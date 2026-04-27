@@ -1,0 +1,12 @@
+{
+  "baseFontSize": 18,
+  "cssTheme": "Atom",
+  "monospaceFontFamily": "JetBrainsMono Nerd Font Mono",
+  "textFontFamily": "Tinos Nerd Font",
+  "accentColor": "",
+  "interfaceFontFamily": "",
+  "enabledCssSnippets": [
+    "bold-color"
+  ],
+  "theme": "moonstone"
+}
