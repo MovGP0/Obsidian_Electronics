@@ -9,6 +9,9 @@ Print view: [https://www.heise.de/ratgeber/Vermessener-Klang-291360.html?seite=a
 Author: Peter Boenik, Carsten Meyer
 Series references: c't 26/07, S. 208
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/ACV](https://www.segor.de/INFO/ct-lab/baugruppe-acv.shtml)
+
 > Eigentlich nur einer Nebenbei-Idee zum c't-Lab-Projekt entsprungen, bewährte sich unser programmierbarer Audio-Vorverstärker in der Praxis so gut, dass wir ihm an dieser Stelle eine breitere Bühne bieten: Mit passender PC-Software erhält man gleichzeitig Oszilloskop, Frequenz- und Klirranalysator für den Niederfrequenzbereich. Das Modul ergänzt damit prima den bereits vorgestellten DDS-Funktionsgenerator, ist aber auch genauso gut eigenständig außerhalb des c't-Lab einsetzbar.
 
 Über das, was Nieder- und was Hochfrequenz ist, herrschen durchaus unterschiedliche Meinungen: Für Zentimeterwellen-Funkamateure ist alles, was man noch auf einem Oszilloskop darstellen kann, keine richtige HF, während die Niederfrequenz-Welt eines Energietechnikers spätestens bei 400 Hz endet. Sprechen wir also lieber vom Audio-Frequenzbereich, obwohl der bei Mittvierzigern wie den Autoren mit Glück noch bis 16 kHz reicht - was weit von den Möglichkeiten des ACV (wie AC-Vorverstärker) getauften c't-Lab-Moduls entfernt ist.

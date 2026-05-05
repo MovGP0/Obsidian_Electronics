@@ -8,6 +8,11 @@ Print view: [https://www.heise.de/ratgeber/Komplementaeres-Paar-291076.html?seit
 Author: Carsten Meyer
 Series references: c't 13/07, S. 202; c't 15/07, S. 188
 
+> [!note] Segor
+> Passende Segor-Seiten:
+> - [Baugruppe c't-Lab/AD16-8](https://www.segor.de/INFO/ct-lab/baugruppe-ad16-8.shtml)
+> - [Baugruppe c't-Lab/DA12-8 (12 und 16 Bit Version)](https://www.segor.de/INFO/ct-lab/baugruppe-da12-8.shtml)
+
 > Zwei Steckkarten mit hochwertigen A/D- und D/A-Wandlern komplettieren das erste Messmodul der c't-Lab-Reihe. Jede der beiden Wandlerkarten besitzt mit (bis zu) 16 Bit Auflösung und acht Kanälen genug Potenzial, um auch anspruchsvollere Mess- und Steuerungsaufgaben zu bewältigen - 0,01 % Genauigkeit sprechen für sich.
 
 Viereinhalb Dezimalstellen Genauigkeit bei hundert Messungen pro Sekunde an gleichzeitig acht Eingangskanälen - so die Eckdaten der A/D-Wandlerkarte AD16-8. Zum Vergleich: Übliche Handmultimeter bieten nur dreieinhalb Dezimalstellen bei kaum mehr als drei Messungen pro Sekunde - und natürlich nur einen einzigen Wandlerkanal. In die andere Richtung geht es nicht minder genau: Die D/A-Wandlerkarte DA12-8 kann man wahlweise mit einem 12- oder 16-Bit-Wandler bestücken, sie besitzt ebenfalls acht Kanäle. Beide Karten akzeptieren beziehungsweise liefern Spannungen zwischen -10 und +10 V, was in der Mess- und Steuerungstechnik eine Art Industriestandard darstellt. Der Trigger-Eingang erleichtert bei der AD-16-8 automatisierte Messungen: Eine Impulsflanke löst bei entsprechender Softwarekonfiguration die Messung aus, und das ADA-IO-Modul liefert die gewünschten Messwerte dann auch automatisch.

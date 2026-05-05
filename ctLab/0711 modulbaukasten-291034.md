@@ -8,6 +8,11 @@ Print view: [https://www.heise.de/ratgeber/Modulbaukasten-291034.html?seite=all&
 Author: Carsten Meyer
 Series references: c't 11/07, S. 212
 
+> [!note] Segor
+> Passende Segor-Seiten:
+> - [Baugruppe c't-Lab/ADA-IO](https://www.segor.de/INFO/ct-lab/baugruppe-ada-io.shtml)
+> - [Baugruppe c't-Lab/IO8-32](https://www.segor.de/INFO/ct-lab/baugruppe-io8-32.shtml)
+
 > Eine tragende Rolle wird dem ADA-IO-Modul des c't-Lab zuteil, und das gleich in zweifacher Hinsicht: Es ist besonders vielseitig einsetzbar und es dient physikalisch als Baugruppenträger für bis zu fünf I/O-Karten. Nach dem Vorgeplänkel in der letzten c't wird es jetzt ernst, denn der mehr oder weniger nur passiven Interface-Elektronik folgt nunmehr das erste intelligente Messmodul.
 
 Gedacht ist ADA-IO als frei konfigurierbares Messwert-Erfassungs- und Ausgabemodul, das je nach Bedarf mit I/O-Leitungen und Wandlerkanälen bestückt werden kann. Der eingebaute Mikrocontroller steuert bis zu 64 digitale I/O-Portleitungen, acht A/D-Kanäle mit 10 und acht mit 16 Bit sowie acht A/D-Kanäle mit 12 oder 16 Bit Auflösung an. Zusätzlich können an seinen I2C-Bus Sensoren mit I2C-Schnittstelle angeschlossen werden, etwa Temperaturfühler oder lichtempfindliche Sonden. Dazu kommen wir aber erst zu einem späteren Zeitpunkt der Serie.

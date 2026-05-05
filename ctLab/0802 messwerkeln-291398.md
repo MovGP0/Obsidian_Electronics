@@ -8,6 +8,9 @@ Print view: [https://www.heise.de/ratgeber/Messwerkeln-291398.html?seite=all&vie
 Author: Heinrich Willecke, Carsten Meyer
 Series references: c't 02/08, S. 170
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/DIV](https://www.segor.de/INFO/ct-lab/baugruppe-div.shtml)
+
 > Nicht nur die höhere Genauigkeit unterscheidet ein labortaugliches Instrument von einem Handmultimeter aus dem Elektronik-Supermarkt: Ersteres muss langzeitstabil, fernsteuer- und kalibrierbar sein, während die „Beweglichkeit“ eher in den Hintergrund tritt. Unser DIV getauftes Modul soll denn auch nicht den Werkzeugkoffer, sondern das c't-Lab-Rack sinnvoll erweitern.
 
 Hundertmal genauer als ein typisches 10-Euro-Multimeter, aber nur zehnmal so teuer - das waren unsere Zielsetzungen beim DIV-Schaltungsdesign. Unser Modul sollte bezüglich seiner Auflösung, Genauigkeit und Konstanz schon an die renommierte Konkurrenz von Fluke, Agilent und Keithley heranreichen, ohne gleich Hunderte oder Tausende von Euro zu kosten. Im Pflichtenheft stand auch, dass es wie die Tischgeräte der erwähnten Hersteller vollständig fernsteuer- und fernabfragbar zu sein hat, hier natürlich mit der einfach erlernbaren und über alle Module konsistenten c't-Lab-Syntax, ebenso sollte die Potentialtrennung aller Module untereinander und zum steuernden Rechner gewährleistet sein.

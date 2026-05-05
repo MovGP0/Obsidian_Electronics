@@ -8,6 +8,9 @@ Print view: [https://www.heise.de/ratgeber/Leitungsschau-291014.html?seite=all&v
 Author: Carsten Meyer
 Series references: c't 10/07, S. 130
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/IFP & Netzwerk](https://www.segor.de/INFO/ct-lab/baugruppe-ifp.shtml)
+
 > Einst boten sich Drucker-Port und ISA-Slot als bevorzugte Pforten für unaufwendige PC-Hardware-Anbindungen an - proprietär natürlich, weil auf bestimmte Plattformen beschränkt, und inzwischen alles andere als zeitgemäß. Unser c't-Lab öffnet gleich drei Tore zum PC: RS-232, USB und Ethernet. Den COM-Port kennt selbst Windows Vista noch - womit sich der Installations- und Programmieraufwand auf ein Minimum beschränkt.
 
 Eigentlich ist auf der ersten c't-Lab-Platine IFP sogar noch eine vierte „Schnittstelle“ vorhanden - nämlich die zum Lichtnetz (darum heißt sie auch IFP wie Interface/Power Supply). Die Stromversorgung auf der Interface-Karte beliefert nicht nur die eigene Elektronik, sie gibt auch noch genügend Saft für ein weiteres Messmodul ab. In praxi werden Sie die Interface-Platine bei einem Vollausbau mehrmals benötigen, und zwar ausschließlich wegen der darauf enthaltenen Netzteil-Elektronik; die Interface-Logik wird nur einmal gebraucht. Damit sparten wir uns ein separates Netzteil-Layout, was nebenbei gesagt auch dem Platinenpreis entgegenkommt.

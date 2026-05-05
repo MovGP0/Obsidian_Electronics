@@ -8,6 +8,9 @@ Print view: [https://www.heise.de/ratgeber/Fernwirkung-291012.html?seite=all&vie
 Author: Carsten Meyer
 Series references: c't 10/07, S. 124
 
+> [!note] Segor
+> Segor führt die c't-Lab-Übersicht hier: [c't-Lab overview](https://www.segor.de/#/ct-lab)
+
 > Mess- und Steuerelektronik zum Anschluss an den PC ist entweder horrend teuer oder von begrenztem Gebrauchswert. Wer mehr verlangt als eine Relaiskarte zum Anschluss an den Druckerport, lässt für industrielle Lösungen schnell einige Monatsgehälter beim Händler. Für unsere leistungsfähigen Mess- und Steuerungsmodule zum Selbstbau lohnt es durchaus, den Lötkolben noch einmal anzuheizen.
 
 Der kreative Umgang mit elektronischen Bauteilen gerät leider immer mehr in Vergessenheit - es gibt ja auch fast nichts mehr, was Fernost nicht deutlich unter dem hiesigen Selbstkostenpreis einzeln gekaufter Bauelemente herstellen kann. Bei Nischenprodukten sieht die Sache noch etwas anders aus. Wer heutzutage noch den Lötkolben schwingt, bastelt an retro-schicken Röhrenverstärkern, restauriert als vergeltende Antwort auf die hyperschnellen Produktzyklen heutiger Konsumelektronik historische Radios oder bringt elektronische Musikinstrumente aus der Nachkriegszeit wieder auf Vordermann, auf dass sie noch mal 50 Jahre halten.

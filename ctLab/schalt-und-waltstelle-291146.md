@@ -8,6 +8,11 @@ Print view: [https://www.heise.de/ratgeber/Schalt-und-Waltstelle-291146.html?sei
 Author: Carsten Meyer
 Series references: c't 16/07, S. 176
 
+> [!note] Segor
+> Passende Segor-Seiten:
+> - [Baugruppe c't-Lab/Panel](https://www.segor.de/INFO/ct-lab/baugruppe-panel.shtml)
+> - [Baugruppe c't-Lab/PS3-2](https://www.segor.de/INFO/ct-lab/baugruppe-ps3-2.shtml)
+
 > Wieder so ein nassgrauer, freudloser Tag? Endlich Zeit, einen guten Lötkolben zur Hand zu nehmen und sich in Bastelzimmer oder Werkstatt zurückzuziehen, um die c't-Lab-Module mit Bedienpanel, Messwert-Anzeige und aufgewerteter Stromversorgung auszurüsten.
 
 Ein ominöser Panel-Anschluss tauchte in den c't-Lab-Schaltplänen der vergangenen Ausgaben immer wieder auf - sowohl auf dem DDS-Modul wie auch auf der ADA-IO-Basisplatine. Hier kann man die in diesem Teil vorgestellte Zusatzplatine anschließen, auf der sich zwei Taster, ein Inkremental-Drehgeber und ein zweizeiliges LC-Display befinden. Damit lassen sich die c't-Lab-Module auch nahezu vollständig bedienen, ohne dass man dafür den Rechner hochfahren oder aufsuchen müsste (falls er vom Modul-Rack entfernt steht). Die Module werden dadurch zu eigenständigen, autarken Geräten. Nebenbei zeigen die Panels auch die Remote-Aktivitäten an - das hilft beim Debuggen des Steuerungsprogramms.

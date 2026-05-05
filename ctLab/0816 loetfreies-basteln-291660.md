@@ -8,6 +8,9 @@ Print view: [https://www.heise.de/ratgeber/Loetfreies-Basteln-291660.html?seite=
 Author: Carsten Meyer
 Series references: c't 16/08, S. 186
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/FPGA und c't-Lab/JTAG](https://www.segor.de/INFO/ct-lab/baugruppe-fpgajtag.shtml)
+
 > FPGA steht für Field Programmable Gate Array, ein Baustein also, dessen Logikelemente sich wie auf einem Experimentierbrett jederzeit umstecken und neu verdrahten lassen – nur in einem ganz anderen Maßstab: Auf unserem Entwurf sehen 400 000 Gatter einer sinnvollen Beschäftigung entgegen. Mit etwas Kommunikationsperipherie fügt sich ein solcher Baustein perfekt in das c't-Lab-System ein.
 
 FPGA-Bausteine sind wahre Universalgenies, die immer dort eingesetzt werden, wo ein Mikroprozessor zu langsam, eine diskret aufgebaute Gatterschaltung viel zu umfangreich und ein speziell für den jeweiligen Anwendungsfall gefertigter Custom-Chip unrentabel oder zu unflexibel wäre. Was der Baustein mit seinen (in der Regel vielen) Anschlüssen macht, bestimmt einzig seine Konfiguration, die sich jederzeit ändern lässt – einfach durch „Aufspielen“ einer Konfigurationsdatei.

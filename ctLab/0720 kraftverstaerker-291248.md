@@ -8,6 +8,9 @@ Print view: [https://www.heise.de/ratgeber/Kraftverstaerker-291248.html?seite=al
 Author: Carsten Meyer
 Series references: c't 20/07, S. 196
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/DCP](https://www.segor.de/INFO/ct-lab/baugruppe-dcp.shtml)
+
 > Wenn es etwas mehr sein darf: Zum Testen von Leistungselektronik, Endstufen, dicken Akkus und DC-Motoren mit dem c't-Lab reicht der Ausgangsstrom des DCG-Moduls manchmal nicht aus. Dann empfehlen wir die Leistungsstufe DCP als Ergänzung, die locker zwei Ampere macht und mit einer pfiffigen Lüftersteuerung auch in engen Modul-Racks nicht zu heiß wird.
 
 Seit CMOS-Bausteine die stromhungrigen TTL-Serien ersetzt haben, besteht im Labor kaum noch Bedarf für Hochleistungs-Netzteile der 20-kg-Klasse. Trotzdem ist die 1-A-Grenze des in der letzten c't vorgestellten DCG-Moduls schnell erreicht, wenn man etwa die Ladekurve eines RC-Akkus aufzeichnen will oder eine Audio-Endstufe repariert werden soll. Zwar kann man zwei DCG-Module für symmetrische Spannungsversorgungen oder hohe Spannungen problemlos in Reihe schalten, was die eingebaute Tracking-Funktion der Firmware schon vermuten lässt; bei einer Parallelschaltung können sich aber die Regeleigenschaften verschlechtern, weil im Grenzbereich immer ein Modul in den Strombegrenzungsbetrieb wechselt. Da ist die Leistungsstufe DCP die billigere und elegantere Alternative - sozusagen das Netzteil für das Netzteil.

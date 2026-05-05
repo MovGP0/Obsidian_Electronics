@@ -7,6 +7,9 @@ Source: [https://www.heise.de/ratgeber/Stromabnehmer-291588.html](https://www.he
 Author: Carsten Meyer, Heinrich Willecke
 Series references: c't 12/08, S. 176
 
+> [!note] Segor
+> Passende Segor-Seite: [Baugruppe c't-Lab/EDL (10A-Version)](https://www.segor.de/INFO/ct-lab/baugruppe-edl.shtml)
+
 > Was eine elektronische, programmierbare Last so spannend macht, offenbart sich erst auf den zweiten Blick – oder bei Lektüre der technischen Daten unseres neuen c't-Lab-Moduls EDL: Wenn Sie beispielsweise den Innenwiderstand eines Netzteils bestimmen, die Entladekurve eines Akkus aufnehmen oder die Leistung eines Solarpanels messen wollen, erleichtert eine programmierbare Stromsenke enorm die Arbeit – vor allem, wenn sie wie unser Modul Messwerte über die gerade anliegende Spannung und den dabei fließenden Strom in hoher Genauigkeit an den steuernden Rechner liefert.
 
 Das Modul EDL (für „Electronic Dummy Load“) ergänzt ideal das im Jahr zuvor im Rahmen des c't-Lab-Projekts vorgestellte programmierbare Netzteil DCG, obwohl es natürlich auch „stand alone“ als universelle elektronische (Gleichspannungs-)Last einsetzbar ist. In Verbindung mit dem PM8-Bedienpanel kommt es für „ad hoc“-Messungen sogar ganz ohne Rechner-Unterstützung aus. EDL lässt sich auf konstante Stromaufnahme (d. h. es fließt unabhängig von der angelegten Spannung immer der gleichen Strom) oder Widerstandskennlinie (der aufgenommene Strom steigt linear mit der angelegten Spannung) umschalten. Die dabei aufgenommene Leistung wird schlicht in Wärme umgesetzt.
