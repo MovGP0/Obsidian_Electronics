@@ -79,140 +79,63 @@ Beim DDS-Funktionsgenerator erfolgt die Frequenzeinstellung im Grob-Modus in Ter
 
 [**Forum zu c't-Lab [3]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
 
-Stückliste PM8
-
-Halbleiter
-
-U1
-
-PCA9555D
-
-U2
-
-LCD alphanum. DIPS082(Electronic Assembly)
-
-LED1, 2
-
-LED 3 mm rot
-
-LED3
-
-LED 3 mm grün
-
-Passive Bauteile
-
-C2
-
-100n ker. RMS
-
-C3, 4
-
-22n ker. RMS
-
-C1
-
-4µ7 25V Ta.
-
-R1, 2, 6, 7
-
-10k
-
-R3, 5, 9
-
-560R
-
-R8, 12
-
-47k
-
-R10, 11
-
-2k7
-
-R4
-
-2k2 Trimmer, RM5 (Piher)
-
-SW4
-
-Dreh-Encoder mit Tastfunktion, z. B. Panasonic EVQWTA-S20-15B
-
-SW1, 2
-
-Digitast D6/DT6 Taster grau
-
-SW3
-
-Digitast D6/DT6 Taster rot
-
-PL1
-
-Wannen-Pfostensteckverb. 10-pol.
-
-Platine PM8
-
-Stückliste PS3-2
-
-Halbleiter
-
-U3, U4
-
-LM2940-CT5, L4941 oder L4940-V5(7805 nur mit 2x7,5-V-Trafo)
-
-U2, U6
-
-7815,7815
-
-U1, U5
-
-7915,7915
-
-RB1..4
-
-Gleichrichter B80C1500 rund
-
-Passive Bauteile
-
-C1, 2, 4..8, 11..14, 16, 18
-
-100n ker. RM5
-
-C3, 5, 15, 17
-
-470µ 35V,CP4,CP4
-
-C9, 10
-
-1000µ 16V,CP4,CP4
-
-FS1
-
-Min.-Sicherung 100mA T, rund RM5
-
-PL1, 2
-
-Wannen-Steckverbinder 14-pol.
-
-PL3
-
-Print-Schraubklemme RM7,5
-
-JP1, 2
-
-Jumper für Test
-
-TR1/2, 5/6
-
-2 x 15 V, Print-Trafo EI38 4,5VAoder Flachtrafo 6VA
-
-TR3/4
-
-2 x 6 V, Print-Trafo EI38 4,5VAPlatine PS3-2 (eMedia, Segor), Isolierstoff-oder Flachtrafo 6VA
-
-Platine PS3-2 (eMedia, Segor),
-Isolierstoff-Platte/Platine 100 x 160 mm,
-4 Abstandsröllchen,
-5 mm mit Befestigungsmaterial
+## Stückliste PM8
+
+### Halbleiter
+
+| ID      | Type                                      |
+| ------- | ----------------------------------------- |
+| U1      | PCA9555D                                  |
+| U2      | LCD alphanum. DIPS082(Electronic Assembly) |
+| LED1, 2 | LED 3 mm rot                              |
+| LED3    | LED 3 mm grün                             |
+
+### Passive Bauteile
+
+| ID          | Type                                                       |
+| ----------- | ---------------------------------------------------------- |
+| C2          | 100n ker. RMS                                              |
+| C3, 4       | 22n ker. RMS                                               |
+| C1          | 4µ7 25V Ta.                                                |
+| R1, 2, 6, 7 | 10k                                                        |
+| R3, 5, 9    | 560R                                                       |
+| R8, 12      | 47k                                                        |
+| R10, 11     | 2k7                                                        |
+| R4          | 2k2 Trimmer, RM5 (Piher)                                   |
+| SW4         | Dreh-Encoder mit Tastfunktion, z. B. Panasonic EVQWTA-S20-15B |
+| SW1, 2      | Digitast D6/DT6 Taster grau                                |
+| SW3         | Digitast D6/DT6 Taster rot                                 |
+| PL1         | Wannen-Pfostensteckverb. 10-pol.                           |
+|             | Platine PM8                                                |
+
+## Stückliste PS3-2
+
+### Halbleiter
+
+| ID      | Type                                                         |
+| ------- | ------------------------------------------------------------ |
+| U3, U4  | LM2940-CT5, L4941 oder L4940-V5(7805 nur mit 2x7,5-V-Trafo) |
+| U2, U6  | 7815,7815                                                    |
+| U1, U5  | 7915,7915                                                    |
+| RB1..4  | Gleichrichter B80C1500 rund                                  |
+
+### Passive Bauteile
+
+| ID                    | Type                                          |
+| --------------------- | --------------------------------------------- |
+| C1, 2, 4..8, 11..14, 16, 18 | 100n ker. RM5                          |
+| C3, 5, 15, 17         | 470µ 35V,CP4,CP4                              |
+| C9, 10                | 1000µ 16V,CP4,CP4                             |
+| FS1                   | Min.-Sicherung 100mA T, rund RM5              |
+| PL1, 2                | Wannen-Steckverbinder 14-pol.                 |
+| PL3                   | Print-Schraubklemme RM7,5                     |
+| JP1, 2                | Jumper für Test                               |
+| TR1/2, 5/6            | 2 x 15 V, Print-Trafo EI38 4,5VA oder Flachtrafo 6VA |
+| TR3/4                 | 2 x 6 V, Print-Trafo EI38 4,5VA oder Flachtrafo 6VA |
+|                       | Platine PS3-2 (eMedia, Segor)                 |
+|                       | Isolierstoff-Platte/Platine 100 x 160 mm      |
+|                       | 4 Abstandsröllchen                            |
+|                       | 5 mm mit Befestigungsmaterial                 |
 
 RSPEAK_STOP
 ([**cm [4]**](mailto:cm@ct.de))

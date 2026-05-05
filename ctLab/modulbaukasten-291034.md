@@ -85,137 +85,77 @@ Bis zum nächsten Teil haben Sie genug Zeit, sich mit der c't-Lab-Syntax vertrau
 
 ***[**Soft-Link [4]**](http://www.heise.de/ct/07/11/links/212.shtml)***
 
-Stückliste ADA-IO
-
-Halbleiter
-
-U1
-
-ATmega32-1 DIL
-
-U2
-
-6N137
-
-LED1
-
-LED 3 mm rot
-
-Kondensatoren
-
-C1
-
-4µ7 25V Ta.
-
-C2...C5
-
-100n ker. RM 5
-
-C6, C7
-
-22p RM2,5
-
-Widerstände
-
-R1, R2
-
-220R
-
-R3
-
-0R (Drahtbrücke)
-
-R4, R5
-
-2k2
-
-R6
-
-4k7
-
-R7
-
-470R
-
-R8
-
-2k7
-
-Sonstiges
-
-JP1...JP5
-
-Jumper 2-pol.
-
-L1
-
-10µH axial RM10
-
-PL1
-
-Pfostenleiste 14-pol.
-
-PL2...6
-
-Pfostenleiste 10-pol.
-
-XTAL1
-
-uartz 16 MHz HC49U
-
-CONN1...5
-
-VG-Federleisten 64-pol. a/bPlatine ADA-IO
-
-Stückliste IO8-32
-
-Halbleiter
-
-U1...U4
-
-PCA9554AD SO16
-
-Kondensatoren
-
-C1, C2
-
-100n ker. RM 5
-
-C3...C10
-
-2n2 100V RM5
-
-Widerstände
-
-R1
-
-10k
-
-R2...R9
-
-300k 1%
-
-R10, R11
-
-4k7
-
-R12...R19
-
-100k 1%
-
-Sonstiges
-
-JP1
-
-Jumper 2-pol.
-
-PL1...6
-
-Pfostenleiste 10-pol.
-
-CONN1
-
-VG-Messerleisten 64-pol. a/b 90°Platine IO8-32 (eMedia, Segor)
+## Stückliste ADA-IO
+
+### Halbleiter
+
+| ID   | Type           |
+| ---- | -------------- |
+| U1   | ATmega32-1 DIL |
+| U2   | 6N137          |
+| LED1 | LED 3 mm rot   |
+
+### Kondensatoren
+
+| ID      | Type           |
+| ------- | -------------- |
+| C1      | 4µ7 25V Ta.    |
+| C2...C5 | 100n ker. RM 5 |
+| C6, C7  | 22p RM2,5      |
+
+### Widerstände
+
+| ID     | Type             |
+| ------ | ---------------- |
+| R1, R2 | 220R             |
+| R3     | 0R (Drahtbrücke) |
+| R4, R5 | 2k2              |
+| R6     | 4k7              |
+| R7     | 470R             |
+| R8     | 2k7              |
+
+### Sonstiges
+
+| ID        | Type                            |
+| --------- | ------------------------------- |
+| JP1...JP5 | Jumper 2-pol.                   |
+| L1        | 10µH axial RM10                 |
+| PL1       | Pfostenleiste 14-pol.           |
+| PL2...6   | Pfostenleiste 10-pol.           |
+| XTAL1     | uartz 16 MHz HC49U              |
+| CONN1...5 | VG-Federleisten 64-pol. a/b Platine ADA-IO |
+
+## Stückliste IO8-32
+
+### Halbleiter
+
+| ID      | Type            |
+| ------- | --------------- |
+| U1...U4 | PCA9554AD SO16  |
+
+### Kondensatoren
+
+| ID       | Type            |
+| -------- | --------------- |
+| C1, C2   | 100n ker. RM 5  |
+| C3...C10 | 2n2 100V RM5    |
+
+### Widerstände
+
+| ID        | Type     |
+| --------- | -------- |
+| R1        | 10k      |
+| R2...R9   | 300k 1%  |
+| R10, R11  | 4k7      |
+| R12...R19 | 100k 1%  |
+
+### Sonstiges
+
+| ID      | Type                                               |
+| ------- | -------------------------------------------------- |
+| JP1     | Jumper 2-pol.                                      |
+| PL1...6 | Pfostenleiste 10-pol.                              |
+| CONN1   | VG-Messerleisten 64-pol. a/b 90° Platine IO8-32 (eMedia, Segor) |
 
 ## **Mit den Modulen sprechen**
 

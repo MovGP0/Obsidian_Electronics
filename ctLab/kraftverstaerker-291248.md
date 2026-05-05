@@ -67,137 +67,56 @@ Abschließend noch eine wichtige Korrektur zur DCG-Schaltung: Die in c't 19/07 a
 
 *Für den Printtrafo TR1 können zwei Modelle verwendet werden - mit EI38- und EI42-Kern. Die EI38-Version darf nur eine Sekundärwicklung aufweisen, während bei EI42-Trafos auch solche mit zwei 9-V-Wicklungen passen. Die bei manchen Fabrikaten vorhandenen Befestigungslaschen sind gegebenenfalls abzuschneiden.*
 
-Stückliste
+## Stückliste
 
-Halbleiter
+### Halbleiter
 
-U1
+| ID     | Type                                   |
+| ------ | -------------------------------------- |
+| U1     | 7815                                   |
+| U2     | 7915                                   |
+| U3     | 7805                                   |
+| U4     | LM75 SO8                               |
+| D1..3  | 1N4148                                 |
+| RB1, 2 | Gleichrichter rund, B80C1500           |
+| RB3    | Gleichrichter PBU605 o. Ä., min. 80V/4A |
+| Q12    | BD249C                                 |
+| Q2..4  | BC337B                                 |
 
-7815
+### Passive Bauteile
 
-U2
+| ID        | Type         |
+| --------- | ------------ |
+| R1        | 10R          |
+| R2..4     | 2k7 SMD0805  |
+| R5..8     | 2k7          |
+| C1        | 4n7 1kV RM5  |
+| C2..10, 13 | 100n ker. RM5 |
+| C14, 15   | 10n ker. RM5 |
+| C11       | 100n SMD1206 |
+| C12       | entfällt     |
+| C5, 6     | 470µ 35V     |
+| C9        | 1000µ 16V    |
+| C16, 17   | 2200µ 40V    |
 
-7915
+### Sonstiges
 
-U3
-
-7805
-
-U4
-
-LM75 SO8
-
-D1..3
-
-1N4148
-
-RB1, 2
-
-Gleichrichter rund, B80C1500
-
-RB3
-
-Gleichrichter PBU605 o. Ä., min. 80V/4A
-
-Q12
-
-BD249C
-
-Q2..4
-
-BC337B
-
-Passive Bauteile
-
-R1
-
-10R
-
-R2..4
-
-2k7 SMD0805
-
-R5..8
-
-2k7
-
-C1
-
-4n7 1kV RM5
-
-C2..10, 13
-
-100n ker. RM5
-
-C14, 15
-
-10n ker. RM5
-
-C11
-
-100n SMD1206
-
-C12
-
-entfällt
-
-C5, 6
-
-470µ 35V
-
-C9
-
-1000µ 16V
-
-C16, 17
-
-2200µ 40V
-
-Sonstiges
-
-FS1
-
-Sicherung 630mAT m. Halter RM20
-
-FS2
-
-Sicherung 3,15AT m. Halter RM20
-
-PL1
-
-Wannen-Pfostenverbinder 14pol.
-
-PL2, 4
-
-Schraubklemme 3pol. RM5
-
-PL3, 7
-
-Schraubklemme 2pol. RM5
-
-PL5
-
-Platinen-Steckverbinder 2pol. (Lüfter)
-
-PL6
-
-MiniFit Jr. Buchse 8pol. 180°
-
-SW1, 2
-
-Relais 16A, z.B. Finder 41.61.9.012.0
-
-TR1
-
-Trafo 1x9V, EI42 5VA oder EI38 4VA
-
-TR2
-
-Trafo 2x15V EI30 2,3VA
-Platine DCP
-Kühlkörper SK68-75
-Lüfter 12V, 40 mm x 40 mm
-Schrauben, Unterlegscheiben
+| ID     | Type                                   |
+| ------ | -------------------------------------- |
+| FS1    | Sicherung 630mAT m. Halter RM20        |
+| FS2    | Sicherung 3,15AT m. Halter RM20        |
+| PL1    | Wannen-Pfostenverbinder 14pol.         |
+| PL2, 4 | Schraubklemme 3pol. RM5                |
+| PL3, 7 | Schraubklemme 2pol. RM5                |
+| PL5    | Platinen-Steckverbinder 2pol. (Lüfter) |
+| PL6    | MiniFit Jr. Buchse 8pol. 180°          |
+| SW1, 2 | Relais 16A, z.B. Finder 41.61.9.012.0  |
+| TR1    | Trafo 1x9V, EI42 5VA oder EI38 4VA     |
+| TR2    | Trafo 2x15V EI30 2,3VA                 |
+|        | Platine DCP                            |
+|        | Kühlkörper SK68-75                     |
+|        | Lüfter 12V, 40 mm x 40 mm              |
+|        | Schrauben, Unterlegscheiben            |
 
 RSPEAK_STOP
 ([**cm [4]**](mailto:cm@ct.de))

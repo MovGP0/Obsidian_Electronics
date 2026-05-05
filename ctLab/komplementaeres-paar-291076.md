@@ -115,255 +115,93 @@ Das ADA-IO-Modul ist mit den hier vorgestellten Wandler-Boards vorerst vollstän
 
 [**Forum zu c't-Lab [2]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
 
-Stückliste AD16-8
-
-Halbleiter
-
-D1
-
-1N4148
-
-U1
-
-AD712 oder OPA2107A DIL
-
-U2
-
-LT1019-2,5 oder REF-43 DIL
-
-U3
-
-DG508 od. DG408 DIL
-
-U4
-
-LTC1864 SO8
-
-Passive Bauteile
-
-C1, C2, C5
-
-4µ7 35V Ta.
-
-C3
-
-220n SMD1206
-
-C9
-
-2n2 SMD0805
-
-C4
-
-1n ker.
-
-C6
-
-100n 63V MKT
-
-C7,C8
-
-100n ker.
-
-L1
-
-10µH axial
-
-R1, R4, R16
-
-470R SMD0805
-
-R15
-
-10k SMD0805
-
-R2
-
-4k7
-
-R3
-
-2k2
-
-R5
-
-10k 0,1%
-
-R6
-
-2k67 0,1%
-
-R7
-
-75k 0,1%
-
-R8
-
-100R
-
-R9
-
-15k 0,1%
-
-R10
-
-8k06 0,1%
-
-R11
-
-2k 0,1%
-
-R12
-
-1k 0,1%
-
-R14
-
-10k 0,1%
-
-R17,R18
-
-10R
-
-R13
-
-2k Präz.-Trimmer stehend, inline
-
-PL1
-
-2pol. Platinen-Steckverbinder mit Kabel
-
-PL2
-
-Pfostenverb. 10pol.
-
-JP1, JP2
-
-Jumper (siehe Text)
-
-CONN1
-
-VG-Messerleiste 64pol, 90° a/b, Platine AD16-8
-
-Stückliste DA12-8
-
-Halbleiter
-
-D1
-
-1N4148
-
-D2
-
-entfällt
-
-U1
-
-TL072
-
-U2
-
-LTC1257 DIL
-
-U4, U5
-
-TL074ACN oder LF444 DIL
-
-U3
-
-DG508 od. DG408 DIL
-
-Passive Bauteile
-
-C1, C6...C9, C12...C15
-
-100n 63V MKT
-
-C4, C10, C11
-
-100n ker.
-
-C2, C5
-
-47µ 25V
-
-C3
-
-4µ7 35V Ta.
-
-L1
-
-10µH axial
-
-R1...R3, R9
-
-10k 0,1%
-
-R6
-
-953R 0,1%
-
-R7
-
-0R (Drahtbrücke)
-
-R8
-
-entfällt
-
-R10
-
-10k
-
-R11...R19
-
-100R
-
-R20, R21
-
-10R
-
-R4
-
-100R Präz.-Trimmer stehend, inline
-
-R5
-
-200R Präz.-Trimmer stehend, inline
-
-PL1
-
-Pfostenverb. 10pol.
-
-JP1
-
-Jumper (siehe Text)
-
-CONN1
-
-VG-Messerleiste 64pol, 90° a/b, Platine DA12-8
-
-Bestückungsvariante 16 Bit
-
-D2
-
-1N4148
-
-U1
-
-AD712 oder OPA2107
-
-U2
-
-LTC1655 DIL oder SO8
-
-U4, U5
-
-AD713 DIL
-
-R7, R8
-
-10k 0,1%
+## Stückliste AD16-8
+
+### Halbleiter
+
+| ID | Type |
+| -- | ---- |
+| D1 | 1N4148 |
+| U1 | AD712 oder OPA2107A DIL |
+| U2 | LT1019-2,5 oder REF-43 DIL |
+| U3 | DG508 od. DG408 DIL |
+| U4 | LTC1864 SO8 |
+
+### Passive Bauteile
+
+| ID          | Type                                |
+| ----------- | ----------------------------------- |
+| C1, C2, C5  | 4µ7 35V Ta.                         |
+| C3          | 220n SMD1206                        |
+| C9          | 2n2 SMD0805                         |
+| C4          | 1n ker.                             |
+| C6          | 100n 63V MKT                        |
+| C7,C8       | 100n ker.                           |
+| L1          | 10µH axial                          |
+| R1, R4, R16 | 470R SMD0805                        |
+| R15         | 10k SMD0805                         |
+| R2          | 4k7                                 |
+| R3          | 2k2                                 |
+| R5          | 10k 0,1%                            |
+| R6          | 2k67 0,1%                           |
+| R7          | 75k 0,1%                            |
+| R8          | 100R                                |
+| R9          | 15k 0,1%                            |
+| R10         | 8k06 0,1%                           |
+| R11         | 2k 0,1%                             |
+| R12         | 1k 0,1%                             |
+| R14         | 10k 0,1%                            |
+| R17,R18     | 10R                                 |
+| R13         | 2k Präz.-Trimmer stehend, inline    |
+| PL1         | 2pol. Platinen-Steckverbinder mit Kabel |
+| PL2         | Pfostenverb. 10pol.                 |
+| JP1, JP2    | Jumper (siehe Text)                 |
+| CONN1       | VG-Messerleiste 64pol, 90° a/b, Platine AD16-8 |
+
+## Stückliste DA12-8
+
+### Halbleiter
+
+| ID     | Type                      |
+| ------ | ------------------------- |
+| D1     | 1N4148                    |
+| D2     | entfällt                  |
+| U1     | TL072                     |
+| U2     | LTC1257 DIL               |
+| U4, U5 | TL074ACN oder LF444 DIL   |
+| U3     | DG508 od. DG408 DIL       |
+
+### Passive Bauteile
+
+| ID                        | Type                                   |
+| ------------------------- | -------------------------------------- |
+| C1, C6...C9, C12...C15    | 100n 63V MKT                           |
+| C4, C10, C11             | 100n ker.                              |
+| C2, C5                   | 47µ 25V                                |
+| C3                       | 4µ7 35V Ta.                            |
+| L1                       | 10µH axial                             |
+| R1...R3, R9             | 10k 0,1%                               |
+| R6                       | 953R 0,1%                              |
+| R7                       | 0R (Drahtbrücke)                       |
+| R8                       | entfällt                               |
+| R10                      | 10k                                    |
+| R11...R19                | 100R                                   |
+| R20, R21                 | 10R                                    |
+| R4                       | 100R Präz.-Trimmer stehend, inline     |
+| R5                       | 200R Präz.-Trimmer stehend, inline     |
+| PL1                      | Pfostenverb. 10pol.                    |
+| JP1                      | Jumper (siehe Text)                    |
+| CONN1                    | VG-Messerleiste 64pol, 90° a/b, Platine DA12-8 |
+
+### Bestückungsvariante 16 Bit
+
+| ID     | Type                  |
+| ------ | --------------------- |
+| D2     | 1N4148                |
+| U1     | AD712 oder OPA2107    |
+| U2     | LTC1655 DIL oder SO8  |
+| U4, U5 | AD713 DIL             |
+| R7, R8 | 10k 0,1%              |
 
 RSPEAK_STOP
 ([**cm [3]**](mailto:cm@ct.de))

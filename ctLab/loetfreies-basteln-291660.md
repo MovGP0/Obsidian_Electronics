@@ -117,193 +117,82 @@ Literatur
 
 [4] [**Grundlagen und Tricks zu FPGA-Entwicklungen [7]**](http://www.mikrocontroller.net/articles/Xilinx_ISE)
 
-Stückliste
-
-FPGA-Platine
-
-Halbleiter
-
-U1
-
-ATmega644, QFP44
-
-U2
-
-Oszillator, DIL14 (optional, siehe Text)
-
-U3
-
-Oszillator, 50 MHz, DIL14
-
-U4
-
-6N137, DIL8
-
-U6
-
-LF33, TO220
-
-U5
-
-LM317, TO220
-
-U7
-
-Xilinx XC3S400, TQ144
-
-D1
-
-1N4007
-
-LED1, LED3
-
-LED rot 3mm
-
-LED2
-
-LED rot SMD0805
-
-Passive Bauteile
-
-C1, C2
-
-22p SMD0805
-
-C3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19
-
-100n SMD1206
-
-C6, 16, 18, 20
-
-22µ 16V Ta.
-
-R1, 16..18, 38, 39
-
-4k7, SMD0805
-
-R2, 30, 31, 33, 36, 41, 44, 47
-
-470R, SMD0805
-
-R3, 4, 8
-
-2k7, SMD0805
-
-R5, R6
-
-220R, SMD0805
-
-R7, 14, 15, 34, 35, 37, 40, 43, 46
-
-1k, SMD0805
-
-R9..13, 20..25, 32
-
-220R, SMD0805
-
-R19, 42, 45 ,48..50
-
-270R, SMD0805
-
-R26..29
-
-100R, SMD0805
-
-Sonstiges
-
-XTAL1
-
-Quarz 16MHz HC49U
-
-PL2..6
-
-Wannen-Pfostenverbind.10-pol.
-
-PL1, PL7
-
-Wannen-Pfostenverbind.14-pol.
-
-PL8
-
-SD-Kartenslot FPS009-2700-0
-
-JP1..5
-
-Jumper 2-pol.
-
-CONN1..3
-
-VG-Leiste 64-pol. female a/b
-
-CONN4
-
-Sub-D 15-pol. HD 90° fem. (VGA)
-
-Platine c't-Lab FPGA (eMedia, Segor)
-
-JTAG-Adapter
-
-Halbleiter
-
-U8, U9
-
-74HC125, DIL (kein HCT/LS!)
-
-D2, D3
-
-BAT48
-
-Passive Bauteile
-
-R51, 57, 58, 62
-
-100R
-
-R52, 64
-
-47R
-
-R53, 55, 56, 60, 61
-
-270R
-
-R54
-
-470R
-
-R59
-
-1k
-
-R63
-
-4k7
-
-C21
-
-10n ker. RM5
-
-C22
-
-100n ker. RM5
-
-Sonstiges
-
-JP6
-
-Jumper 2-pol.
-
-PL9
-
-Wannen-Pfostenverbind. 14-pol.
-
-PL10
-
-Platinen-Steckverbinder 2-pol.
-
-CONN5
-
-Sub-D 25-pol. 90° male
+## Stückliste FPGA-Platine
+
+### Halbleiter
+
+| ID         | Type                                   |
+| ---------- | -------------------------------------- |
+| U1         | ATmega644, QFP44                       |
+| U2         | Oszillator, DIL14 (optional, siehe Text) |
+| U3         | Oszillator, 50 MHz, DIL14              |
+| U4         | 6N137, DIL8                            |
+| U6         | LF33, TO220                            |
+| U5         | LM317, TO220                           |
+| U7         | Xilinx XC3S400, TQ144                  |
+| D1         | 1N4007                                 |
+| LED1, LED3 | LED rot 3mm                            |
+| LED2       | LED rot SMD0805                        |
+
+### Passive Bauteile
+
+| ID                                    | Type         |
+| ------------------------------------- | ------------ |
+| C1, C2                                | 22p SMD0805  |
+| C3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19 | 100n SMD1206 |
+| C6, 16, 18, 20                        | 22µ 16V Ta.  |
+| R1, 16..18, 38, 39                    | 4k7, SMD0805 |
+| R2, 30, 31, 33, 36, 41, 44, 47        | 470R, SMD0805 |
+| R3, 4, 8                              | 2k7, SMD0805 |
+| R5, R6                                | 220R, SMD0805 |
+| R7, 14, 15, 34, 35, 37, 40, 43, 46    | 1k, SMD0805  |
+| R9..13, 20..25, 32                    | 220R, SMD0805 |
+| R19, 42, 45, 48..50                   | 270R, SMD0805 |
+| R26..29                               | 100R, SMD0805 |
+
+### Sonstiges
+
+| ID      | Type                               |
+| ------- | ---------------------------------- |
+| XTAL1   | Quarz 16MHz HC49U                  |
+| PL2..6  | Wannen-Pfostenverbind.10-pol.      |
+| PL1, PL7 | Wannen-Pfostenverbind.14-pol.     |
+| PL8     | SD-Kartenslot FPS009-2700-0        |
+| JP1..5  | Jumper 2-pol.                      |
+| CONN1..3 | VG-Leiste 64-pol. female a/b      |
+| CONN4   | Sub-D 15-pol. HD 90° fem. (VGA)    |
+|         | Platine c't-Lab FPGA (eMedia, Segor) |
+
+## Stückliste JTAG-Adapter
+
+### Halbleiter
+
+| ID     | Type                          |
+| ------ | ----------------------------- |
+| U8, U9 | 74HC125, DIL (kein HCT/LS!)   |
+| D2, D3 | BAT48                         |
+
+### Passive Bauteile
+
+| ID                  | Type          |
+| ------------------- | ------------- |
+| R51, 57, 58, 62     | 100R          |
+| R52, 64             | 47R           |
+| R53, 55, 56, 60, 61 | 270R          |
+| R54                 | 470R          |
+| R59                 | 1k            |
+| R63                 | 4k7           |
+| C21                 | 10n ker. RM5  |
+| C22                 | 100n ker. RM5 |
+
+### Sonstiges
+
+| ID    | Type                           |
+| ----- | ------------------------------ |
+| JP6   | Jumper 2-pol.                  |
+| PL9   | Wannen-Pfostenverbind. 14-pol. |
+| PL10  | Platinen-Steckverbinder 2-pol. |
+| CONN5 | Sub-D 25-pol. 90° male         |
 
 RSPEAK_STOP
 ([**cm [8]**](mailto:cm@ct.de))

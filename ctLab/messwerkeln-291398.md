@@ -93,281 +93,94 @@ Der Display-Integrationsmodus lässt sich übrigens (wie auch der Default-Messbe
 
 Noch zu erwähnen ist die Handhabung des Trigger-Eingangs: Hier kann beispielsweise ein Taster oder ein Schaltkontakt angeschlossen werden, der eine Messung auch ohne explizite Anfrage vom Rechner auslöst. Der Eingang ist TTL-kompatibel, die Schaltflanke lässt sich über die Trigger-Parameter (siehe DIV-Syntax) steuern. Mit der Triggermaske legt man fest, welche der Messkanäle bei Triggerung ausgegeben werden sollen, und wie bei ADA-IO gibt es auch einen Trigger-Timer für automatisch wiederholte Mess-Ausgaben in einem festen Zeitraster (TRT-Einstellung in Millisekunden).
 
-Stückliste DIV
-
-Halbleiter
-
-U1
-
-ATmega32 16MHz DIL
-
-U2
-
-6N137
-
-U3
-
-LT1019, REF-43 DIL
-
-U4
-
-LTC2400 SO8
-
-U5
-
-OP-27 DIL (siehe Text)
-
-U6
-
-LF411 DIL
-
-U7
-
-DG419 DIL
-
-U8
-
-LM399 (siehe Text)
-
-U9
-
-ULN2003 oder ULN2803 DIL
-
-Q1, 2
-
-BC547B
-
-D1...D4
-
-1N5401
-
-LED1
-
-LED 3mm rot
-
-Passive Bauteile
-
-C1, 2
-
-22p RM2,5
-
-C11
-
-1n FKP RM5
-
-C12, 13
-
-220n SMD 1206
-
-C14
-
-1µ 63V MKT RM5
-
-C16
-
-10µ 25V Tantal
-
-C17
-
-470p 1000V RM5
-
-C3, 4, 7, 9, 10
-
-100n ker. RM5
-
-C5, 6
-
-4µ7 50V
-
-C8
-
-47µ 10V Tantal
-
-R1
-
-470R
-
-R2, 3, 9, 10, 11
-
-220R
-
-R4, 7
-
-4k7
-
-R5, 6
-
-6R8
-
-R8, 21, 22, 31,32
-
-10k
-
-R12, 14, 16, 24
-
-2k7
-
-R13
-
-10k Präz.-Trimmer W64 (siehe Text)
-
-R15, 28, 33
-
-22k
-
-R17
-
-200R Präz.-Trimmer W64
-
-R18
-
-820R (siehe Text)
-
-R19
-
-10k 0,1%
-
-R20
-
-90k 0,1%
-
-R23
-
-4k7 SMD 0806
-
-R25
-
-0R Drahtbrücke
-
-R26
-
-20k 0,1%
-
-R27
-
-7k5
-
-R29, 30
-
-1k 0,1%
-
-R34
-
-10R 2W 1%
-
-R35
-
-1k
-
-R36
-
-100k 0,1%
-
-R37
-
-900k 0,1%
-
-R38
-
-0,1R 1%, Isabellenhütte
-RM20 oder RM27,5
-
-R39
-
-9M 0,1%, RM20
-
-L1
-
-100µH axial
-
-Sonstiges
-
-FS1
-
-Sicherung 2,5A FF mit Halter
-
-HV1
-
-Überspannungsableiter
-EC350X Epcos
-B88069X0810S102
-
-JP1...5
-
-Jumper-Steckbrücken nach Bedarf
-
-M1
-
-Wannen-Pfostenverbinder 16-pol. (TRMSC-Modul)
-
-PL1
-
-Wannen-Pfostenverbinder 14-pol.
-
-PL2Ö5
-
-Wannen-Pfostenverbinder 10-pol.
-
-PL6, 7
-
-Platinen-Steckverbinder 2-pol.
-
-PL8, 9
-
-2 x Anschlussklemme 2-pol.
-RM5 oder 1 x 4-pol. oder Lötpins
-
-SW1, 7
-
-DIL Reedrelais 1-pol. ein, 5V, z. B. Hamlin 721A05
-
-SW2Ö6
-
-Min.-Relais 2-pol. um 12V, z. B. Omron G5V-2 12VDC oder SDS DS2E-M-DC12V
-
-XTAL1
-
-16 MHz HC49U
-Befestigungsmaterial für Frontplatte und Abschirmplatte
-Platine DIV (eMedia, Segor)
-
-Stückliste TRMSC-Änderungen
-
-R3
-
-27k
-
-R7
-
-10k
-
-R8
-
-82k
-
-R10
-
-8k2
-
-R11
-
-1k
-
-R20
-
-27k
-
-JP2
-
-Jumper gesteckt
-
-PL3, 4, 5
-
-entfällt
-
-PL2
-
-abgeschirmte Verbindung zu DIV PL7
+## Stückliste DIV
+
+### Halbleiter
+
+| ID     | Type                        |
+| ------ | --------------------------- |
+| U1     | ATmega32 16MHz DIL         |
+| U2     | 6N137                       |
+| U3     | LT1019, REF-43 DIL         |
+| U4     | LTC2400 SO8                |
+| U5     | OP-27 DIL (siehe Text)     |
+| U6     | LF411 DIL                  |
+| U7     | DG419 DIL                  |
+| U8     | LM399 (siehe Text)         |
+| U9     | ULN2003 oder ULN2803 DIL   |
+| Q1, 2  | BC547B                     |
+| D1...D4 | 1N5401                    |
+| LED1   | LED 3mm rot                |
+
+### Passive Bauteile
+
+| ID                 | Type                                |
+| ------------------ | ----------------------------------- |
+| C1, 2              | 22p RM2,5                           |
+| C11                | 1n FKP RM5                          |
+| C12, 13            | 220n SMD 1206                       |
+| C14                | 1µ 63V MKT RM5                      |
+| C16                | 10µ 25V Tantal                      |
+| C17                | 470p 1000V RM5                      |
+| C3, 4, 7, 9, 10    | 100n ker. RM5                       |
+| C5, 6              | 4µ7 50V                             |
+| C8                 | 47µ 10V Tantal                      |
+| R1                 | 470R                                |
+| R2, 3, 9, 10, 11   | 220R                                |
+| R4, 7              | 4k7                                 |
+| R5, 6              | 6R8                                 |
+| R8, 21, 22, 31,32  | 10k                                 |
+| R12, 14, 16, 24    | 2k7                                 |
+| R13                | 10k Präz.-Trimmer W64 (siehe Text)  |
+| R15, 28, 33        | 22k                                 |
+| R17                | 200R Präz.-Trimmer W64              |
+| R18                | 820R (siehe Text)                   |
+| R19                | 10k 0,1%                            |
+| R20                | 90k 0,1%                            |
+| R23                | 4k7 SMD 0806                        |
+| R25                | 0R Drahtbrücke                      |
+| R26                | 20k 0,1%                            |
+| R27                | 7k5                                 |
+| R29, 30            | 1k 0,1%                             |
+| R34                | 10R 2W 1%                           |
+| R35                | 1k                                  |
+| R36                | 100k 0,1%                           |
+| R37                | 900k 0,1%                           |
+| R38                | 0,1R 1%, Isabellenhütte RM20 oder RM27,5 |
+| R39                | 9M 0,1%, RM20                       |
+| L1                 | 100µH axial                         |
+
+### Sonstiges
+
+| ID      | Type                                                             |
+| ------- | ---------------------------------------------------------------- |
+| FS1     | Sicherung 2,5A FF mit Halter                                     |
+| HV1     | Überspannungsableiter EC350X Epcos / B88069X0810S102             |
+| JP1...5 | Jumper-Steckbrücken nach Bedarf                                  |
+| M1      | Wannen-Pfostenverbinder 16-pol. (TRMSC-Modul)                    |
+| PL1     | Wannen-Pfostenverbinder 14-pol.                                  |
+| PL2Ö5   | Wannen-Pfostenverbinder 10-pol.                                  |
+| PL6, 7  | Platinen-Steckverbinder 2-pol.                                   |
+| PL8, 9  | 2 x Anschlussklemme 2-pol. RM5 oder 1 x 4-pol. oder Lötpins      |
+| SW1, 7  | DIL Reedrelais 1-pol. ein, 5V, z. B. Hamlin 721A05               |
+| SW2Ö6   | Min.-Relais 2-pol. um 12V, z. B. Omron G5V-2 12VDC oder SDS DS2E-M-DC12V |
+| XTAL1   | 16 MHz HC49U                                                     |
+|         | Befestigungsmaterial für Frontplatte und Abschirmplatte          |
+|         | Platine DIV (eMedia, Segor)                                      |
+
+## Stückliste TRMSC-Änderungen
+
+| ID       | Type                           |
+| -------- | ------------------------------ |
+| R3       | 27k                            |
+| R7       | 10k                            |
+| R8       | 82k                            |
+| R10      | 8k2                            |
+| R11      | 1k                             |
+| R20      | 27k                            |
+| JP2      | Jumper gesteckt                |
+| PL3, 4, 5 | entfällt                      |
+| PL2      | abgeschirmte Verbindung zu DIV PL7 |
 
 RSPEAK_STOP
 ([**cm [2]**](mailto:cm@ct.de))

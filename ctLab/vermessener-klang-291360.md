@@ -99,446 +99,150 @@ Literatur
 
 [2] [**Realistische HiFi-Betrachtungen [5]**](http://www.hifiaktiv.at/diverses/realistische_betrachtungen.htm)
 
-Stückliste manuelle Bedienung
-
-Halbleiter
-
-U5
-
-DG409, DG509
-
-U6
-
-NE5532, OP2751, OPA 26041, OPA21341
-
-U7
-
-DG419
-
-U8
-
-LF412A, OP2751, OPA26041, OPA21341
-
-U9
-
-DG419
-
-D1...D10, D15
-
-1N4848
-
-Q1..5
-
-BC547B
-
-Passive Bauteile
-
-C7
-
-10µ 25V Tantal
-
-C13, 18
-
-4µ7 25V Tantal
-
-C19, 21
-
-1000µ 25V
-
-C20, 22
-
-10µ 63V RM15/22,5/27,5
-
-C23, 25, 29, 30
-
-10p RM2,5
-
-C24, 26
-
-2µ2 50V MKT1
-
-C27, 28, 35, 36
-
-100n ker. RM5
-
-C31, 32
-
-470n 250V RM15/22,5
-
-C33, 34
-
-220p RM5
-
-C37, 38
-
-2..30p Trimm-C RM5x5
-
-C14, 17
-
-220n MKT RM5
-
-R20, 21, 23, 2
-
-4k7
-
-R10
-
-0R (Drahtbrücke)
-
-R13, 18
-
-10R
-
-R14...17, 42, 43
-
-10k
-
-R22, 25
-
-360R1
-
-R26, 27, 32, 33
-
-11k1
-
-R28, 29, 54, 56
-
-10k1
-
-R30, 31, 52, 53
-
-15k1
-
-R34, 35
-
-5k11
-
-R36, 37, 44, 51
-
-75k1
-
-R38, 39
-
-220k
-
-R40, 41
-
-100R
-
-R45, 50
-
-100k1
-
-R46, 49
-
-150k1
-
-R47, 48
-
-750k1
-
-R55, 57
-
-3k9
-
-R58, 59
-
-2k Präz-Trimmer W64
-
-L2
-
-10µH axial
-
-P1, 2
-
-10k lin. Poti 4mm
-
-Sonstiges
-
-PL2
-
-Platinen-Steckverbinder 2pol.
-
-PL8
-
-Platinen-Steckverbinder 8pol.
-
-PL9
-
-Platinen-Steckverbinder 4pol.
-
-PL10, 11, 12
-
-Platinen-Steckverbinder 3pol.
-
-PL13, 14
-
-Cinch-Buchsen Print, Mono
-
-SW1, 2
-
-Reed-Relais 1pol. um 5V, Hamlin 721C05, Günther 3565-1231-051 o. ä.
-
-UA1
-
-DC-DC Wandler 5V in, 2x12V out, 2W Inline
-
-S1
-
-Stufenschalter 1x12polig Platine ACV (eMedia, Segor)
+## Stückliste manuelle Bedienung
+
+### Halbleiter
+
+| ID          | Type                                   |
+| ----------- | -------------------------------------- |
+| U5          | DG409, DG509                           |
+| U6          | NE5532, OP2751, OPA 26041, OPA21341   |
+| U7          | DG419                                  |
+| U8          | LF412A, OP2751, OPA26041, OPA21341    |
+| U9          | DG419                                  |
+| D1...D10, D15 | 1N4848                               |
+| Q1..5       | BC547B                                 |
+
+### Passive Bauteile
+
+| ID                    | Type                          |
+| --------------------- | ----------------------------- |
+| C7                    | 10µ 25V Tantal                |
+| C13, 18               | 4µ7 25V Tantal                |
+| C19, 21               | 1000µ 25V                     |
+| C20, 22               | 10µ 63V RM15/22,5/27,5        |
+| C23, 25, 29, 30       | 10p RM2,5                     |
+| C24, 26               | 2µ2 50V MKT1                  |
+| C27, 28, 35, 36       | 100n ker. RM5                 |
+| C31, 32               | 470n 250V RM15/22,5           |
+| C33, 34               | 220p RM5                      |
+| C37, 38               | 2..30p Trimm-C RM5x5          |
+| C14, 17               | 220n MKT RM5                  |
+| R20, 21, 23, 2        | 4k7                           |
+| R10                   | 0R (Drahtbrücke)              |
+| R13, 18               | 10R                           |
+| R14...17, 42, 43      | 10k                           |
+| R22, 25               | 360R1                         |
+| R26, 27, 32, 33       | 11k1                          |
+| R28, 29, 54, 56       | 10k1                          |
+| R30, 31, 52, 53       | 15k1                          |
+| R34, 35               | 5k11                          |
+| R36, 37, 44, 51       | 75k1                          |
+| R38, 39               | 220k                          |
+| R40, 41               | 100R                          |
+| R45, 50               | 100k1                         |
+| R46, 49               | 150k1                         |
+| R47, 48               | 750k1                         |
+| R55, 57               | 3k9                           |
+| R58, 59               | 2k Präz-Trimmer W64           |
+| L2                    | 10µH axial                    |
+| P1, 2                 | 10k lin. Poti 4mm             |
+
+### Sonstiges
+
+| ID           | Type |
+| ------------ | ---- |
+| PL2          | Platinen-Steckverbinder 2pol. |
+| PL8          | Platinen-Steckverbinder 8pol. |
+| PL9          | Platinen-Steckverbinder 4pol. |
+| PL10, 11, 12 | Platinen-Steckverbinder 3pol. |
+| PL13, 14     | Cinch-Buchsen Print, Mono |
+| SW1, 2       | Reed-Relais 1pol. um 5V, Hamlin 721C05, Günther 3565-1231-051 o. ä. |
+| UA1          | DC-DC Wandler 5V in, 2x12V out, 2W Inline |
+| S1           | Stufenschalter 1x12polig Platine ACV (eMedia, Segor) |
 
 alle Widerstände 1 Prozent Metallfilm
+
 1 siehe Text
 
-Stückliste c't-Lab-Einsatz
-
-Halbleiter
-
-U1
-
-6N137
-
-U2
-
-ATmega168-20PU DIL
-
-U3, 4
-
-LTC1967 SMD
-
-U5
-
-DG409, DG509
-
-U6
-
-NE5532, OP2751, OPA 26041, OPA21341
-
-U7
-
-DG419
-
-U8
-
-LF412A, OP2751, OPA26041, OPA21341
-
-U9
-
-DG419
-
-D11...D15
-
-1N4848
-
-LED1
-
-LED 3mm rot
-
-Q1..5
-
-BC547B
-
-Passive Bauteile
-
-C1, 4, 11
-
-100n ker. RM5
-
-C10
-
-4µ 25V Tantal
-
-C15, 16
-
-2µ2 35V Tantal
-
-C19, 21
-
-1000µ 25V
-
-C2, 3
-
-22pF RM2,5
-
-C5, 12
-
-100n SMD1206
-
-C20, 22
-
-10µ 63V
-
-C23, 25, 29, 30
-
-10p RM2,5
-
-C24, 26
-
-2µ2 50V MKT RM5
-
-C27, 28, 35, 36
-
-100n ker. RM5
-
-C31, 32
-
-470n 250V RM15/22,5
-
-C33, 34
-
-220p RM5
-
-C37, 38
-
-2..30p Trimm-C RM5x5
-
-C8, 9, 14, 17
-
-220n MKT1 RM5
-
-R1, 2
-
-220R
-
-R3
-
-470R
-
-R4, 19
-
-2k7
-
-R5, 6, 11, 12
-
-10k SMD0805
-
-R7, 8
-
-100k
-
-R9, 20, 21, 23, 24
-
-4k7
-
-R10
-
-0R (Drahtbrücke)
-
-R14...17, 42, 43
-
-10k
-
-R22, 25
-
-360R1
-
-R26, 27, 32, 33
-
-11k1
-
-R28, 29, 54, 56
-
-10k1
-
-R30, 31, 52, 53
-
-15k1
-
-R34, 35
-
-5k11
-
-R36, 37, 44, 51
-
-75k1
-
-R38, 39
-
-220k
-
-R40, 41
-
-100R
-
-R45, 50
-
-100k1
-
-R46, 49
-
-150k1
-
-R47, 48
-
-750k1
-
-R55, 57
-
-3k9
-
-R58, 59
-
-2k Präz-Trimmer W64
-
-L1
-
-100µH axial
-
-L2
-
-10µH axial
-
-P1, 2
-
-10k lin. Poti 4mm
-
-XTAL1
-
-16MHz HC-49U
-
-Sonstiges
-
-JP1...5
-
-Jumper 2pol.
-
-PL1
-
-Wannen-Pfostenverbinder 14pol.
-
-PL2
-
-Platinen-Steckverbinder 2pol.
-
-PL3, 4, 5, 7
-
-Wannen-Pfostenverbinder 10pol.
-
-PL6
-
-Wannen-Pfostenverbinder 16pol.
-
-PL6
-
-Wannen-Pfostenverbinder 16pol.
-
-PL9
-
-Platinen-Steckverbinder 4pol.
-
-PL10, 11, 12
-
-Platinen-Steckverbinder 3pol.
-
-PL13, 14
-
-Cinch-Buchsen Print, Mono
-
-SW1, 2
-
-Reed-Relais 1pol. um 5V, Hamlin 721C05, Günther 3565-1231-051 o. ä. Platine ACV (eMedia, Segor)
+## Stückliste c't-Lab-Einsatz
+
+### Halbleiter
+
+| ID      | Type                                   |
+| ------- | -------------------------------------- |
+| U1      | 6N137                                  |
+| U2      | ATmega168-20PU DIL                     |
+| U3, 4   | LTC1967 SMD                            |
+| U5      | DG409, DG509                           |
+| U6      | NE5532, OP2751, OPA 26041, OPA21341   |
+| U7      | DG419                                  |
+| U8      | LF412A, OP2751, OPA26041, OPA21341    |
+| U9      | DG419                                  |
+| D11...D15 | 1N4848                               |
+| LED1    | LED 3mm rot                            |
+| Q1..5   | BC547B                                 |
+
+### Passive Bauteile
+
+| ID                    | Type                          |
+| --------------------- | ----------------------------- |
+| C1, 4, 11             | 100n ker. RM5                 |
+| C10                   | 4µ 25V Tantal                 |
+| C15, 16               | 2µ2 35V Tantal                |
+| C19, 21               | 1000µ 25V                     |
+| C2, 3                 | 22pF RM2,5                    |
+| C5, 12                | 100n SMD1206                  |
+| C20, 22               | 10µ 63V                       |
+| C23, 25, 29, 30       | 10p RM2,5                     |
+| C24, 26               | 2µ2 50V MKT RM5               |
+| C27, 28, 35, 36       | 100n ker. RM5                 |
+| C31, 32               | 470n 250V RM15/22,5           |
+| C33, 34               | 220p RM5                      |
+| C37, 38               | 2..30p Trimm-C RM5x5          |
+| C8, 9, 14, 17         | 220n MKT1 RM5                 |
+| R1, 2                 | 220R                          |
+| R3                    | 470R                          |
+| R4, 19                | 2k7                           |
+| R5, 6, 11, 12         | 10k SMD0805                   |
+| R7, 8                 | 100k                          |
+| R9, 20, 21, 23, 24    | 4k7                           |
+| R10                   | 0R (Drahtbrücke)              |
+| R14...17, 42, 43      | 10k                           |
+| R22, 25               | 360R1                         |
+| R26, 27, 32, 33       | 11k1                          |
+| R28, 29, 54, 56       | 10k1                          |
+| R30, 31, 52, 53       | 15k1                          |
+| R34, 35               | 5k11                          |
+| R36, 37, 44, 51       | 75k1                          |
+| R38, 39               | 220k                          |
+| R40, 41               | 100R                          |
+| R45, 50               | 100k1                         |
+| R46, 49               | 150k1                         |
+| R47, 48               | 750k1                         |
+| R55, 57               | 3k9                           |
+| R58, 59               | 2k Präz-Trimmer W64           |
+| L1                    | 100µH axial                   |
+| L2                    | 10µH axial                    |
+| P1, 2                 | 10k lin. Poti 4mm             |
+| XTAL1                 | 16MHz HC-49U                  |
+
+### Sonstiges
+
+| ID           | Type |
+| ------------ | ---- |
+| JP1...5      | Jumper 2pol. |
+| PL1          | Wannen-Pfostenverbinder 14pol. |
+| PL2          | Platinen-Steckverbinder 2pol. |
+| PL3, 4, 5, 7 | Wannen-Pfostenverbinder 10pol. |
+| PL6          | Wannen-Pfostenverbinder 16pol. |
+| PL9          | Platinen-Steckverbinder 4pol. |
+| PL10, 11, 12 | Platinen-Steckverbinder 3pol. |
+| PL13, 14     | Cinch-Buchsen Print, Mono |
+| SW1, 2       | Reed-Relais 1pol. um 5V, Hamlin 721C05, Günther 3565-1231-051 o. ä. Platine ACV (eMedia, Segor) |
 
 alle Widerstände 1 Prozent Metallfilm
+
 1siehe Text
 
 RSPEAK_STOP

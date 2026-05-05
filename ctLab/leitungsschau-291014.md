@@ -96,146 +96,61 @@ Literatur
 
 ***[**Soft-Link [6]**](http://www.heise.de/ct/07/10/links/130.shtml)***
 
-Stückliste
-
-Halbleiter
-
-U1
-
-7815
-
-U2
-
-7915
-
-U3, U4
-
-7805
-
-U5
-
-FT232RL (FTDI)
-
-U6
-
-6N137
-
-U8
-
-LF33
-
-U9
-
-MAX232
-
-U10
-
-XPort-01 (Lantronix)
-
-D1, D3, D4
-
-1N4148
-
-D2
-
-1N4004
-
-RB1..RB3
-
-B80C1500
-
-Widerstände
-
-R1
-
-0R (nur zum Test bestücken)
-
-R2
-
-220R
-
-R3
-
-220R
-
-R4
-
-2k7
-
-R5
-
-2k2
-
-R7
-
-4k7
-
-R8
-
-10k
-
-Kondensatoren
-
-C1..C8, C14, C19, C22..C24
-
-100n ker. RMS
-
-C9..C12
-
-470µ 35V
-
-C13, C15
-
-47µ 6V3
-
-C16..C18, C21
-
-11µ 50V
-
-C20
-
-4µ7 35V
-
-Sonstiges
-
-L1
-
-10µH axial
-
-JP1..JP3
-
-Jumper (Steckbrücken)
-
-PL1
-
-Pfosten 14-pol.
-
-PL2
-
-Pfosten 10-pol.
-
-PL3
-
-Schraubklemme RM 7,5
-
-PL4
-
-USB-B Printbuchse
-
-RS1
-
-D-Sub 9-pol. F
-
-TR1
-
-Flachtrafo 2 x 15 V, 6 VA (Block)
-
-TR2
-
-Flachtrafo 2 x 9 V, 6 VA (Block)
-
-Kühlschellen TO-220 für U3, U4
-Platine c't-Lab IFP (eMedia)
+## Stückliste
+
+### Halbleiter
+
+| ID         | Type                |
+| ---------- | ------------------- |
+| U1         | 7815                |
+| U2         | 7915                |
+| U3, U4     | 7805                |
+| U5         | FT232RL (FTDI)      |
+| U6         | 6N137               |
+| U8         | LF33                |
+| U9         | MAX232              |
+| U10        | XPort-01 (Lantronix) |
+| D1, D3, D4 | 1N4148              |
+| D2         | 1N4004              |
+| RB1..RB3   | B80C1500            |
+
+### Widerstände
+
+| ID | Type |
+| -- | ---- |
+| R1 | 0R (nur zum Test bestücken) |
+| R2 | 220R |
+| R3 | 220R |
+| R4 | 2k7  |
+| R5 | 2k2  |
+| R7 | 4k7  |
+| R8 | 10k  |
+
+### Kondensatoren
+
+| ID                      | Type          |
+| ----------------------- | ------------- |
+| C1..C8, C14, C19, C22..C24 | 100n ker. RMS |
+| C9..C12                 | 470µ 35V      |
+| C13, C15                | 47µ 6V3       |
+| C16..C18, C21           | 11µ 50V       |
+| C20                     | 4µ7 35V       |
+
+### Sonstiges
+
+| ID      | Type                              |
+| ------- | --------------------------------- |
+| L1      | 10µH axial                        |
+| JP1..JP3 | Jumper (Steckbrücken)            |
+| PL1     | Pfosten 14-pol.                   |
+| PL2     | Pfosten 10-pol.                   |
+| PL3     | Schraubklemme RM 7,5              |
+| PL4     | USB-B Printbuchse                 |
+| RS1     | D-Sub 9-pol. F                    |
+| TR1     | Flachtrafo 2 x 15 V, 6 VA (Block) |
+| TR2     | Flachtrafo 2 x 9 V, 6 VA (Block)  |
+|         | Kühlschellen TO-220 für U3, U4    |
+|         | Platine c't-Lab IFP (eMedia)      |
 
 RSPEAK_STOP
 ([**cm [7]**](mailto:cm@ct.de))

@@ -131,333 +131,107 @@ Nach dem zugegebenermaßen etwas umständlichen, aber unbedingt notwendigen Offs
 
 *Der Leistungstransistor Q12 wird entweder auf der Rückseite der DCG-Platine montiert oder mit kurzen Litzenstücken angeschlossen. Für den Ausgang können Schraubklemmen oder Lötstifte vorgesehen werden.*
 
-Stückliste
-
-Halbleiter
-
-U1
-
-6N137
-
-U10
-
-LF411
-
-U11
-
-OP07
-
-U12
-
-DG409, DG509
-
-U13
-
-CNY17-2, 4N25
-
-U2
-
-ATmega32AU16 (QFP)
-
-U3
-
-LTC18641/entfällt2
-
-U4
-
-LT10191/entfällt2
-
-U5
-
-NE5532
-
-U6
-
-LF411
-
-U7
-
-LTC16551/LTC12572
-
-U8
-
-DG413
-
-U9
-
-LF412A
-
-Q1, 2, 10, 11
-
-BS170
-
-Q12
-
-BD243C, MJE3055
-
-Q3, 4, 7
-
-BC546
-
-Q5
-
-BC556
-
-Q6
-
-BD677
-
-Q8, 9
-
-IRF540
-
-D1...D4
-
-1N4148
-
-D5, 6
-
-1N4007
-
-D7
-
-1N5407
-
-ZD1
-
-ZPD 9V1 400mW
-
-LED1
-
-LED 3mm rot
-
-LED2
-
-LED 3mm gelb
-
-LED3
-
-LED 3mm grün
-
-Passive Bauteile
-
-XTAL1
-
-16 MHz HC-49U
-
-L1
-
-10 µH axial
-
-C1, 4, 5, 8, 11,14, 15, 17, 18, 25, 28, 31
-
-100n ker. RM5
-
-C2, 3
-
-22pF RM2,5
-
-C6
-
-220n SMD12061/entfällt2
-
-C7
-
-220n SMD12061/entfällt2
-
-C9
-
-2n2 SMD08051/entfällt2
-
-C10
-
-4µ7 50V
-
-C12
-
-2n2 RM5
-
-C13, 20
-
-100n 63V MKT
-
-C16, 21, 26
-
-10µ 50V
-
-C19, 22
-
-4µ7 25V Ta
-
-C23, 29
-
-100µ 63V
-
-C24
-
-220p RM5
-
-C27
-
-470p RM5
-
-C30
-
-330n ker. RM5
-
-R1, 5, 3, 29, 52
-
-2k2
-
-R2, 4, 51
-
-220R
-
-R6, 38
-
-10R
-
-R7
-
-0R
-
-R8, 55
-
-470R
-
-R9, 46, 48
-
-4k7
-
-R10, 11, 13, 15
-
-470R SMD08051/entfällt2
-
-R12
-
-30k1/entfällt2
-
-R24
-
-30k
-
-R14
-
-100k SMD08051/entfällt2
-
-R16
-
-7k5
-
-R17
-
-20k1/30k2
-
-R18
-
-10k1/7k52
-
-R19, 20, 23, 26, 31, 37, 42, 43, 44, 47, 50, 61
-
-10k
-
-R21, 22
-
-30k
-
-R25, 32, 40, 49
-
-1k
-
-R27
-
-39k
-
-R28, 36
-
-10k Präz.-Trimmer W64
-
-R30
-
-12k
-
-R33
-
-1k1/3k2
-
-R34
-
-3k
-
-R35
-
-6k8
-
-R39
-
-330R
-
-R41
-
-1k8
-
-R45
-
-22k
-
-R53
-
-4R7 2W
-
-R54
-
-47R
-
-R56
-
-0R47 5W
-
-R57
-
-0R47 5W
-
-R58
-
-2R2
-
-R59, 60
-
-100R
-
-R62
-
-180k
-
-Sonstiges
-
-JP1...5
-
-Jumper-Steckbrücken
-
-PL1
-
-Wannen-Pfostenverbinder 14-pol.
-
-PL2..PL5
-
-Wannen-Pfostenverbinder 10-pol.
-
-PL6
-
-MiniFit Jr. 8-pol. 180°
-
-PL7
-
-Schraubklemme 4-pol.
-
-Mechanische Bauteile
-
-Kühlkörper SK105, Platine c't-Lab DCG, Abstandsröllchen, Befestigungsmaterial
+## Stückliste
+
+### Halbleiter
+
+| ID            | Type                    |
+| ------------- | ----------------------- |
+| U1            | 6N137                   |
+| U10           | LF411                   |
+| U11           | OP07                    |
+| U12           | DG409, DG509            |
+| U13           | CNY17-2, 4N25           |
+| U2            | ATmega32AU16 (QFP)      |
+| U3            | LTC18641/entfällt2      |
+| U4            | LT10191/entfällt2       |
+| U5            | NE5532                  |
+| U6            | LF411                   |
+| U7            | LTC16551/LTC12572       |
+| U8            | DG413                   |
+| U9            | LF412A                  |
+| Q1, 2, 10, 11 | BS170                   |
+| Q12           | BD243C, MJE3055         |
+| Q3, 4, 7      | BC546                   |
+| Q5            | BC556                   |
+| Q6            | BD677                   |
+| Q8, 9         | IRF540                  |
+| D1...D4       | 1N4148                  |
+| D5, 6         | 1N4007                  |
+| D7            | 1N5407                  |
+| ZD1           | ZPD 9V1 400mW           |
+| LED1          | LED 3mm rot             |
+| LED2          | LED 3mm gelb            |
+| LED3          | LED 3mm grün            |
+
+### Passive Bauteile
+
+| ID                                       | Type                    |
+| ---------------------------------------- | ----------------------- |
+| XTAL1                                    | 16 MHz HC-49U           |
+| L1                                       | 10 µH axial             |
+| C1, 4, 5, 8, 11,14, 15, 17, 18, 25, 28, 31 | 100n ker. RM5        |
+| C2, 3                                    | 22pF RM2,5              |
+| C6                                       | 220n SMD12061/entfällt2 |
+| C7                                       | 220n SMD12061/entfällt2 |
+| C9                                       | 2n2 SMD08051/entfällt2  |
+| C10                                      | 4µ7 50V                 |
+| C12                                      | 2n2 RM5                 |
+| C13, 20                                  | 100n 63V MKT            |
+| C16, 21, 26                              | 10µ 50V                 |
+| C19, 22                                  | 4µ7 25V Ta              |
+| C23, 29                                  | 100µ 63V                |
+| C24                                      | 220p RM5                |
+| C27                                      | 470p RM5                |
+| C30                                      | 330n ker. RM5           |
+| R1, 5, 3, 29, 52                         | 2k2                     |
+| R2, 4, 51                                | 220R                    |
+| R6, 38                                   | 10R                     |
+| R7                                       | 0R                      |
+| R8, 55                                   | 470R                    |
+| R9, 46, 48                               | 4k7                     |
+| R10, 11, 13, 15                          | 470R SMD08051/entfällt2 |
+| R12                                      | 30k1/entfällt2          |
+| R24                                      | 30k                     |
+| R14                                      | 100k SMD08051/entfällt2 |
+| R16                                      | 7k5                     |
+| R17                                      | 20k1/30k2               |
+| R18                                      | 10k1/7k52               |
+| R19, 20, 23, 26, 31, 37, 42, 43, 44, 47, 50, 61 | 10k          |
+| R21, 22                                  | 30k                     |
+| R25, 32, 40, 49                          | 1k                      |
+| R27                                      | 39k                     |
+| R28, 36                                  | 10k Präz.-Trimmer W64   |
+| R30                                      | 12k                     |
+| R33                                      | 1k1/3k2                 |
+| R34                                      | 3k                      |
+| R35                                      | 6k8                     |
+| R39                                      | 330R                    |
+| R41                                      | 1k8                     |
+| R45                                      | 22k                     |
+| R53                                      | 4R7 2W                  |
+| R54                                      | 47R                     |
+| R56                                      | 0R47 5W                 |
+| R57                                      | 0R47 5W                 |
+| R58                                      | 2R2                     |
+| R59, 60                                  | 100R                    |
+| R62                                      | 180k                    |
+
+### Sonstiges
+
+| ID      | Type                         |
+| ------- | ---------------------------- |
+| JP1...5 | Jumper-Steckbrücken          |
+| PL1     | Wannen-Pfostenverbinder 14-pol. |
+| PL2..PL5 | Wannen-Pfostenverbinder 10-pol. |
+| PL6     | MiniFit Jr. 8-pol. 180°      |
+| PL7     | Schraubklemme 4-pol.         |
+
+### Mechanische Bauteile
+
+| ID | Type |
+| -- | ---- |
+|    | Kühlkörper SK105, Platine c't-Lab DCG, Abstandsröllchen, Befestigungsmaterial |
 
 1 16-Bit-Version
 

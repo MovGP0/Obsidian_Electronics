@@ -127,278 +127,89 @@ In der Widerstands-Betriebsart sind Prozentwert und Timing ohne Belang, hier erf
 
 Das Kabel zu den Laborbuchsen auf der Frontplatte sollte recht kräftig gewählt werden, um Spannungsabfälle zu vermeiden. Bei Leitungslängen über zehn Zentimeter kommen die Sense-Anschlüsse zum Einsatz, von denen zusätzliche Litzen zu den zwei Laborbuchsen am Frontpanel geführt werden; ansonsten werden sie mit den zugehörigen In-Pins kurzgeschlossen.
 
-Stückliste
-
-Halbleiter
-
-U1
-
-6N137
-
-U2
-
-ATmega32 DIL
-
-U3
-
-OPA2277 DIL
-
-U4
-
-LTC8043 DIL oder MAX543 DIL, alternativ LTC8043 SO8
-
-U6
-
-LTC1864 SO8
-
-U7
-
-DG409 o. DG509 DIL
-
-U8, U11
-
-DG419 DIL
-
-U9
-
-LT1019-2,5 DIL
-
-U10, U13
-
-OP-27 DIL
-
-U12
-
-LF411 DIL
-
-U14
-
-LM75 SO8
-
-Q1, Q7
-
-BS170
-
-Q2
-
-BC547B
-
-Q3,Q4
-
-IRFZ44
-
-Q5,Q6
-
-IRF540
-
-Q8
-
-BC337
-
-D1, 2, 4
-
-1N4148
-
-D3
-
-1N5401
-
-Z1, Z3
-
-Z-Diode 5V1 400 mW
-
-Z2
-
-Z-Diode 8V2 400 mW
-
-LED1
-
-LED 3 mm rot
-
-Passive Bauteile
-
-C14
-
-1n SMD 0805
-
-C13
-
-220n SMD 1206
-
-C1, 2, 10
-
-22p RM2,5
-
-C3, C5...8, 16, 20, 22, 23
-
-100n ker. RM5
-
-C15
-
-1n RM5
-
-C17
-
-10n RM5
-
-C21
-
-2n2 RM5
-
-C24
-
-330n ker. RM5
-
-C4
-
-10µ 35V Ta.
-
-C11
-
-47µ 16V
-
-C12, C18
-
-4µ7 35V Ta.
-
-C9, C19
-
-10µ 35V Ta.
-
-R8
-
-0R (Drahtbrücke)
-
-R52
-
-100k
-
-R63
-
-100R
-
-R10, 20, 32, 34
-
-10k
-
-R5, 12, 59, 64, 69, 56
-
-10R
-
-R37
-
-18k
-
-R24, 30, 31, 35, 42
-
-1k
-
-R36, R53
-
-220k
-
-R2, R3, R4, R11, R14...R18
-
-220R
-
-R60
-
-2k
-
-R25, 26, 46
-
-2k2
-
-R7, 9, 13, 19, 55
-
-2k7
-
-R33
-
-30k
-
-R1, 28, 45, 49, 51
-
-470R
-
-R29, 54, 57, 61, R62, 65
-
-47R
-
-R29, 54, 57, 61, R41, 43, 47, 50
-
-4k7
-
-R58
-
-680k
-
-R27
-
-R-Array 22kx4
-
-R39, 44, 48
-
-2k2 Präz.-Trim. 67X 90°
-
-R66
-
-0R1 5W
-
-R67
-
-1R 2W
-
-R68
-
-1R 2W
-
-XTAL1
-
-Quarz 16 MHz HC49U
-
-L1
-
-10µH axial
-
-L2
-
-5µH Stabkerndrossel 3A
-
-Sonstiges
-
-PL1
-
-Wannen-Pfostenverb. 14-pol.
-
-PL2, PL3, PL4, PL5
-
-Wannen-Pfostenverb. 10-pol.
-
-JP1…JP5
-
-Jumper 2-pol.
-
-PL6, PL7, PL10
-
-Platinen-Steckverb. 2-pol.
-
-PL8
-
-Platinen-Steckverb. 5-pol.
-
-PL9
-
-Anschlussklemme 3-pol.
-RM5 oder Lötpins
-
-PL11
-
-Anschlussklemme 4-pol.
-RM5 oder Lötpins
-
-Schrauben M3 x 8, M3 x 6, Unterlegscheiben
-Platine c't-Lab EDL (eMedia, Segor)
+## Stückliste
+
+### Halbleiter
+
+| ID      | Type                                           |
+| ------- | ---------------------------------------------- |
+| U1      | 6N137                                          |
+| U2      | ATmega32 DIL                                   |
+| U3      | OPA2277 DIL                                    |
+| U4      | LTC8043 DIL oder MAX543 DIL, alternativ LTC8043 SO8 |
+| U6      | LTC1864 SO8                                    |
+| U7      | DG409 o. DG509 DIL                             |
+| U8, U11 | DG419 DIL                                      |
+| U9      | LT1019-2,5 DIL                                 |
+| U10, U13 | OP-27 DIL                                     |
+| U12     | LF411 DIL                                      |
+| U14     | LM75 SO8                                       |
+| Q1, Q7  | BS170                                          |
+| Q2      | BC547B                                         |
+| Q3,Q4   | IRFZ44                                         |
+| Q5,Q6   | IRF540                                         |
+| Q8      | BC337                                          |
+| D1, 2, 4 | 1N4148                                        |
+| D3      | 1N5401                                         |
+| Z1, Z3  | Z-Diode 5V1 400 mW                             |
+| Z2      | Z-Diode 8V2 400 mW                             |
+| LED1    | LED 3 mm rot                                   |
+
+### Passive Bauteile
+
+| ID                           | Type                    |
+| ---------------------------- | ----------------------- |
+| C14                          | 1n SMD 0805             |
+| C13                          | 220n SMD 1206           |
+| C1, 2, 10                    | 22p RM2,5               |
+| C3, C5...8, 16, 20, 22, 23   | 100n ker. RM5           |
+| C15                          | 1n RM5                  |
+| C17                          | 10n RM5                 |
+| C21                          | 2n2 RM5                 |
+| C24                          | 330n ker. RM5           |
+| C4                           | 10µ 35V Ta.             |
+| C11                          | 47µ 16V                 |
+| C12, C18                     | 4µ7 35V Ta.             |
+| C9, C19                      | 10µ 35V Ta.             |
+| R8                           | 0R (Drahtbrücke)        |
+| R52                          | 100k                    |
+| R63                          | 100R                    |
+| R10, 20, 32, 34              | 10k                     |
+| R5, 12, 59, 64, 69, 56       | 10R                     |
+| R37                          | 18k                     |
+| R24, 30, 31, 35, 42          | 1k                      |
+| R36, R53                     | 220k                    |
+| R2, R3, R4, R11, R14...R18   | 220R                    |
+| R60                          | 2k                      |
+| R25, 26, 46                  | 2k2                     |
+| R7, 9, 13, 19, 55            | 2k7                     |
+| R33                          | 30k                     |
+| R1, 28, 45, 49, 51           | 470R                    |
+| R29, 54, 57, 61, R62, 65     | 47R                     |
+| R29, 54, 57, 61, R41, 43, 47, 50 | 4k7                 |
+| R58                          | 680k                    |
+| R27                          | R-Array 22kx4           |
+| R39, 44, 48                  | 2k2 Präz.-Trim. 67X 90° |
+| R66                          | 0R1 5W                  |
+| R67                          | 1R 2W                   |
+| R68                          | 1R 2W                   |
+| XTAL1                        | Quarz 16 MHz HC49U      |
+| L1                           | 10µH axial              |
+| L2                           | 5µH Stabkerndrossel 3A  |
+
+### Sonstiges
+
+| ID             | Type |
+| -------------- | ---- |
+| PL1            | Wannen-Pfostenverb. 14-pol. |
+| PL2, PL3, PL4, PL5 | Wannen-Pfostenverb. 10-pol. |
+| JP1…JP5        | Jumper 2-pol. |
+| PL6, PL7, PL10 | Platinen-Steckverb. 2-pol. |
+| PL8            | Platinen-Steckverb. 5-pol. |
+| PL9            | Anschlussklemme 3-pol. RM5 oder Lötpins |
+| PL11           | Anschlussklemme 4-pol. RM5 oder Lötpins |
+|                | Schrauben M3 x 8, M3 x 6, Unterlegscheiben |
+|                | Platine c't-Lab EDL (eMedia, Segor) |
 
 RSPEAK_STOP
 ([**cm [5]**](mailto:cm@ct.de))
