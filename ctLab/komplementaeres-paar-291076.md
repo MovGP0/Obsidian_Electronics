@@ -111,9 +111,9 @@ Mit dem Trigger-Timing-Parameter „TRT“ kann man eine periodische Triggerung 
 
 Das ADA-IO-Modul ist mit den hier vorgestellten Wandler-Boards vorerst vollständig; der bei voller Bestückung noch frei bleibende Slot kann für eigene Erweiterungen, etwa Sensorvorverstärker, dienen. Zu einem späteren Zeitpunkt der Serie wird noch eine Timer/Counter-Karte nachgereicht, die Impulse und Frequenzen zählen kann. Der nächste c't-Lab-Beitrag stellt erst einmal das versprochene Funktionsgeneratormodul DDS samt Bedien-Panel vor.
 
-***[**Soft-Link [1]**](http://www.heise.de/ct/07/13/links/202.shtml)***
+***[**Soft-Link [1]**](https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html)***
 
-[**Forum zu c't-Lab [2]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [2]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 
 ## Stückliste AD16-8
 
@@ -204,7 +204,7 @@ Das ADA-IO-Modul ist mit den hier vorgestellten Wandler-Boards vorerst vollstän
 | R7, R8 | 10k 0,1%              |
 
 RSPEAK_STOP
-([**cm [3]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -213,8 +213,7 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.heise.de/ct/07/13/links/202.shtml
-2. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-3. mailto:cm@ct.de
+1. https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html
+2. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

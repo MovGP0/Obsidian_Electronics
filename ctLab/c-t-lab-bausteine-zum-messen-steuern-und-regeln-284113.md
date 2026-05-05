@@ -29,11 +29,11 @@ Mess- und Steuerelektronik zum Anschluss an den PC ist entweder horrend teuer od
 
 Download LabView 6.1 für Mac und Linux
 
-Die Linux- und Mac-Versionen von LabView 6.1 liegt zum [**exklusiven Download [16]**](http://www.heise.de/software/download/labview/43883) bereit. Die Windows-Version liegt auf der [**Heft-DVD in c't 11/07 [17]**](http://www.heise.de/software/download/cdd_51) bei, die sich im Rahmen des Projekts c't-Lab auch intensiv mit LabView auseinandersetzt. Aus Platzgründen hatten es die beiden anderen nicht auf die DVD geschafft. Anders als noch im Artikel (c't 11/07, S. 212) angegeben, liegen sie nun doch nicht auf der Website von National Instruments zum Download bereit, sondern in der E-Technik-Rubrik des Software-Verzeichnisses.
+Die Linux- und Mac-Versionen von LabView 6.1 wurden laut einer [**Heise-Meldung zum damaligen Download [16]**](https://www.heise.de/news/LabView-6-1-als-Vollversion-fuer-Mac-und-Linux-zum-Download-178683.html) exklusiv auf heise.de angeboten. Die Windows-Version liegt auf der Heft-DVD in c't 11/07 bei, die sich im Rahmen des Projekts c't-Lab auch intensiv mit LabView auseinandersetzt. Aus Platzgründen hatten es die beiden anderen nicht auf die DVD geschafft. Anders als noch im Artikel (c't 11/07, S. 212) angegeben, liegen sie nun doch nicht auf der Website von National Instruments zum Download bereit, sondern in der E-Technik-Rubrik des Software-Verzeichnisses.
 
-[**Forum zu c't-Lab [18]**](http://www.heise.de/ct/foren/forum-116199/list/)
+[**Forum zu c't-Lab [17]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 RSPEAK_STOP
-([**cm [19]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -57,9 +57,7 @@ RSPEAK_START
 13. https://www.heise.de/ratgeber/Audio-Pedant-291478.html
 14. https://www.heise.de/ratgeber/Stromabnehmer-291588.html
 15. https://www.heise.de/ratgeber/Loetfreies-Basteln-291660.html
-16. http://www.heise.de/software/download/labview/43883
-17. http://www.heise.de/software/download/cdd_51
-18. http://www.heise.de/ct/foren/forum-116199/list/
-19. mailto:cm@ct.de
+16. https://www.heise.de/news/LabView-6-1-als-Vollversion-fuer-Mac-und-Linux-zum-Download-178683.html
+17. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

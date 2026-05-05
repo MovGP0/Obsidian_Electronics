@@ -114,16 +114,14 @@ Für etliche Messgeräte findet man bei National Instruments geeignete Treiber (
 *S. 130*
 
 RSPEAK_STOP
-([**cm [2]**](mailto:cm@ct.de))
 RSPEAK_START
 
 **URL dieses Artikels:**
 
-`https://www.heise.de/-291012`
+`https://www.heise.de/ratgeber/Fernwirkung-291012.html`
 
 **Links in diesem Artikel:**
 
 1. https://www.heise.de/ratgeber/Leitungsschau-291014.html
-2. mailto:cm@ct.de
 
 *Copyright © 2007 Heise Medien*

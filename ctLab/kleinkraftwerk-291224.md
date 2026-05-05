@@ -1,7 +1,7 @@
 # Kleinkraftwerk
 
 Source: [https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html](https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html)
-Print view: [https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html?seite=all&view=print](https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html?seite=all&view=print)
+Print view: [https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html?view=print](https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html?view=print)
 Author: Carsten Meyer
 Series references: c't 19/07, S. 212
 
@@ -51,7 +51,7 @@ Sollten Sie beim Verstehen des Schaltplans irgendwann ins Stocken geraten: Macht
 
 *Praktischer Aufbau des c't-Lab-Racks (von oben gesehen) mit den Modulen IFP, ADA mit IO-Karten, PS3-2, DIV (noch nicht vorgestellt), DDS mit TRMSC, DCG und DCP. Den dicken DCP-Trafo mit M84-Kern haben wir auf die Rückseite verfrachtet.*
 
-Der Mikrocontroller ATmega32 (U2) besorgt die Kommunikation mit dem c't-Lab-OptoBus, er versteht die schon vom ADA-IO- und DDS-Modul bekannte [**c't-Lab-Syntax [3]**](http://www.ct-lab.de) und steuert die D/A-Wandler-Kanäle, Multiplexer und Umschalter, kümmert sich um Bedieneingaben am PM8-Panel und liest die Ist-Werte der A/D-Kanäle aus. Auf dem Leistungsteil DCP schaltet er je nach gewünschter Ausgangsspannung die Eingangsspannungsrelais um und liefert auf Anfrage sogar die Temperatur des Kühlkörpers. Wie üblich berücksichtigt er die an den Jumpern JP1 bis JP3 eingestellte Moduladresse und ignoriert Befehle, die nicht an ihn gerichtet sind.
+Der Mikrocontroller ATmega32 (U2) besorgt die Kommunikation mit dem c't-Lab-OptoBus, er versteht die schon vom ADA-IO- und DDS-Modul bekannte [**c't-Lab-Syntax [3]**](https://www.heise.de/ratgeber/Modulbaukasten-291034.html) und steuert die D/A-Wandler-Kanäle, Multiplexer und Umschalter, kümmert sich um Bedieneingaben am PM8-Panel und liest die Ist-Werte der A/D-Kanäle aus. Auf dem Leistungsteil DCP schaltet er je nach gewünschter Ausgangsspannung die Eingangsspannungsrelais um und liefert auf Anfrage sogar die Temperatur des Kühlkörpers. Wie üblich berücksichtigt er die an den Jumpern JP1 bis JP3 eingestellte Moduladresse und ignoriert Befehle, die nicht an ihn gerichtet sind.
 
 Mit der Referenzspannungsquelle steht und fällt die Stabilität und Drift der Schaltung, denn die Ausgangsspannung des D/A-Wandlers kann nicht stabiler sein als die ihm zugeführte Referenzspannung. Hier kommt der anerkannt gute LT1019 von Linear Technologies zum Einsatz, ein gleichwertiger und pinkompatibler Ersatz wäre der REF-43 von Analog Devices. Auf eine Hardwaretrimmung der Referenz konnten wir verzichten, da die Kalibrierung ausschließlich per Software erfolgt; der Absolutwert der Referenzspannung (nominal 2,500V) ist deshalb nicht kritisch, wohl aber ihre geringe Drift - und die ist bei den genannten Bauteilen tadellos.
 
@@ -119,13 +119,13 @@ Für den Feinabgleich ist natürlich die Leistungsstufe in Betrieb zu nehmen: Q1
 
 *Ein Minimal-DCG benötigt nur noch eine (nicht unbedingt stabilisierte) Gleichspannungsquelle, hier ein Kompakt-Festspannungsnetzteil von Meanwell, und einen Kühlkörper mit 3 K/W oder besser.*
 
-Sie benötigen zum Abgleich ein Digitalmultimeter, möglichst ein genaues Tischmodell aus gutem Hause (HP/Agilent, Fluke, Keithley); billige Handmultimeter sind vor allem in den Strombereichen oft sehr ungenau. Am einfachsten ist die Kalibrierung, wenn Sie das LabVIEW-Programm DCG-Abgleich.vi verwenden, das Sie auf [**www.ct-lab.de [4]**](http://www.ct-lab.de) unter „Downloads“ finden. Beginnen Sie immer mit den Offset-Werten. OFS 0 ist der Offset-Wert für den unteren Spannungsbereich bis 12 V: Der sollte auf dem Default-Wert von zehn DAC-Zählerpunkten bleiben, weil der oben beschriebene Hardwareabgleich den Offset hier bereits neutralisiert hat. Erzwingen Sie nun mit „DCV=15!“ den oberen Spannungsbereich, den Sie aber mit dem Prozent-Parameter „PCV = 0!“ auf eine Ausgangsspannung von 0 V bringen. Stellen Sie nun den OFS-1-Parameter so ein, dass sich eine minimale Ausgangsspannung ergibt; hier sollte nur eine minimale Korrektur nötig sein.
+Sie benötigen zum Abgleich ein Digitalmultimeter, möglichst ein genaues Tischmodell aus gutem Hause (HP/Agilent, Fluke, Keithley); billige Handmultimeter sind vor allem in den Strombereichen oft sehr ungenau. Am einfachsten ist die Kalibrierung, wenn Sie das LabVIEW-Programm DCG-Abgleich.vi verwenden, das Sie im [**c't-Lab-Archiv auf sn7400.de [4]**](https://www.sn7400.de/ctlab/) finden. Beginnen Sie immer mit den Offset-Werten. OFS 0 ist der Offset-Wert für den unteren Spannungsbereich bis 12 V: Der sollte auf dem Default-Wert von zehn DAC-Zählerpunkten bleiben, weil der oben beschriebene Hardwareabgleich den Offset hier bereits neutralisiert hat. Erzwingen Sie nun mit „DCV=15!“ den oberen Spannungsbereich, den Sie aber mit dem Prozent-Parameter „PCV = 0!“ auf eine Ausgangsspannung von 0 V bringen. Stellen Sie nun den OFS-1-Parameter so ein, dass sich eine minimale Ausgangsspannung ergibt; hier sollte nur eine minimale Korrektur nötig sein.
 
 Die Offset-Parameter 10 und 11 sind für die A/D-Wandlung der Ist-Spannung zuständig. Auch diese müssen Sie so einstellen, dass sich eine Anzeige (auf dem PM8-Display) oder ein Messergebnis (mit der Abfrage „MSV?“ von möglichst genau 0 V ergibt. Die Einstellung der Offset-Parameter für die Strombereiche (OFS 2 bis 5 für die Soll-Ströme und OFS 12 bis 15 für die vom DCG gemessenen Ist-Ströme) erfolgt genauso, hier müssen Sie aber zunächst die Ausgangsspannung wieder auf 5 V setzen, damit auch ein Strom fließen kann. Die Soll-Ströme der vier Bereiche (z. B. „DCA=0.001“ für die Mitte des 2-mA-Bereiches) sind dann mit „PCA=0!“ abzuwürgen, worauf man mit dem zuständigen Offset-Parameter den am Multimeter abgelesenen Reststrom auf null bringt. Für die Offset-Null-Einstellung der Strom-Istwerte (OFS 12 bis 15, siehe auch Syntax-Tabelle) bleiben die DCG-Ausgangsklemmen einfach offen.
 
 Nach dem zugegebenermaßen etwas umständlichen, aber unbedingt notwendigen Offset-Abgleich - den das DCG-Abgleich-VI zwar nicht automatisiert, aber doch sehr vereinfacht, weil es die zuständigen Parameter auswendig kennt und den Write-Enable-Befehl automatisch voranstellt - bleibt der Skalierungsabgleich. Das Procedere kennen Sie ja bereits von den AD16-8- und DA12-8-Karten für ADA-IO: Skalierungsfaktoren so anpassen, dass sich der „Vollausschlag“ von Soll- und Ist-Werten (ebenfalls 12 Parameter) mit den am Multimeter abgelesenen Werten deckt.
 
-[**Forum zu c't-Lab [5]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [5]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 
 ![[kleinkraftwerk-291224-08.jpeg]]
 
@@ -238,20 +238,19 @@ Nach dem zugegebenermaßen etwas umständlichen, aber unbedingt notwendigen Offs
 2 12-Bit-Version
 
 RSPEAK_STOP
-([**cm [6]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
 
-`https://www.heise.de/-291224`
+[https://www.heise.de/-291224](https://www.heise.de/-291224)
 
 **Links in diesem Artikel:**
 
 1. https://www.heise.de/ratgeber/Leitungsschau-291014.html
 2. https://www.heise.de/ratgeber/Schalt-und-Waltstelle-291146.html
-3. http://www.ct-lab.de
-4. http://www.ct-lab.de
-5. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-6. mailto:cm@ct.de
+3. https://www.heise.de/ratgeber/Modulbaukasten-291034.html
+4. https://www.sn7400.de/ctlab/
+5. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

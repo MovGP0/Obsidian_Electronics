@@ -86,15 +86,15 @@ Anschließend müssen Sie die Drahtbrücke an Position R1 wieder entfernen, sons
 
 Literatur
 
-[1] FTDI Hersteller-Website, [**www.ftdichip.com [1]**](http://www.ftdichip.com) , [**www.ftdichip.com/Resources/Utilities.htm [2]**](http://www.ftdichip.com/Resources/Utilities.htm)
+[1] FTDI Hersteller-Website, [**ftdichip.com [1]**](https://ftdichip.com/) , [**ftdichip.com/utilities/ [2]**](https://ftdichip.com/utilities/)
 
-[2] Lantronix Hersteller-Website, [**www.lantronix.de [3]**](http://www.lantronix.de)
+[2] Lantronix Hersteller-Website, [**www.lantronix.com/products/xport/ [3]**](https://www.lantronix.com/products/xport/)
 
-[3] DLPdesign Hersteller-Website, [**www.dlpdesign.com/usb/usb232.shtml [4]**](http://www.dlpdesign.com/usb/usb232.shtml)
+[3] DLPdesign Hersteller-Website, [**www.dlpdesign.com/usb/usb232.shtml [4]**](https://www.dlpdesign.com/usb/usb232.shtml)
 
-[**Forum zu c't-Lab [5]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [5]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 
-***[**Soft-Link [6]**](http://www.heise.de/ct/07/10/links/130.shtml)***
+***[**Soft-Link [6]**](https://www.heise.de/select/ct/2007/10/softlinks/130)***
 
 ## Stückliste
 
@@ -153,7 +153,7 @@ Literatur
 |         | Platine c't-Lab IFP (eMedia)      |
 
 RSPEAK_STOP
-([**cm [7]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -162,12 +162,11 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ftdichip.com
-2. http://www.ftdichip.com/Resources/Utilities.htm
-3. http://www.lantronix.de
-4. http://www.dlpdesign.com/usb/usb232.shtml
-5. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-6. http://www.heise.de/ct/07/10/links/130.shtml
-7. mailto:cm@ct.de
+1. https://ftdichip.com/
+2. https://ftdichip.com/utilities/
+3. https://www.lantronix.com/products/xport/
+4. https://www.dlpdesign.com/usb/usb232.shtml
+5. https://ctlabforum.thoralt.de/phpbb/index.php
+6. https://www.heise.de/select/ct/2007/10/softlinks/130
 
 *Copyright © 2007 Heise Medien*

@@ -11,11 +11,11 @@ Schon einmal einen Drehknopf, einen skalierbaren Zeitschrieb und ein Zeigerinstr
 
 LabVIEW ist anders. Hier gibt es nichts zu kompilieren, zu assemblieren und zu linken - die Programmierung erfolgt durch „Verdrahtung“ eines Ablaufplans, der entfernt an ein Schaltbild erinnert, aber eher der Gattung „Flussdiagramm“ zuzuordnen ist. Seine Stärken spielt die Entwicklungsumgebung aus, wenn es darum geht, Messergebnisse oder Prozesse ansehnlich darzustellen. Als virtuelle Bedienelemente und Anzeigen gibt es Zeigerinstrumente, Thermometer und Digitalanzeigen, Drehknöpfe und Taster, Oszillogramme, XY-Diagramme und Zeitschriebe - wobei die Konfigurationsmöglichkeiten jeder Display-Variante geradezu uferlos erscheinen.
 
-Wenn Sie die auf der Heft-DVD 11/2007 beiliegende Vollversion von LabVIEW 6.1 noch nicht installiert haben, wird es dafür höchste Zeit, zumal schon der Abgleich einiger c't-Lab-Module ohne die unter [**www.ct-lab.de [1]**](http://www.ct-lab.de) verfügbaren LabVIEW-Demos unnötig umständlich gerät. Zugegebenermaßen fällt es gerade gestandenen Programmierern schwer, sich an die LabVIEW-Gepflogenheiten zu gewöhnen - aber da müssen Sie jetzt durch. Erfolgserlebnisse stellen sich im Übrigen deutlich schneller als beim Erlernen herkömmlicher Programmiersprachen ein.
+Wenn Sie die auf der Heft-DVD 11/2007 beiliegende Vollversion von LabVIEW 6.1 noch nicht installiert haben, wird es dafür höchste Zeit, zumal schon der Abgleich einiger c't-Lab-Module ohne die unter [**LabVIEW_VIs [1]**](https://www.sn7400.de/ctlab/?dir=LabVIEW_VIs) verfügbaren LabVIEW-Demos unnötig umständlich gerät. Zugegebenermaßen fällt es gerade gestandenen Programmierern schwer, sich an die LabVIEW-Gepflogenheiten zu gewöhnen - aber da müssen Sie jetzt durch. Erfolgserlebnisse stellen sich im Übrigen deutlich schneller als beim Erlernen herkömmlicher Programmiersprachen ein.
 
 ## ZIP-frisch
 
-Das Programmpaket ist mit über 400 MByte zwar ein recht dicker Brocken, doch keine Angst: Viele Funktionen und Features werden Sie für den Einstieg nicht brauchen, und auch von den Hilfsprogrammen bleibt nur ein einziges essenzielles übrig. Sie können die Installation direkt aus dem ZIP-Archiv der Heft-DVD erledigen, WinZIP legt bei Bedarf ein temporäres Verzeichnis an. Der Installationsvorgang ist gemessen am Umfang des Pakets überraschend schnell erledigt, wenn man die (empfehlenswerten) Default-Einstellungen übernimmt. Vorher sollten Sie sich aber bei National Instruments eine gültige Seriennummer für die c't-Version besorgen [1].
+Das Programmpaket ist mit über 400 MByte zwar ein recht dicker Brocken, doch keine Angst: Viele Funktionen und Features werden Sie für den Einstieg nicht brauchen, und auch von den Hilfsprogrammen bleibt nur ein einziges essenzielles übrig. Sie können die Installation direkt aus dem ZIP-Archiv der Heft-DVD erledigen, WinZIP legt bei Bedarf ein temporäres Verzeichnis an. Der Installationsvorgang ist gemessen am Umfang des Pakets überraschend schnell erledigt, wenn man die (empfehlenswerten) Default-Einstellungen übernimmt. Der ursprüngliche Registrierungslink für die c't-Version ist nicht mehr verfügbar; als aktuelle Alternative bietet National Instruments die LabVIEW Community Edition [1].
 
 Nach der Installation und dem Reset des Rechners starten Sie zunächst das mitinstallierte Tool „Measurement & Automation Exporer“ (MAX), das in unserem Fall nur dazu dient, der für das c't-Lab verwendeten seriellen Schnittstelle einen eindeutigen Namen für die LabVIEW-interne Treiberarchitektur (VISA, Virtual Instrument Software Architecture) zuzuweisen und diese zu initialisieren. Das Programm erkennt ebenso Messwerterfassungs- und Interface-Karten von National Instruments sowie angemeldete Netzwerk-Verbindungen zum Fernsteuern und Fernabfragen anderer Labor-Rechner und der daran angeschlossenen Hardware - auch das ist mit LabVIEW möglich.
 
@@ -59,7 +59,7 @@ Cluster sind im Prinzip Kabelkanäle mit einer fast beliebigen Anzahl von Einzel
 
 Nicht nur aus ästhetischen Gründen empfiehlt die LabVIEW-Dokumentation, gleichartige Signale (z. B. Ressourcennamen oder Fehlermeldungen) immer auf gleicher Höhe des Anschlussfeldes unterzubringen, damit kein virtueller Drahtverhau entsteht. Ein Sub-VI mit zugewiesenem Anschlussfeld lässt sich sehr einfach in ein anderes Programm integrieren: Einfach aus dem Windows Explorer auf das Haupt-Diagramm ziehen oder mit „Wählen Sie ein VI...“ links unten in der Funktionspalette. Das DemoAll-VI verwendet beispielsweise das vorgestellte Ident-VI zur Initialisierung der Schnittstelle. Sie finden es im DemoAll-Diagramm links oben.
 
-Das Frage-Antwort-Spiel des Ident-VI übernehmen auch CTLAB-SendVal.vi und CTLAB-ReceiveVal.vi, nur dass sie lediglich auf die Antwort eines einzelnen Moduls warten und auf die Initialisierung verzichten. Bei SendVal, das einen Einstellwert an das c't-Lab sendet, ist dies nur die „OK“-Rückmeldung des Modul-Controllers, während ReceiveVal einen Messwert anfordert und diesen bei Erhalt nach Moduladresse, Subkanalnummer und Wert aufschlüsselt. Beide VIs basteln zunächst aus Modul- und Kanalnummer und String-Fragmenten den Befehl zusammen, schicken ihn an die Schnittstelle und warten so lange, bis ein Messwert eintrifft - entsprechend der c't-Lab-Syntax (siehe [**www.ct-lab.de [2]**](http://www.ct-lab.de)) erkennbar am Präfix-„#“. Trifft bis zum Timeout keine Antwort mit passenden Modul- und Kanalnummern ein, enthält der Error-Cluster eine Fehlermeldung. Neben dem nackten Messwert liefern die VIs auch einen Ergebnis-Cluster, dessen wichtigster Bestandteil das „Valid“-Flag ist - es zeigt an, ob ein Messwert korrekt empfangen oder der Befehl ohne Fehlermeldung akzeptiert wurde. Zusätzlich enthalten ist der komplette Empfangs-String, so wie er an der seriellen Schnittstelle eingegangen ist. Da diese VIs keine Schnittstellen-Initialisierung vornehmen, sind sie nur eingeschränkt autark: Bevor sie gestartet werden, muss die Schnittstelle wenigstens einmal (etwa durch CTLAB-Ident.vi) initialisiert worden sein.
+Das Frage-Antwort-Spiel des Ident-VI übernehmen auch CTLAB-SendVal.vi und CTLAB-ReceiveVal.vi, nur dass sie lediglich auf die Antwort eines einzelnen Moduls warten und auf die Initialisierung verzichten. Bei SendVal, das einen Einstellwert an das c't-Lab sendet, ist dies nur die „OK“-Rückmeldung des Modul-Controllers, während ReceiveVal einen Messwert anfordert und diesen bei Erhalt nach Moduladresse, Subkanalnummer und Wert aufschlüsselt. Beide VIs basteln zunächst aus Modul- und Kanalnummer und String-Fragmenten den Befehl zusammen, schicken ihn an die Schnittstelle und warten so lange, bis ein Messwert eintrifft - entsprechend der [**c't-Lab-Syntax [2]**](https://www.sn7400.de/ctlab/Dokumentation/syntax.pdf) erkennbar am Präfix-„#“. Trifft bis zum Timeout keine Antwort mit passenden Modul- und Kanalnummern ein, enthält der Error-Cluster eine Fehlermeldung. Neben dem nackten Messwert liefern die VIs auch einen Ergebnis-Cluster, dessen wichtigster Bestandteil das „Valid“-Flag ist - es zeigt an, ob ein Messwert korrekt empfangen oder der Befehl ohne Fehlermeldung akzeptiert wurde. Zusätzlich enthalten ist der komplette Empfangs-String, so wie er an der seriellen Schnittstelle eingegangen ist. Da diese VIs keine Schnittstellen-Initialisierung vornehmen, sind sie nur eingeschränkt autark: Bevor sie gestartet werden, muss die Schnittstelle wenigstens einmal (etwa durch CTLAB-Ident.vi) initialisiert worden sein.
 
 ## Flugs pollen
 
@@ -125,13 +125,13 @@ Der Subkanal-Dispatcher von NotifyDemo.vi verwendet seinerseits Notify-Messages,
 
 Literatur
 
-[1] [**http://digital.ni.com/express.nsf/bycode/ct_registrierung [3]**](http://digital.ni.com/express.nsf/bycode/ct_registrierung)
+[1] [**LabVIEW Community Download [3]**](https://www.ni.com/en/support/downloads/software-products/download.labview-community.html)
 
-[2] [**www.heise.de/ct/projekte/machmit/ctlab/wiki/LabViewDemos [4]**](http://www.heise.de/ct/projekte/machmit/ctlab/wiki/LabViewDemos)
+[2] [**LabVIEW_VIs [4]**](https://www.sn7400.de/ctlab/?dir=LabVIEW_VIs)
 
-[**Forum zu c't-Lab [5]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [5]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 RSPEAK_STOP
-([**cm [6]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -140,11 +140,10 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.ct-lab.de
-3. http://digital.ni.com/express.nsf/bycode/ct_registrierung
-4. http://www.heise.de/ct/projekte/machmit/ctlab/wiki/LabViewDemos
-5. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-6. mailto:cm@ct.de
+1. https://www.sn7400.de/ctlab/?dir=LabVIEW_VIs
+2. https://www.sn7400.de/ctlab/Dokumentation/syntax.pdf
+3. https://www.ni.com/en/support/downloads/software-products/download.labview-community.html
+4. https://www.sn7400.de/ctlab/?dir=LabVIEW_VIs
+5. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

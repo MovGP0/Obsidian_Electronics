@@ -93,11 +93,11 @@ Ein Kühlkörper für die Spannungsregler sollte nur in Ausnahmefällen (Hochfre
 
 *Der optionale Platinenteil mit dem JTAG-Adapter (rechts) wird nach dem Bestücken abgetrennt. Verwenden Sie bei Selbstbauten (vor allem solchen mit SMD-Bauteilen) lieber kein Bleifrei-Lötzinn – selbst Profis bekommen damit keine schönen Lötstellen hin. Rot eingezeichnet sind die acht 100n-Kondensatoren C4, C6, C7, C8, C10, C12, C13 und C14, die auf der Lötseite zu bestücken sind.*
 
-Die Bestückung des JTAG-Adapters (Schaltung frei nach Xilinx auf [**www.ct-lab.de [1]**](http://www.ct-lab.de)) – der einem in der Entwurfsphase das Umkopieren der FPGA-Konfiguration auf Speicherkarte erspart – ist optional. Die Schaltung kann von der FPGA-Platine mit Strom versorgt werden, J6 muss dann gesteckt sein.
+Die Bestückung des JTAG-Adapters (siehe auch die [**SEGOR-Baugruppenübersicht**](https://www.segor.de/INFO/ct-lab/baugruppe-fpgajtag.shtml)) – der einem in der Entwurfsphase das Umkopieren der FPGA-Konfiguration auf Speicherkarte erspart – ist optional. Die Schaltung kann von der FPGA-Platine mit Strom versorgt werden, J6 muss dann gesteckt sein.
 
-Wie oben erwähnt verlangt die FPGA-Platine keine Einstellarbeiten. Lediglich die Hilfsspannungen sollten Sie nach dem Anschließen an eine c't-Lab-Stromversorgung (IFP-Modul oder PS2-3-Platine) kontrollieren, am besten direkt an den Ausgängen der Spannungsregler (3,3 V an Pin 3 von U6, 1,2V an Pin 2 von U5) und an der Kathode von D1 (ca. 2,5 V). Die Inbetriebnahme beginnt mit dem Programmieren der Firmware für den ATmega644-Controller. Hier sind unbedingt die Clock-Fuses für einen externen Quarz als Taktquelle zu setzen (siehe auch Hinweise zum Flashen auf [**www.ct-lab.de [2]**](http://www.ct-lab.de)) – der 644 ist hier deutlich anspruchsvoller als der (ältere) ATmega32. Das FPGA-Modul muss sich nach erfolgreichem „Flashen“ mit seinem Begrüßungsstring (etwa „#6:254=1.XXX [c't FPGA]“) melden.
+Wie oben erwähnt verlangt die FPGA-Platine keine Einstellarbeiten. Lediglich die Hilfsspannungen sollten Sie nach dem Anschließen an eine c't-Lab-Stromversorgung (IFP-Modul oder PS2-3-Platine) kontrollieren, am besten direkt an den Ausgängen der Spannungsregler (3,3 V an Pin 3 von U6, 1,2V an Pin 2 von U5) und an der Kathode von D1 (ca. 2,5 V). Die Inbetriebnahme beginnt mit dem Programmieren der Firmware für den ATmega644-Controller. Hier sind unbedingt die Clock-Fuses für einen externen Quarz als Taktquelle zu setzen (siehe auch die [**Heise-FAQ zum Flashen und Setzen der Fuse-Bits**](https://www.heise.de/hintergrund/FAQ-fuer-c-t-Bot-und-c-t-SIM-291940.html?seite=2)) – der 644 ist hier deutlich anspruchsvoller als der (ältere) ATmega32. Das FPGA-Modul muss sich nach erfolgreichem „Flashen“ mit seinem Begrüßungsstring (etwa „#6:254=1.XXX [c't FPGA]“) melden.
 
-Kopieren Sie nun die Demo-Konfiguration „LEDblink.bin“ (siehe Sourcen auf [**www.ct-lab.de [3]**](http://www.ct-lab.de)) auf eine leere SD-Karte und setzen diese in den Kartenslot ein. Die LED neben dem Slot sollte nun knapp zwei Sekunden lang aufflackern, danach muss die Status-LED des FPGA blinken – eindeutiges Kennzeichen, dass die Datei einwandfrei „aufgespielt“ wurde und das FPGA arbeitet.
+Kopieren Sie nun die Demo-Konfiguration „LEDblink.bin“ auf eine leere SD-Karte und setzen diese in den Kartenslot ein. Die LED neben dem Slot sollte nun knapp zwei Sekunden lang aufflackern, danach muss die Status-LED des FPGA blinken – eindeutiges Kennzeichen, dass die Datei einwandfrei „aufgespielt“ wurde und das FPGA arbeitet.
 
 Freilich kann zur direkten FPGA-Konfiguration vom Rechner aus auch der JTAG-Port PL7 verwendet werden; dies ist in der Entwurfsphase bequemer, außerdem gestatten einige Xilinx-Entwicklungstools über JTAG den Zugriff auf FPGA-Interna. Die Pinbelegung entspricht dem „Parallel Cable III“ von Xilinx, ein Druckerport-Adapter, der sich schnell mit ein paar Bauteilen aus der Bastelkiste (siehe Stückliste) aufbauen lässt: Wir haben dafür einen Teil der FPGA-Platine reserviert, der sich abbrechen lässt und dann den Adapter bildet. Ein nicht allzu langes Flachbandkabel (max. 30 cm) stellt dann die Verbindung zwischen JTAG-Adapter und FPGA-Platine her, der Adapter wiederum wird über ein 25-poliges Sub-D-Kabel (voll beschaltet) mit dem Rechner verbunden.
 
@@ -109,13 +109,13 @@ Wir hätten Ihnen an dieser Stelle aber zumindest gern verraten, wie Sie unser F
 
 Literatur
 
-[1] [**Spiele-Klassiker als FPGA-Implementationen [4]**](http://www.fpgaarcade.com)
+[1] [**Spiele-Klassiker als FPGA-Implementationen**](https://www.fpgaarcade.com/)
 
-[2] [**Xilinx WebPACK ISE, FPGA-Entwicklungsumgebung [5]**](http://www.xilinx.com/ise/logic_design_prod/webpack.htm)
+[2] [**AMD/Xilinx ISE Archive**](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/archive-ise.html)
 
-[3] [**c't-Lab-Supportseite [6]**](http://www.ct-lab.de)
+[3] [**c't-Lab-Projekte bei SEGOR**](https://www.segor.de/INFO/ct-lab-projekte.shtml)
 
-[4] [**Grundlagen und Tricks zu FPGA-Entwicklungen [7]**](http://www.mikrocontroller.net/articles/Xilinx_ISE)
+[4] [**Grundlagen und Tricks zu FPGA-Entwicklungen**](https://www.mikrocontroller.net/articles/Xilinx_ISE)
 
 ## Stückliste FPGA-Platine
 
@@ -195,7 +195,7 @@ Literatur
 | CONN5 | Sub-D 25-pol. 90° male         |
 
 RSPEAK_STOP
-([**cm [8]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -204,13 +204,11 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.ct-lab.de
-3. http://www.ct-lab.de
-4. http://www.fpgaarcade.com
-5. http://www.xilinx.com/ise/logic_design_prod/webpack.htm
-6. http://www.ct-lab.de
-7. http://www.mikrocontroller.net/articles/Xilinx_ISE
-8. mailto:cm@ct.de
+1. https://www.segor.de/INFO/ct-lab/baugruppe-fpgajtag.shtml
+2. https://www.heise.de/hintergrund/FAQ-fuer-c-t-Bot-und-c-t-SIM-291940.html?seite=2
+3. https://www.fpgaarcade.com/
+4. https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/archive-ise.html
+5. https://www.segor.de/INFO/ct-lab-projekte.shtml
+6. https://www.mikrocontroller.net/articles/Xilinx_ISE
 
 *Copyright © 2008 Heise Medien*

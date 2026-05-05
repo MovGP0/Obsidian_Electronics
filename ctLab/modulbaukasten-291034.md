@@ -81,7 +81,7 @@ Zur Prüfung der digitalen I/O-Ports lesen Sie diese zunächst mit „PIO 0?“ 
 
 Bis zum nächsten Teil haben Sie genug Zeit, sich mit der c't-Lab-Syntax vertraut zu machen, die LabView-Demo-Programme (Beschreibung der LabView-Entwicklungsumgebung siehe c't 11/07, S. 182) auszuprobieren und ein wenig mit den IO8-32-Ports zu spielen. Bitte beachten Sie, dass die Ports maximal 20 mA liefern können; dauerhafte Kurzschlüsse an mehreren Pins sind zu vermeiden.
 
-*[**Forum zu c't-Lab [3]**](https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/)*
+*[**Forum zu c't-Lab [3]**](https://ctlabforum.thoralt.de/phpbb/index.php)*
 
 ***[**Soft-Link [4]**](https://www.heise.de/select/ct/2007/11/softlinks/212)***
 
@@ -461,7 +461,7 @@ RSPEAK_START
 
 1. https://www.e-lab.de/programmer/isp.html
 2. https://www.e-lab.de/
-3. https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/
+3. https://ctlabforum.thoralt.de/phpbb/index.php
 4. https://www.heise.de/select/ct/2007/11/softlinks/212
 
 *Copyright © 2007 Heise Medien*

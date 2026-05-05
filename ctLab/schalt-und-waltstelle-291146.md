@@ -73,11 +73,9 @@ Die grundsätzliche Bedienung ist bei allen c't-Lab-Modulen konsistent: Mit den 
 
 *Das LCD des PM8-Panels verwendet die Signale des Quasi-Industriestandards 44780 von Hitachi, allerdings aufgeteilt auf zwei Pfostenleisten. Der Modul-Prozessor steuert es über den I2C-Bus an.*
 
-Beim DDS-Funktionsgenerator erfolgt die Frequenzeinstellung im Grob-Modus in Terz-Schritten (1000, 1250, 1600, 2000, 2500 Hz usw.), im Feineinstell-Modus hertzweise. Bei der Pegel-Einstellung wählt man grob die dB-Schritte, fein die Millivolts - beim Zurückschalten in den Grobmodus, der übrigens nach knapp zwei Sekunden automatisch erfolgt, aktualisiert sich selbstverständlich auch die dB-Anzeige. Die DDS-Firmware erkennt das Panel automatisch, zeigt beim Einschalten eine Begrüßungsmeldung und geht dann ins Frequenz-Menü. Die Übersicht der Menü-Einträge sparen wir uns hier, zumal sie sich bei Firmware-Updates ändern kann. Sie ist aber in der c't-Lab-Syntax-Übersicht enthalten (siehe [**www.ct-lab.de [1]**](http://www.ct-lab.de)). Derzeit noch in später Planungsphase befindet sich die Panel-Implementation für die ADA-IO-Firmware; hier wird es zumindest möglich sein, die A/D-Kanäle als skalierte Messwerte und die Portbits als Binärmuster darzustellen.
+Beim DDS-Funktionsgenerator erfolgt die Frequenzeinstellung im Grob-Modus in Terz-Schritten (1000, 1250, 1600, 2000, 2500 Hz usw.), im Feineinstell-Modus hertzweise. Bei der Pegel-Einstellung wählt man grob die dB-Schritte, fein die Millivolts - beim Zurückschalten in den Grobmodus, der übrigens nach knapp zwei Sekunden automatisch erfolgt, aktualisiert sich selbstverständlich auch die dB-Anzeige. Die DDS-Firmware erkennt das Panel automatisch, zeigt beim Einschalten eine Begrüßungsmeldung und geht dann ins Frequenz-Menü. Die Übersicht der Menü-Einträge sparen wir uns hier, zumal sie sich bei Firmware-Updates ändern kann. Sie ist aber in der c't-Lab-Syntax-Übersicht enthalten; einen noch erreichbaren Projektüberblick finden Sie bei heise unter [**c't-Lab - Bausteine zum Messen, Steuern und Regeln [1]**](https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html). Derzeit noch in später Planungsphase befindet sich die Panel-Implementation für die ADA-IO-Firmware; hier wird es zumindest möglich sein, die A/D-Kanäle als skalierte Messwerte und die Portbits als Binärmuster darzustellen.
 
-***[**Soft-Link [2]**](http://www.heise.de/ct/07/16/links/176.shtml)***
-
-[**Forum zu c't-Lab [3]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [2]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 
 ## Stückliste PM8
 
@@ -138,18 +136,15 @@ Beim DDS-Funktionsgenerator erfolgt die Frequenzeinstellung im Grob-Modus in Ter
 |                       | 5 mm mit Befestigungsmaterial                 |
 
 RSPEAK_STOP
-([**cm [4]**](mailto:cm@ct.de))
 RSPEAK_START
 
 **URL dieses Artikels:**
 
-`https://www.heise.de/-291146`
+`https://www.heise.de/ratgeber/Schalt-und-Waltstelle-291146.html`
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.heise.de/ct/07/16/links/176.shtml
-3. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-4. mailto:cm@ct.de
+1. https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html
+2. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

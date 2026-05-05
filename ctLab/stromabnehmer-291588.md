@@ -53,7 +53,7 @@ Zweites Beispiel, andersherum und diesmal mit eingeschaltetem Low-Spannungsberei
 
 Der bei einem gegebenen Shunt Rs minimal einstellbare simulierte Widerstand beträgt also im High-V-Bereich (bis 25 V) 100 x Rs, im Low-V-Bereich (bis 6,25 V) 25 x Rs (exakter: jeweils 4096/4095 davon, mit der angegebenen Dimensionierung also 2,5006 Ohm im Low- und 10,002 Ohm im High-Bereich).
 
-Ein paar Randbedingungen sind bei einer Umdimensionierung zugunsten höherer Sollströme oder kleinerer simulierter Widerstände zu beachten, auch wenn der Firmware geänderte Vorteiler-Faktoren und Shunt-Werte bequem per OPT-Parameter (siehe c't-Lab-Syntax auf [**www.ct-lab.de [1]**](http://www.ct-lab.de)) nahegebracht werden können: Die maximale Eingangsspannung des Istwert-Wandlers darf (nach Vorteilung) 2,5 V nicht überschreiten, der multiplizierende D/A-Wandler im R-Betrieb maximal 5 V erhalten. Die Leiterbahnen der Platine sind kurzzeitig bis 10 A belastbar, und die Shunts und Leistungstransistoren müssen die für jeden Strombereich gewählten Maximalströme natürlich auch verkraften können. Bei den Transistoren ist nicht die Verlustleistung oder der maximale Drain-Strom maßgeblich, sondern die „Safe Operating Area“: Bei höheren Spannungen sinkt die umsetzbare Leistung drastisch.
+Ein paar Randbedingungen sind bei einer Umdimensionierung zugunsten höherer Sollströme oder kleinerer simulierter Widerstände zu beachten, auch wenn der Firmware geänderte Vorteiler-Faktoren und Shunt-Werte bequem per OPT-Parameter (siehe c't-Lab-Syntax auf [**Dokumentation [1]**](https://www.sn7400.de/ctlab/?dir=Dokumentation)) nahegebracht werden können: Die maximale Eingangsspannung des Istwert-Wandlers darf (nach Vorteilung) 2,5 V nicht überschreiten, der multiplizierende D/A-Wandler im R-Betrieb maximal 5 V erhalten. Die Leiterbahnen der Platine sind kurzzeitig bis 10 A belastbar, und die Shunts und Leistungstransistoren müssen die für jeden Strombereich gewählten Maximalströme natürlich auch verkraften können. Bei den Transistoren ist nicht die Verlustleistung oder der maximale Drain-Strom maßgeblich, sondern die „Safe Operating Area“: Bei höheren Spannungen sinkt die umsetzbare Leistung drastisch.
 
 ## Leistungsträger
 
@@ -73,7 +73,7 @@ Beim Aufbau machen einem diesmal weniger fummelige SMD-Bauteile (nur eine Hand v
 
 *Der EDL-Controller-Teil entspricht weitgehend dem des DCG-Moduls, allerdings mit etwas anderer Belegung der Portleitungen. Hinzugekommen ist der Temperaturfühler U14.*
 
-Soll ein Adapter zum Einsatz kommen, wird auf der Platine nur eine 8-polige IC-Fassung an Stelle von U4 eingesetzt, die Verbindung zum Adapter erledigen dann sogenannte IC-Stiftleisten (siehe hierzu auch den Abschnitt „DCG-Bugfix“ auf [**www.ct-lab.de [2]**](http://www.ct-lab.de)). Das Auflöten des nur im TSSOP- und im beinchenlosen SON-Gehäuse (kleiner als eine Blattwanze) lieferbaren 16-Bit-Wandlers DAC8811 dürfen sich aber nur erfahrene Löter zutrauen. Wir empfehlen, zunächst immer die abgedruckte Grundversion mit 12-Bit-DAC aufzubauen und erst nach erfolgreicher Inbetriebnahme eigene Änderungswünsche (mehr Strom, mehr Bits) einzupflegen.
+Soll ein Adapter zum Einsatz kommen, wird auf der Platine nur eine 8-polige IC-Fassung an Stelle von U4 eingesetzt, die Verbindung zum Adapter erledigen dann sogenannte IC-Stiftleisten (siehe hierzu auch den Abschnitt „DCG-Bugfix“ auf [**c't-Lab-Forum [2]**](https://ctlabforum.thoralt.de/phpbb/viewtopic.php?t=368)). Das Auflöten des nur im TSSOP- und im beinchenlosen SON-Gehäuse (kleiner als eine Blattwanze) lieferbaren 16-Bit-Wandlers DAC8811 dürfen sich aber nur erfahrene Löter zutrauen. Wir empfehlen, zunächst immer die abgedruckte Grundversion mit 12-Bit-DAC aufzubauen und erst nach erfolgreicher Inbetriebnahme eigene Änderungswünsche (mehr Strom, mehr Bits) einzupflegen.
 
 Die drei Trimmpotis R39, R44 und R48 besitzen seitliche Einstellschrauben und sind so einzulöten, dass diese in Richtung Prozessor U2 weisen; das erleichtert Abgleicharbeiten nach erfolgter Montage des Kühlkörpers. Der verdeckt später ein Drittel der Platine, unter anderem auch die Trimmer. Der Temperaturfühler U14 (LM75) kommt unter dem Winkelkühlkörper (Typ SK451 von Fischer) zu liegen, muss also möglichst plan aufgelötet werden. Drei M3-Unterlegscheiben auf jeder der Kühlkörper-Befestigungsschrauben (M3 x 8) sorgen für den nötigen Abstand von rund 1,5 mm. Ein Klecks weiße Wärmeleitpaste auf U14 verbessert die thermische Kopplung.
 
@@ -89,7 +89,7 @@ Ein an PL10 angeschlossener 12-V-Lüfter, etwa von einem obsoleten Prozessorküh
 
 ## Selbstgedreht
 
-Apropos Drehen: Grundlegende Einstellarbeiten können Sie schon vor der Kühlkörpermontage ausführen – die Trimmer sind dann deutlich einfacher zu erreichen. Nach Aufspielen der Firmware (im „Browse Source“-Bereich auf [**www.ct-lab.de [3]**](http://www.ct-lab.de) zu finden) geht selbige in einen Einstell-Zustand, der für den Hardware-Abgleich ausreicht. Achtung: Der Kalibriermodus, erkennbar an einer im Sekundenrhythmus blinkenden LED1, wird nach einem erneuten Reset (oder Ein- und Ausschalten) wieder verlassen, ist also nur direkt nach dem „Flashen“ zugänglich.
+Apropos Drehen: Grundlegende Einstellarbeiten können Sie schon vor der Kühlkörpermontage ausführen – die Trimmer sind dann deutlich einfacher zu erreichen. Nach Aufspielen der Firmware (im „Browse Source“-Bereich auf [**Firmware-Mirror [3]**](https://www.sn7400.de/ctlab/Firmware?dir=EDL) zu finden) geht selbige in einen Einstell-Zustand, der für den Hardware-Abgleich ausreicht. Achtung: Der Kalibriermodus, erkennbar an einer im Sekundenrhythmus blinkenden LED1, wird nach einem erneuten Reset (oder Ein- und Ausschalten) wieder verlassen, ist also nur direkt nach dem „Flashen“ zugänglich.
 
 Schließen Sie die Eingangsklemmen In- und In+ kurz, die Sense-Eingänge bleiben offen. Stellen Sie nun R44 so ein, dass die Spannung an TP1 bei leuchtender und „außer“ LED gleich ist (im Idealfall 0 V, Multimeter mit mV-Bereich verwenden). Wichtig: Beide gemessenen Werte (Offset-Spannung des Istspannungsteiler-OpAmps) sollen möglichst gleich sein, während einige mV Abweichung von 0 V durchaus zulässig sind. Als Bezugspotenzial dient bei allen Messungen die Drahtbrücke auf Position R8 (Schaltungs-Masse).
 
@@ -123,7 +123,7 @@ Den Strom für die Off-Zeit gibt man als Prozentwert vom eingestellten Sollstrom
 
 Nach erfolgter Einstellung des Sollstromes geht das Display in den Istwert-Anzeigemodus von Strom (obere Zeile) und Klemmenspannung (untere Zeile), kenntlich gemacht durch einen „hohlen“ Cursor-Pfeil (während einer Einstellung ist er schwarz ausgefüllt oder bei Feineinstellung – wie üblich durch kurzen Druck auf den Drehgeber – schraffiert). Bei der dynamischen On-Off-Messung wird alternierend der On- und der Off-Wert im Sekundenrhythmus angezeigt; ein Kreis in der unteren Displayzeile zeigt den jeweili-gen Zustand (hohl = Off-Wert, schwarz ausgefüllt = On-Wert). Wichtig: Der Anzeige-Rhythmus ist von den eingestellten On-Off-Zeiten unabhängig – bei im Millisekunden-Takt wechselnden Werten würde man auch nichts erkennen.
 
-In der Widerstands-Betriebsart sind Prozentwert und Timing ohne Belang, hier erfolgt bei der vorliegenden Firmware-Version keine Umschaltung auf einen Off-Wert. Kühlkörper-Temperatur und die aufgenommene Leistung lassen sich dagegen immer abrufen. Alle Parameter stehen natürlich auch befehlsgesteuert (siehe Syntax-Tabelle auf [**www.ct-lab.de [4]**](http://www.ct-lab.de)) zur Verfügung.
+In der Widerstands-Betriebsart sind Prozentwert und Timing ohne Belang, hier erfolgt bei der vorliegenden Firmware-Version keine Umschaltung auf einen Off-Wert. Kühlkörper-Temperatur und die aufgenommene Leistung lassen sich dagegen immer abrufen. Alle Parameter stehen natürlich auch befehlsgesteuert (siehe Syntax-Tabelle auf [**Dokumentation [4]**](https://www.sn7400.de/ctlab/?dir=Dokumentation)) zur Verfügung.
 
 Das Kabel zu den Laborbuchsen auf der Frontplatte sollte recht kräftig gewählt werden, um Spannungsabfälle zu vermeiden. Bei Leitungslängen über zehn Zentimeter kommen die Sense-Anschlüsse zum Einsatz, von denen zusätzliche Litzen zu den zwei Laborbuchsen am Frontpanel geführt werden; ansonsten werden sie mit den zugehörigen In-Pins kurzgeschlossen.
 
@@ -212,7 +212,7 @@ Das Kabel zu den Laborbuchsen auf der Frontplatte sollte recht kräftig gewählt
 |                | Platine c't-Lab EDL (eMedia, Segor) |
 
 RSPEAK_STOP
-([**cm [5]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -221,10 +221,9 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.ct-lab.de
-3. http://www.ct-lab.de
-4. http://www.ct-lab.de
-5. mailto:cm@ct.de
+1. https://www.sn7400.de/ctlab/?dir=Dokumentation
+2. https://ctlabforum.thoralt.de/phpbb/viewtopic.php?t=368
+3. https://www.sn7400.de/ctlab/Firmware?dir=EDL
+4. https://www.sn7400.de/ctlab/?dir=Dokumentation
 
 *Copyright © 2008 Heise Medien*

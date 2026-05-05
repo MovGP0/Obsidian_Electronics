@@ -93,7 +93,7 @@ Die Netz-Optoschaltstufe ist noch einfacher aufgebaut: Der Opto-Triac bildet mit
 
 Wenn man beide Schaltertypen benötigt, kann man zwei Platinen mit einem Flachbandkabel anschließen, darf dabei aber jedes Bit nur einmal bestücken.
 
-[**Forum zu c't-Lab [1]**](https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/)
+[**Forum zu c't-Lab [1]**](https://ctlabforum.thoralt.de/phpbb/index.php)
 RSPEAK_STOP
 (roe)
 RSPEAK_START
@@ -104,6 +104,6 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/
+1. https://ctlabforum.thoralt.de/phpbb/index.php
 
 *Copyright © 2007 Heise Medien*

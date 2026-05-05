@@ -25,7 +25,7 @@ Die technischen Daten unseres Vorverstärkers lassen aber selbst Audio-Kenner au
 
 Wer den Vorverstärker in sein c't-Lab integrieren möchte oder den zusätzlichen Komfort einer Aussteuerungs- und Pegelanzeige wünscht, sollte den Controller-Teil gleich mitbestücken. Zwei optionale True-RMS-Messwandler liefern dem Steuer-Rechner oder dem LCD auf einem angeschlossenen Bedien-Panel millivoltgenau die aktuelle Eingangsspannung, beim LCD sogar wählbar als Zahlenwert- oder Balkenanzeige.
 
-Wie alle c't-Lab-Module besitzt auch die ACV-Platine einen eigenen Mikrocontroller, der sich vornehmlich des c't-Lab-eigenen Protokolls über die OptoBus-Schnittstelle annimmt (siehe auch [**www.ct-lab.de [1]**](http://www.ct-lab.de)), aber auch die Auswertung des Effektiv-Messwerts für beide Stereo-Kanäle erledigt. Und natürlich kann man zur manuellen Bedienung ein Panel PM-8 mit LC-Anzeige und Drehgeber anschließen. Als besonderen Leckerbissen haben wir noch eine Erweiterungsschnittstelle vorgesehen, die einen Audio-ADC auf einer Tochterplatine aufnimmt (wie beim DDS-Modul die TRMSC-Platine).
+Wie alle c't-Lab-Module besitzt auch die ACV-Platine einen eigenen Mikrocontroller, der sich vornehmlich des c't-Lab-eigenen Protokolls über die OptoBus-Schnittstelle annimmt (siehe auch [**c't-Lab-Projekte bei Segor [1]**](https://www.segor.de/INFO/ct-lab-projekte.shtml)), aber auch die Auswertung des Effektiv-Messwerts für beide Stereo-Kanäle erledigt. Und natürlich kann man zur manuellen Bedienung ein Panel PM-8 mit LC-Anzeige und Drehgeber anschließen. Als besonderen Leckerbissen haben wir noch eine Erweiterungsschnittstelle vorgesehen, die einen Audio-ADC auf einer Tochterplatine aufnimmt (wie beim DDS-Modul die TRMSC-Platine).
 
 ![[vermessener-klang-291360-02.jpg]]
 
@@ -39,11 +39,11 @@ Damit sich der Vorverstärker keine Störsignale aus der Umgebung (z. B. das Lic
 
 Der Vorverstärker inklusive Messbereichsumschaltung ist auch ohne c't-Lab-Anbindung funktionsfähig; er benötigt lediglich eine stabile Stromversorgung mit 5 V/200 mA (z. B. Steckernetzteil) an PL2. Für eine solche Stand-alone-Anwendung brauchen Sie den Controller und die zwei True-RMS-Gleichrichter nicht zu bestücken. An PL8 wird dann ein Stufenschalter (min. acht Positionen) angeschlossen. Bitte beachten: Die 0-dB-Einstellung (alle Relais/Multiplexer in Ruheposition) bleibt offen und erhält keinen Anschlussdraht, deshalb reicht hier ein 8poliger Steckverbinder. Die ±15-V-Versorgung geschieht über den DC/DC-Wandler UA1 aus der 5-V-Schiene. Alternativ wäre auch eine Stromversorgung über eine „halbe“ PS3-2-Netzteilkarte aus dem c't-Lab-Sortiment möglich, dann darf UA1 nicht bestückt werden.
 
-Der Einsatz im c't-Lab benötigt natürlich zwingend einen Mikrocontroller, der ob seiner überschaubaren Aufgaben etwas kleiner ausgefallen ist als bei den übrigen c't-Lab-Modulen. Trotzdem bietet die Schaltung damit den bekannten Komfort: Panel-Anschluss, Fernsteuerbarkeit und Auswertung des effektiven NF-Pegels gehören dazu. Mit dem Drehgeber am Panel stellt man den Messbereich ein, das LCD zeigt den Ausgangspegel als Balkenanzeige oder als mV-Efektivspannung. Wird die Pegel-Anzeige nicht gewünscht, dürfen Sie die relativ teuren True-RMS-Gleichrichter U3 und U4 (SMD-Bauteile!) auch weglassen; natürlich entfällt dann auch die Pegelabfrage über c't-Lab-Befehle (siehe Syntax-Tabelle auf www.ct-lab.de). Wie üblich kann die Moduladresse mit drei Jumpern binär eingestellt werden, hier sind dies JP3 (+4), JP4 (+2) und JP5 (+1).
+Der Einsatz im c't-Lab benötigt natürlich zwingend einen Mikrocontroller, der ob seiner überschaubaren Aufgaben etwas kleiner ausgefallen ist als bei den übrigen c't-Lab-Modulen. Trotzdem bietet die Schaltung damit den bekannten Komfort: Panel-Anschluss, Fernsteuerbarkeit und Auswertung des effektiven NF-Pegels gehören dazu. Mit dem Drehgeber am Panel stellt man den Messbereich ein, das LCD zeigt den Ausgangspegel als Balkenanzeige oder als mV-Efektivspannung. Wird die Pegel-Anzeige nicht gewünscht, dürfen Sie die relativ teuren True-RMS-Gleichrichter U3 und U4 (SMD-Bauteile!) auch weglassen; natürlich entfällt dann auch die Pegelabfrage über c't-Lab-Befehle (siehe Syntax-Tabelle auf der c't-Lab-Projektseite bei Segor). Wie üblich kann die Moduladresse mit drei Jumpern binär eingestellt werden, hier sind dies JP3 (+4), JP4 (+2) und JP5 (+1).
 
 ![[vermessener-klang-291360-03.jpg]]
 
-*Erst lesen, dann c't drehen: Der Analogteil der Schaltung arbeitet mit zwei Verstärkerstufen in Reihe. Die Arbeit im Controller-Teil übernimmt ein ATmega168, der wie bei den anderen c't-Lab-Modulen auch über die ISP-Schnittstelle mit der ihm zugedachten Firmware zu füttern ist. Hinweise zum Programmiervorgang finden Sie ausführlich auf www.ct-lab.de, ebenso die Firmware selbst.*
+*Erst lesen, dann c't drehen: Der Analogteil der Schaltung arbeitet mit zwei Verstärkerstufen in Reihe. Die Arbeit im Controller-Teil übernimmt ein ATmega168, der wie bei den anderen c't-Lab-Modulen auch über die ISP-Schnittstelle mit der ihm zugedachten Firmware zu füttern ist. Hinweise zum Programmiervorgang und weitere Projektunterlagen finden Sie heute am ehesten auf der c't-Lab-Projektseite bei Segor.*
 
 Den Controller benötigen Sie auch, wenn später die ADC-Tochterplatine nachgerüstet werden soll, da er deren Wandler und SPDIF-Transmitter über I2C-Bus initialisieren muss. Die Einstellung der Wandler-Rate (48/96/192 kHz) und des Audio-Formats (Consumer/Professional) erfolgt am PM8-Panel oder per c't-Lab-Befehl. Die manuelle Bedienung ist geringfügig anders als bei den übrigen Modulen gestaltet: Ein Druck auf den Drehgeber wechselt nicht zu einer Feineinstellung (die es hier nicht gibt), sondern schreibt den eingestellten Parameter (auch die eingestellte Eingangsempfindlichkeit) als Default-Wert in das EEPROM des Controllers. Mit der ADC-Tochterplatine ist auf jeden Fall eine PS3-2-Platine als Stromversorgung vorzusehen; die Wandler-Elektronik wird dann über PL6 (Extension) versorgt, ähnlich wie beim DDS-Modul die TRMSC-Erweiterung.
 
@@ -81,9 +81,9 @@ Leider widersprechen sich an dieser Stelle die Forderungen nach elektrischer Sic
 
 ## Eingestellt
 
-Der Aufbau der Schaltung sollte mit der Fertigplatine nach so vielen c't-Lab-Beiträgen keine Schwierigkeiten mehr bereiten; voraussichtlich wird Segor ([**www.segor.de [2]**](http://www.segor.de)) aber wieder Bauteilesätze mit aufgelöteten SMD-Chips anbieten.
+Der Aufbau der Schaltung sollte mit der Fertigplatine nach so vielen c't-Lab-Beiträgen keine Schwierigkeiten mehr bereiten; voraussichtlich wird Segor ([**www.segor.de [2]**](https://www.segor.de/)) aber wieder Bauteilesätze mit aufgelöteten SMD-Chips anbieten.
 
-Vor dem Einbau der (hoffentlich funktionierenden) Schaltung in ein Gehäuse haben die Schaltungsdesigner den Abgleich gesetzt. Pro Kanal gibt es zwei Abgleichpunkte: die Trimmkondensatoren C37 und C38 zur Frequenzkompensation in der -20-dB-Stellung und die Trimmpotis R58 und R59 zum Festlegen des Regelumfangs der Gain-Potis. Die ist deshalb nötig, weil Potentiometer gemeinhin deutlich größere Toleranzen aufweisen als Metallfilm-Festwiderstände. C37 und C38 werden kanalweise mit einer 1-kHz-Rechteckschwingung (z. B. vom DDS-Modul, Pegel ca. 5 Vss) abgeglichen, und zwar so, dass in der -20-dB-Stufe ein möglichst gerades, horizontales „Dach“ am Ausgang erscheint (mit Oszilloskop kontrollieren). R58 und R59 werden so eingestellt, dass sich in der linken Endstellung der Gain-Potentiometer eine Abschwächung von genau -10 dB gegenüber der rechten Endstellung ergibt (Eingangssignal 0 dBm = 775 mV, Verstärkungsstufe 0 dB). Hier empfiehlt sich als Hilfsmittel das LabVIEW-Programm „SC-SpectrumAnalyzer.vi“ (auf [**www.ct-lab.de [3]**](http://www.ct-lab.de)), das auch eine genaue Pegelanzeige bereithält.
+Vor dem Einbau der (hoffentlich funktionierenden) Schaltung in ein Gehäuse haben die Schaltungsdesigner den Abgleich gesetzt. Pro Kanal gibt es zwei Abgleichpunkte: die Trimmkondensatoren C37 und C38 zur Frequenzkompensation in der -20-dB-Stellung und die Trimmpotis R58 und R59 zum Festlegen des Regelumfangs der Gain-Potis. Die ist deshalb nötig, weil Potentiometer gemeinhin deutlich größere Toleranzen aufweisen als Metallfilm-Festwiderstände. C37 und C38 werden kanalweise mit einer 1-kHz-Rechteckschwingung (z. B. vom DDS-Modul, Pegel ca. 5 Vss) abgeglichen, und zwar so, dass in der -20-dB-Stufe ein möglichst gerades, horizontales „Dach“ am Ausgang erscheint (mit Oszilloskop kontrollieren). R58 und R59 werden so eingestellt, dass sich in der linken Endstellung der Gain-Potentiometer eine Abschwächung von genau -10 dB gegenüber der rechten Endstellung ergibt (Eingangssignal 0 dBm = 775 mV, Verstärkungsstufe 0 dB). Hier empfiehlt sich als Hilfsmittel das LabVIEW-Programm „SC-SpectrumAnalyzer.vi“ (auf [**c't-Lab-Projekte bei Segor [3]**](https://www.segor.de/INFO/ct-lab-projekte.shtml)), das auch eine genaue Pegelanzeige bereithält.
 
 ![[vermessener-klang-291360-05.jpeg]]
 
@@ -95,9 +95,9 @@ Zum Schluss noch ein gut gemeinter Hinweis: Unser Vorverstärker soll dem gemess
 
 Literatur
 
-[1] The Audio Critic, [**The Ten Biggest Lies in Audio [4]**](http://www.theaudiocritic.com/downloads/article_1.pdf)
+[1] The Audio Critic, [**The Ten Biggest Lies in Audio [4]**](https://www.theaudioinsights.com/downloads/article_1.pdf)
 
-[2] [**Realistische HiFi-Betrachtungen [5]**](http://www.hifiaktiv.at/diverses/realistische_betrachtungen.htm)
+[2] [**Lüge und Wahrheit [5]**](https://www.hifiaktiv.at/luege-und-wahrheit/)
 
 ## Stückliste manuelle Bedienung
 
@@ -246,7 +246,7 @@ alle Widerstände 1 Prozent Metallfilm
 1siehe Text
 
 RSPEAK_STOP
-([**cm [6]**](mailto:cm@ct.de))
+
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -255,11 +255,10 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.segor.de
-3. http://www.ct-lab.de
-4. http://www.theaudiocritic.com/downloads/article_1.pdf
-5. http://www.hifiaktiv.at/diverses/realistische_betrachtungen.htm
-6. mailto:cm@ct.de
+1. https://www.segor.de/INFO/ct-lab-projekte.shtml
+2. https://www.segor.de/
+3. https://www.segor.de/INFO/ct-lab-projekte.shtml
+4. https://www.theaudioinsights.com/downloads/article_1.pdf
+5. https://www.hifiaktiv.at/luege-und-wahrheit/
 
 *Copyright © 2007 Heise Medien*

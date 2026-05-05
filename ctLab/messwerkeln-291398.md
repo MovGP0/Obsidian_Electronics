@@ -61,9 +61,9 @@ Der Baustein im SO-8-Gehäuse und die wenigen SMD-Bauteile in seiner Nähe könn
 
 Einige Punkte zum Aufbau haben wir bereits oben gestreift, und wer schon ein c't-Lab-Modul erfolgreich vollendet hat, sollte auch mit der vorliegenden Schaltung wenig Probleme haben. Besonderes Augenmerk verdienen hier allerdings die Lötstellen um den Eingangsspannungsteiler: Sauberkeit ist hier - wie schon beim Wandler selbst - das höchste Gebot. Schon ein Fingerabdruck auf der Platine in der Nähe des Vorteilers kann sich negativ auf die Messgenauigkeit auswirken. Borstenpinsel, Baumwoll-Lappen und etwas Aceton helfen dagegen.
 
-Ist die Platine komplett bestückt, kann nach dem Flashen der [**Firmware [1]**](http://www.ct-lab.de) ein erster Funktionstest erfolgen (beides ohne aufgesetztes TRMSC-Modul). Beim allerersten Start führt die DIV-Firmware zunächst eine Offset-Grundkalibrierung durch, die etwa 20 Sekunden dauert - erkennbar am hörbaren Klickern der Relais und der Anzeige „OFS init“, wenn ein PM8-Panel angeschlossen ist. Die Offset-Grundkalibrierung (die eine spätere genaue Einstellung nicht ersetzen soll) kann jederzeit erzwungen werden, wenn man den Drehgeber-Knopf am Bedienpanel beim Einschalten einige Sekunden gedrückt hält.
+Ist die Platine komplett bestückt, kann nach dem Flashen der [**Firmware**](https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html) ein erster Funktionstest erfolgen (beides ohne aufgesetztes TRMSC-Modul). Beim allerersten Start führt die DIV-Firmware zunächst eine Offset-Grundkalibrierung durch, die etwa 20 Sekunden dauert - erkennbar am hörbaren Klickern der Relais und der Anzeige „OFS init“, wenn ein PM8-Panel angeschlossen ist. Die Offset-Grundkalibrierung (die eine spätere genaue Einstellung nicht ersetzen soll) kann jederzeit erzwungen werden, wenn man den Drehgeber-Knopf am Bedienpanel beim Einschalten einige Sekunden gedrückt hält.
 
-Als Default-Messbereich ist „2,5 V DC“ eingestellt, mit diesem sollten Sie auch den Abgleich beginnen - aber erst die Schaltung eine Viertelstunde warmlaufen lassen. Wenn Sie den DIV-Eingang mit einer Drahtbrücke kurzschließen, sollte auch die PM8-Anzeige auf einen Wert sehr nahe Null zurückgehen (oder die im LabVIEW-Programm DIV-Abgleich.vi angezeigte Zahl). Mit DIV-Abgleich.vi gestaltet sich der Offset- und Skalenfaktor-Abgleich relativ einfach - analog zum Verfahren, dass wir schon bei der AD16-8-Steckkarte für ADA-IO beschrieben haben (c't 13/07, S. 202, auch online unter www.ct-lab.de verfügbar). Möglicherweise stimmen die mit der Offset-Initialisierung gesetzten Offset-Werte der einzelnen DC-Messbereiche schon recht genau und verlangen nur minimale Korrekturen. Einen Anzeige-Wert von exakt Null werden sie wegen der immer auftretenden Thermospannungen und der OpAmp-Drift nicht erreichen, einige µV sind durchaus zulässig.
+Als Default-Messbereich ist „2,5 V DC“ eingestellt, mit diesem sollten Sie auch den Abgleich beginnen - aber erst die Schaltung eine Viertelstunde warmlaufen lassen. Wenn Sie den DIV-Eingang mit einer Drahtbrücke kurzschließen, sollte auch die PM8-Anzeige auf einen Wert sehr nahe Null zurückgehen (oder die im LabVIEW-Programm DIV-Abgleich.vi angezeigte Zahl). Mit DIV-Abgleich.vi gestaltet sich der Offset- und Skalenfaktor-Abgleich relativ einfach - analog zum Verfahren, dass wir schon bei der [AD16-8-Steckkarte für ADA-IO](https://www.heise.de/ratgeber/Modulbaukasten-291034.html) beschrieben haben (c't 13/07, S. 202). Möglicherweise stimmen die mit der Offset-Initialisierung gesetzten Offset-Werte der einzelnen DC-Messbereiche schon recht genau und verlangen nur minimale Korrekturen. Einen Anzeige-Wert von exakt Null werden sie wegen der immer auftretenden Thermospannungen und der OpAmp-Drift nicht erreichen, einige µV sind durchaus zulässig.
 
 ## Henne und Ei
 
@@ -183,16 +183,11 @@ Noch zu erwähnen ist die Handhabung des Trigger-Eingangs: Hier kann beispielswe
 | PL2      | abgeschirmte Verbindung zu DIV PL7 |
 
 RSPEAK_STOP
-([**cm [2]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
 
 `https://www.heise.de/-291398`
-
-**Links in diesem Artikel:**
-
-1. http://www.ct-lab.de
-2. mailto:cm@ct.de
 
 *Copyright © 2008 Heise Medien*

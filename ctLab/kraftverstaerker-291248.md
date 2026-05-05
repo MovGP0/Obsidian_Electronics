@@ -21,7 +21,7 @@ Die DCP-Funktionsweise ist im Vergleich zur DCG-Schaltung atemberaubend schnell 
 
 *So wird Q12 montiert: Kontrollieren Sie vor dem Einlöten, ob Kurzschlüsse zum Kühlkörper die Isolierung - und damit ein Erfolgserlebnis - vereiteln.*
 
-Die Relais werden übrigens leicht zeitverzögert angesteuert, sodass kein kurzschließender Lichtbogen auftreten kann; die Schaltschwelle kann per OPT-Befehl (siehe Syntax-Tabelle unter „Dokumentation“ auf [**www.ct-lab.de [1]**](http://www.ct-lab.de)) geändert werden. Zur Sicherheit schalten beide Relais ab, wenn die Temperatur des Kühlkörpers über 100 °C gestiegen ist oder durch einen Defekt (z. B. Q12 zerstört) die Ausgangsspannung deutlich über der eingestellten Sollspannung liegt. Um all diese Dinge kümmert sich die Firmware auf der DCG-Platine. Die DCP-Platine besitzt eine Primär- und Sekundärsicherung für den Leistungstrafo, sein Primäranschluss ist auf zwei Schraubklemmen geführt („ACprim.“). „PE“ ist der Anschluss für den Schutzleiter des Netzkabels, der selbstverständlich auch sorgfältig mit dem Metallchassis eines 19"-Einbaurahmens zu verbinden ist.
+Die Relais werden übrigens leicht zeitverzögert angesteuert, sodass kein kurzschließender Lichtbogen auftreten kann; die Schaltschwelle kann per OPT-Befehl (siehe [**Syntax-Tabelle [1]**](https://www.sn7400.de/ctlab/Dokumentation/syntax.pdf)) geändert werden. Zur Sicherheit schalten beide Relais ab, wenn die Temperatur des Kühlkörpers über 100 °C gestiegen ist oder durch einen Defekt (z. B. Q12 zerstört) die Ausgangsspannung deutlich über der eingestellten Sollspannung liegt. Um all diese Dinge kümmert sich die Firmware auf der DCG-Platine. Die DCP-Platine besitzt eine Primär- und Sekundärsicherung für den Leistungstrafo, sein Primäranschluss ist auf zwei Schraubklemmen geführt („ACprim.“). „PE“ ist der Anschluss für den Schutzleiter des Netzkabels, der selbstverständlich auch sorgfältig mit dem Metallchassis eines 19"-Einbaurahmens zu verbinden ist.
 
 Die Leistungsstufe Q12 darf auf der DCG-Platine natürlich nicht bestückt werden, wenn die DCP-Platine zum Einsatz kommt. Hier ackert ein dicker BD249, der einen Kühlkörper mit Zwangslüftung spendiert bekam. Die ist bei maximalen Verlustleistungen um 40 W auch dringend geboten - trotz der „gestuften“ Eingangsspannung. Die Lüftersteuerung übernimmt ein LM75, den PC-Experten als Prozessor-Temperaturfühler kennen. Er enthält ein über I2C-Bus auslesbares Thermometer mit Thermostat-Funktion. Bei Temperaturen über 50 °C geht der OS-Ausgang auf high, und der Lüfter rauscht los. Kleines Gimmick am Rande: Mit den Befehlen „2:VAL 233?“ oder „2:233?“ kann man die aktuelle Kühlkörpertemperatur erfragen und mit „2:OPT 20=60!“ die Thermostat-Schaltschwelle einstellen (hier mit Moduladresse 2 auf 60 °C, siehe auch Syntax-Tabelle).
 
@@ -51,7 +51,7 @@ Prüfen Sie zunächst die DCP-Hilfsspannungserzeugung: Minuspol des Messgerätes
 
 ## Letzte Hand
 
-Zur „richtigen“ Inbetriebnahme müssen Sie die Schaltungen wieder vom Netz trennen. Warten Sie einige Sekunden, bevor Sie DCP/PL1 mit DCG/PL1 verbinden (14-poliges Flachbandkabel - Stecker auch richtig gepolt?). Kontrollieren Sie noch einmal, ob die Pins der beiden MiniFit-Stecker der Hochstrom-Verbindung eins zu eins verbunden sind. Ist das zweifelsfrei der Fall, dürfen Sie auch die MiniFits einstöpseln. Nach dem Einschalten sollte der Lüfter kurz anlaufen, aber gleich darauf verstummen. Eine Sekunde später wird Relais SW2 anziehen; wenn die Sicherung FS2 intakt geblieben ist (wenn nicht: Gleichrichter defekt/falsch gepolt, C15/16 falsch gepolt, Kurzschluss Q12 zum Kühlkörper?) sollten an DCP/PL7 nun rund 20 V zu messen sein und an den Ausgangsklemmen der DCG-Platine die Default-Spannung von 5 V anliegen. Für den nun anstehenden Abgleich verwenden Sie am besten das LabVIEW-Programm DCG-Abgleich.vi, das Sie auf [**www.ct-lab.de [2]**](http://www.ct-lab.de) unter „Downloads“ finden. Folgen Sie der im VI-Panel verewigten Kurzanleitung. Zum Sichern der kalibrierten Parameter dient das Hilfsprogramm ParamBackupRestore.vi, das auch bei Firmware-Updates gute Dienste leistet - wenn man nämlich beim Flashen des Controllers versehentlich die Kalibrierwerte überschrieben hat.
+Zur „richtigen“ Inbetriebnahme müssen Sie die Schaltungen wieder vom Netz trennen. Warten Sie einige Sekunden, bevor Sie DCP/PL1 mit DCG/PL1 verbinden (14-poliges Flachbandkabel - Stecker auch richtig gepolt?). Kontrollieren Sie noch einmal, ob die Pins der beiden MiniFit-Stecker der Hochstrom-Verbindung eins zu eins verbunden sind. Ist das zweifelsfrei der Fall, dürfen Sie auch die MiniFits einstöpseln. Nach dem Einschalten sollte der Lüfter kurz anlaufen, aber gleich darauf verstummen. Eine Sekunde später wird Relais SW2 anziehen; wenn die Sicherung FS2 intakt geblieben ist (wenn nicht: Gleichrichter defekt/falsch gepolt, C15/16 falsch gepolt, Kurzschluss Q12 zum Kühlkörper?) sollten an DCP/PL7 nun rund 20 V zu messen sein und an den Ausgangsklemmen der DCG-Platine die Default-Spannung von 5 V anliegen. Für den nun anstehenden Abgleich verwenden Sie am besten das LabVIEW-Programm [**DCG-Abgleich.vi [2]**](https://www.sn7400.de/ctlab/LabVIEW_VIs/DCG-Abgleich.vi). Folgen Sie der im VI-Panel verewigten Kurzanleitung. Zum Sichern der kalibrierten Parameter dient das Hilfsprogramm ParamBackupRestore.vi, das auch bei Firmware-Updates gute Dienste leistet - wenn man nämlich beim Flashen des Controllers versehentlich die Kalibrierwerte überschrieben hat.
 
 ![[kraftverstaerker-291248-03.jpeg]]
 
@@ -61,7 +61,7 @@ Ganz wichtig: **Bevor** Sie die Schaltungen, etwa zum Ein- oder Ausbau in das Ge
 
 Die vorliegenden Schaltungen können für höhere Ausgangsspannungen oder -ströme recht leicht modifiziert werden, wenn man die Optionsparameter der Firmware entsprechend den neuen Gegebenheiten anpasst (etwa kleinere Shunts auf der DCG-Platine, wie im DCG-Beitrag beschrieben). Mehr als 3 A oder 60 W Verlustleistung sollten Sie Q12 keinesfalls zumuten - aber das wissen Sie ja ohnehin, wenn Sie sich eine Modifikation zutrauen.
 
-Abschließend noch eine wichtige Korrektur zur DCG-Schaltung: Die in c't 19/07 abgedruckte Dimensionierung weist zwar ein äußerst schnelles Stromregelverhalten auf, produziert aber beim Übergang vom Strom- in den Spannungsregel-Betrieb unschöne Spikes, vor allem, wenn keinerlei kapazitive Last vorhanden ist. Bitte beachten Sie dazu unbedingt die „Ergänzungen und Berichtigungen” auf [**www.ct-lab.de [3]**](http://www.ct-lab.de).
+Abschließend noch eine wichtige Korrektur zur DCG-Schaltung: Die in c't 19/07 abgedruckte Dimensionierung weist zwar ein äußerst schnelles Stromregelverhalten auf, produziert aber beim Übergang vom Strom- in den Spannungsregel-Betrieb unschöne Spikes, vor allem, wenn keinerlei kapazitive Last vorhanden ist. Bitte beachten Sie dazu unbedingt die „Ergänzungen und Berichtigungen”.
 
 ![[kraftverstaerker-291248-04.jpeg]]
 
@@ -119,7 +119,7 @@ Abschließend noch eine wichtige Korrektur zur DCG-Schaltung: Die in c't 19/07 a
 |        | Schrauben, Unterlegscheiben            |
 
 RSPEAK_STOP
-([**cm [4]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
@@ -128,9 +128,7 @@ RSPEAK_START
 
 **Links in diesem Artikel:**
 
-1. http://www.ct-lab.de
-2. http://www.ct-lab.de
-3. http://www.ct-lab.de
-4. mailto:cm@ct.de
+1. https://www.sn7400.de/ctlab/Dokumentation/syntax.pdf
+2. https://www.sn7400.de/ctlab/LabVIEW_VIs/DCG-Abgleich.vi
 
 *Copyright © 2007 Heise Medien*

@@ -4,7 +4,7 @@ sources:
 - "[Audio-Pedant](https://www.heise.de/ratgeber/Audio-Pedant-291478.html)"
 - "[Audio-Pedant](https://www.heise.de/-291478)"
 - c't 06/08, S. 222
-- "[an22.pdf](http://www.cirrus.com/en/pubs/appNote/an22.pdf)"
+- "[AN22: Overview of Digital Audio Interface Data Structures](https://statics.cirrus.com/pubs/appNote/an22.pdf)"
 authors:
 - Heinrich Willecke
 - Carsten Meyer
@@ -73,13 +73,13 @@ Der optische Transmitter kann gegebenenfalls dort eingebaut werden, wo er gebrau
 
 ## Dessert zum Menü
 
-Im Panel-Menü des ACV-Moduls dient der Eintrag „SmplRate“ zur Einstellung von Modus und Sampling-Frequenz. Der Consumer-Mode ist durch ein der Sampling-Rate vorangestelltes „C“ zu erkennen, analog bedeutet „P“ Professional. Durch kurzen Druck auf den Drehgeber-Knopf wird die aktuelle Einstellung im EEPROM des Controllers dauerhaft gespeichert und beim nächsten Einschalten automatisch aufgerufen. Die Befehls-Entsprechung des Menüs findet sich im VAL-Wert 8: Mit VAL 8=1! stellt man 96 kHz Sampling-Rate im Consumer-Modus ein (siehe dazu auch Syntax-Tabelle auf [**www.ct-lab.de [1]**](http://www.ct-lab.de)). Wählen Sie den Professional-Modus aber nur, wenn auch tatsächlich Studio-Geräte angeschlossen sind; HiFi-Komponenten könnte diese Einstellung verwirren.
+Im Panel-Menü des ACV-Moduls dient der Eintrag „SmplRate“ zur Einstellung von Modus und Sampling-Frequenz. Der Consumer-Mode ist durch ein der Sampling-Rate vorangestelltes „C“ zu erkennen, analog bedeutet „P“ Professional. Durch kurzen Druck auf den Drehgeber-Knopf wird die aktuelle Einstellung im EEPROM des Controllers dauerhaft gespeichert und beim nächsten Einschalten automatisch aufgerufen. Die Befehls-Entsprechung des Menüs findet sich im VAL-Wert 8: Mit VAL 8=1! stellt man 96 kHz Sampling-Rate im Consumer-Modus ein (siehe dazu auch die c't-Lab-Syntax im Artikel [**Modulbaukasten**](https://www.heise.de/ratgeber/Modulbaukasten-291034.html)). Wählen Sie den Professional-Modus aber nur, wenn auch tatsächlich Studio-Geräte angeschlossen sind; HiFi-Komponenten könnte diese Einstellung verwirren.
 
 Literatur
 
 [1] Klangwerkstatt, Audio-DSP und AD/DA-Wandler, c't 5/96, S. 334 und c't 6/96, S. 302
 
-[2] [**Digital Audio Data Structures [2]**](http://www.cirrus.com/en/pubs/appNote/an22.pdf)
+[2] [**Digital Audio Data Structures [2]**](https://statics.cirrus.com/pubs/appNote/an22.pdf)
 
 ## Audio-Fehler
 
