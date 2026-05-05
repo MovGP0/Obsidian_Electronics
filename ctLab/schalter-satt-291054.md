@@ -4,7 +4,7 @@ title: Optoschaltstufe
 # Schalter satt
 
 Source: [https://www.heise.de/ratgeber/Schalter-satt-291054.html](https://www.heise.de/ratgeber/Schalter-satt-291054.html)
-Print view: [https://www.heise.de/ratgeber/Schalter-satt-291054.html?seite=all&view=print](https://www.heise.de/ratgeber/Schalter-satt-291054.html?seite=all&view=print)
+Print view: [https://www.heise.de/ratgeber/Schalter-satt-291054.html?view=print](https://www.heise.de/ratgeber/Schalter-satt-291054.html?view=print)
 Author: Carsten Meyer, Peter Röbke-Doerr
 Series references: c't 12/07, S. 194
 
@@ -93,18 +93,17 @@ Die Netz-Optoschaltstufe ist noch einfacher aufgebaut: Der Opto-Triac bildet mit
 
 Wenn man beide Schaltertypen benötigt, kann man zwei Platinen mit einem Flachbandkabel anschließen, darf dabei aber jedes Bit nur einmal bestücken.
 
-[**Forum zu c't-Lab [1]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)
+[**Forum zu c't-Lab [1]**](https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/)
 RSPEAK_STOP
-([**roe [2]**](mailto:roe@heise.de))
+(roe)
 RSPEAK_START
 
 **URL dieses Artikels:**
 
-`https://www.heise.de/-291054`
+`https://heise.de/-291054`
 
 **Links in diesem Artikel:**
 
-1. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-2. mailto:roe@heise.de
+1. https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/
 
 *Copyright © 2007 Heise Medien*
