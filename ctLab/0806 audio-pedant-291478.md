@@ -10,7 +10,6 @@ authors:
 - Carsten Meyer
 Copyright: 2008 Heise Medien
 ---
-
 # Audio-Pedant
 
 > Als Ergänzung für das Audio-Vorverstärkermodul des c't-Lab drängt sich ein A/D-Wandler mit Digital-Audio-Ausgang geradezu auf. Damit erhält man unabhängig vom Wohlwollen der PC-Soundkarte reproduzierbar gute Messergebnisse bei der Analyse von NF-Signalen. Nebenbei kann er natürlich auch als „amtlicher“ Audio-Wandler für Recording-Zwecke herhalten – mit 24 Bit Auflösung und maximal 192 kHz Sample-Rate.

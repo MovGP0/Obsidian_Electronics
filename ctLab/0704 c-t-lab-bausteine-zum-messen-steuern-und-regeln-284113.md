@@ -1,3 +1,6 @@
+---
+title: c't-Lab (Article Overview)
+---
 # c't-Lab - Bausteine zum Messen, Steuern und Regeln
 
 Source: [https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html](https://www.heise.de/hintergrund/c-t-Lab-Bausteine-zum-Messen-Steuern-und-Regeln-284113.html)

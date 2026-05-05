@@ -1,3 +1,6 @@
+---
+title: DCG (Strom/Spannungsquelle)
+---
 # Kleinkraftwerk
 
 Source: [https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html](https://www.heise.de/ratgeber/Kleinkraftwerk-291224.html)

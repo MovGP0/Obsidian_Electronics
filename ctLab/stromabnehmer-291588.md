@@ -1,7 +1,9 @@
+---
+title: EDL (steuerbare elektronische Last)
+---
 # Stromabnehmer
 
 Source: [https://www.heise.de/ratgeber/Stromabnehmer-291588.html](https://www.heise.de/ratgeber/Stromabnehmer-291588.html)
-Print view: [https://www.heise.de/ratgeber/Stromabnehmer-291588.html?seite=all&view=print](https://www.heise.de/ratgeber/Stromabnehmer-291588.html?seite=all&view=print)
 Author: Carsten Meyer, Heinrich Willecke
 Series references: c't 12/08, S. 176
 

@@ -1,3 +1,6 @@
+---
+title: IFP (Interface and Power-Supply)
+---
 # Leitungsschau
 
 Source: [https://www.heise.de/ratgeber/Leitungsschau-291014.html](https://www.heise.de/ratgeber/Leitungsschau-291014.html)

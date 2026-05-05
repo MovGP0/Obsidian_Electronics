@@ -1,3 +1,6 @@
+---
+title: ADA-IO (I/O Baugruppenträger)
+---
 # Modulbaukasten
 
 Source: [https://www.heise.de/ratgeber/Modulbaukasten-291034.html](https://www.heise.de/ratgeber/Modulbaukasten-291034.html)

@@ -1,5 +1,5 @@
 ---
-title: Optoschaltstufe
+title: OUT8 (Optoschaltstufe)
 ---
 # Schalter satt
 

@@ -1,3 +1,6 @@
+---
+title: PS3-2 (Netzteilbaugruppe)
+---
 # Schalt- und Waltstelle
 
 Source: [https://www.heise.de/ratgeber/Schalt-und-Waltstelle-291146.html](https://www.heise.de/ratgeber/Schalt-und-Waltstelle-291146.html)

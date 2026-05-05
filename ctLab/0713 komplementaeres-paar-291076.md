@@ -1,3 +1,6 @@
+---
+title: DA12-8 (Digital-Analog Converter)
+---
 # Komplementäres Paar
 
 Source: [https://www.heise.de/ratgeber/Komplementaeres-Paar-291076.html](https://www.heise.de/ratgeber/Komplementaeres-Paar-291076.html)

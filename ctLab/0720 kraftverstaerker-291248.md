@@ -1,3 +1,6 @@
+---
+title: DCP (Hochleistungs-Netzteil)
+---
 # Kraftverstärker
 
 Source: [https://www.heise.de/ratgeber/Kraftverstaerker-291248.html](https://www.heise.de/ratgeber/Kraftverstaerker-291248.html)

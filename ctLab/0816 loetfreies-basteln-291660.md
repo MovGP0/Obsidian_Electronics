@@ -1,3 +1,6 @@
+---
+title: FPGA Platine
+---
 # Lötfreies Basteln
 
 Source: [https://www.heise.de/ratgeber/Loetfreies-Basteln-291660.html](https://www.heise.de/ratgeber/Loetfreies-Basteln-291660.html)

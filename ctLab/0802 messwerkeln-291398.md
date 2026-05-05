@@ -1,3 +1,6 @@
+---
+title: DIV (Multimeter)
+---
 # Messwerkeln
 
 Source: [https://www.heise.de/ratgeber/Messwerkeln-291398.html](https://www.heise.de/ratgeber/Messwerkeln-291398.html)

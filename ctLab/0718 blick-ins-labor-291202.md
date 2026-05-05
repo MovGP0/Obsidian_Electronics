@@ -1,3 +1,6 @@
+---
+title: LabVIEW
+---
 # Blick ins Labor
 
 Source: [https://www.heise.de/ratgeber/Blick-ins-Labor-291202.html](https://www.heise.de/ratgeber/Blick-ins-Labor-291202.html)
