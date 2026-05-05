@@ -3,7 +3,7 @@
   "cssTheme": "Atom",
   "monospaceFontFamily": "JetBrainsMono Nerd Font Mono",
   "textFontFamily": "Tinos Nerd Font",
-  "accentColor": "",
+  "accentColor": "#22c502",
   "interfaceFontFamily": "",
   "enabledCssSnippets": [
     "bold-color"

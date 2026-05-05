@@ -3,7 +3,7 @@ A **CMOS-NOR-gate** operates according to the same principle as the [[CMOS-NOT-G
 In order for the controlled load resistance to become high, one of the input voltages goes to the high (H) state, a corresponding number of p-channel FETs must be connected in series.
 
 ```kicanvas
-src: Electronics/CMOS-NOR-Gate.kicad_sch
+src: CMOS-NOR-Gate.kicad_sch
 controls: basic
 zoom: 3
 theme: dark
