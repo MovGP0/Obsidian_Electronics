@@ -33,7 +33,7 @@ Wir empfehlen, die Firmware (siehe Soft-Link) des ATmega32 „in circuit“ zu f
 
 ## Weichbrennerei
 
-Das Ganze ist einfacher, als es sich zunächst anhört: Sie benötigen zum Flashen der Firmware neben PonyProg (bitte die Hinweise auf der Webseite des Autors beachten) nur noch einen sehr einfachen ISP-Programmieradapter für den PC-Druckerport, der sich in wenigen Minuten mit Bauteilen aus der Bastelkiste aufbauen lässt. Sie können beispielsweise den erstmalig zum BlueMP3-Projekt in c't 9/04, Seite 202 vorgestellten ISP-Adapter verwenden, für den es unter der Bestellnummer 0410203 für vier Euro bei eMedia eine Leerplatine und bei Segor in Berlin einen Bausatz gibt. Beide sind mit der ISP-Schnittstelle des ADA-IO-Moduls pinkompatibel und arbeiten prima mit PonyProg zusammen. Bastler mit einer Abneigung gegen SMD-Bauteile erhalten zum Beispiel bei der Firma Embedit ([**www.embedit.de [1]**](http://www.embedit.de)) recht preiswert (ca. 13 Euro) kompatible, fertig aufgebaute ISP-Programmieradapter.
+Das Ganze ist einfacher, als es sich zunächst anhört: Sie benötigen zum Flashen der Firmware neben PonyProg (bitte die Hinweise auf der Webseite des Autors beachten) nur noch einen sehr einfachen ISP-Programmieradapter für den PC-Druckerport, der sich in wenigen Minuten mit Bauteilen aus der Bastelkiste aufbauen lässt. Sie können beispielsweise den erstmalig zum BlueMP3-Projekt in c't 9/04, Seite 202 vorgestellten ISP-Adapter verwenden, für den es unter der Bestellnummer 0410203 für vier Euro bei eMedia eine Leerplatine und bei Segor in Berlin einen Bausatz gibt. Beide sind mit der ISP-Schnittstelle des ADA-IO-Moduls pinkompatibel und arbeiten prima mit PonyProg zusammen. Bastler mit einer Abneigung gegen SMD-Bauteile erhalten zum Beispiel bei P. Rohlfing Elektronik ([**www.e-lab.de/programmer/isp.html [1]**](https://www.e-lab.de/programmer/isp.html)) kompatible, fertig aufgebaute ISP-Programmieradapter.
 
 Zur Firmware-Programmierung muss die ADA-IO-Platine mit Strom versorgt werden, es genügt hierfür die 5-V-Versorgung, wenn Sie nicht gleich das IFP-Interface dazu heranziehen möchten. Der ISP-Programmieradapter wird mit Steckverbinder PL4 (ISP) der Platine über ein 10-poliges Flachbandkabel 1:1 verbunden. Stellen Sie nach dem Start von PonyProg unter „Setup“ zunächst die richtige Schnittstelle ein. Unter Win2000/XP wählt man „Parallel“ und „AVR ISP I/O“. Mit einem Klick auf „Probe“ kann die richtige Funktion des Druckerports und des ISP-Adapters überprüft werden. Stellen Sie nach Drücken von OK unter „Device“ den Typ AVR micro/ATmega32 ein.
 
@@ -53,7 +53,7 @@ Ist der Aufbau so weit fortgeschritten, können Sie sich an das Bestücken der I
 
 Die I/O-Karte enthält neben den rein digitalen Portbausteinen Vorteiler und RC-Filter für den internen A/D-Wandler des ATmega32. Die acht A/D-Leitungen liegen über den Vorteiler an PL5 an, bei der angegebenen Dimensionierung 300 kΩ/100 kΩ ergibt sich ein Eingangsspannungsbereich von 0 bis 10 V bei einem Eingangswiderstand von 400 kΩ. Trotz der beschränkten Genauigkeit des internen Wandlers sollten Sie für die Spannungsteiler einprozentige Metallfilmwiderstände einsetzen.
 
-Bei einer zweiten gleichzeitig eingesetzten IO8-32-Karte dürfen die Spannungsteiler-Widerstände R4 bis R19, die Kondensatoren C2 bis C9 und Pfostenleiste PL5 nicht bestückt werden, Port A des ATmega32 ist ja nur einmal vorhanden. Über PL7 ist der I2C-Bus zugänglich, die Pinbelegung des sechspoligen Steckverbinders ist mit den I2C-Modulen der Firma E-Lab ([**www.e-lab.de [2]**](http://www.e-lab.de)) kompatibel. Wegen der höheren Geschwindigkeit wurde die 400-kHz-Variante des I2C-Protokolls gewählt, ältere Bausteine sind unter Umständen nicht dazu kompatibel.
+Bei einer zweiten gleichzeitig eingesetzten IO8-32-Karte dürfen die Spannungsteiler-Widerstände R4 bis R19, die Kondensatoren C2 bis C9 und Pfostenleiste PL5 nicht bestückt werden, Port A des ATmega32 ist ja nur einmal vorhanden. Über PL7 ist der I2C-Bus zugänglich, die Pinbelegung des sechspoligen Steckverbinders ist mit den I2C-Modulen der Firma E-Lab ([**www.e-lab.de [2]**](https://www.e-lab.de/)) kompatibel. Wegen der höheren Geschwindigkeit wurde die 400-kHz-Variante des I2C-Protokolls gewählt, ältere Bausteine sind unter Umständen nicht dazu kompatibel.
 
 Die PCA9554A (wichtig ist das A im Suffix, sonst kommen sich die Port-Adressen mit anderen, zukünftig verwendeten Bausteinen ins Gehege) sind in einem noch gut von Hand lötbaren SO16-Gehäuse im Handel, das einen Beinchen-Abstand (Pitch) von 1,27 mm aufweist; für diese wurde auch die Platine (einseitig) layoutet. Die anderen Varianten sind Uhrmachern und Nanotechnikern vorbehalten. Als SMD-Bauteile gehören sie auf die Lötseite der Platine - Selberätzer wissen das zu schätzen, sparen sie sich doch die 64 Bohrlöcher für DIL-Gehäuse. Vorteil gegenüber dem älteren PCF8574 ist der wesentlich höhere mögliche Ausgangsstrom (der PCA9554A kann kleine Reed-Relais oder LEDs direkt ansteuern), die für jede I/O-Leitung frei bestimmbare Datenrichtung und die einzeln über Register ansprechbaren Portbits - obwohl letzteres natürlich nur den Entwickler der Firmware freut(e), damit haben Sie als Anwender wenig zu tun.
 
@@ -81,9 +81,9 @@ Zur Prüfung der digitalen I/O-Ports lesen Sie diese zunächst mit „PIO 0?“ 
 
 Bis zum nächsten Teil haben Sie genug Zeit, sich mit der c't-Lab-Syntax vertraut zu machen, die LabView-Demo-Programme (Beschreibung der LabView-Entwicklungsumgebung siehe c't 11/07, S. 182) auszuprobieren und ein wenig mit den IO8-32-Ports zu spielen. Bitte beachten Sie, dass die Ports maximal 20 mA liefern können; dauerhafte Kurzschlüsse an mehreren Pins sind zu vermeiden.
 
-*[**Forum zu c't-Lab [3]**](http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/)*
+*[**Forum zu c't-Lab [3]**](https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/)*
 
-***[**Soft-Link [4]**](http://www.heise.de/ct/07/11/links/212.shtml)***
+***[**Soft-Link [4]**](https://www.heise.de/select/ct/2007/11/softlinks/212)***
 
 ## Stückliste ADA-IO
 
@@ -450,19 +450,18 @@ Schreibschutz-, Syntax- oder Parameter-Fehler werden immer auch in Klartext (in 
 Messaufgaben benötigen unter Umständen eine gewisse Zeit, bis das Ergebnis vorliegt. Nebenstehende Tabelle gibt eine Übersicht über die zu erwartenden Latenzzeiten, gerechnet vom Ende des letzten Befehls-Bytes bis zum Beginn der Antwort beziehungsweise zur Reaktion an den D/A-Ausgängen oder Port-Bits.
 
 RSPEAK_STOP
-([**cm [5]**](mailto:cm@ct.de))
+(cm)
 RSPEAK_START
 
 **URL dieses Artikels:**
 
-`https://www.heise.de/-291034`
+`https://www.heise.de/ratgeber/Modulbaukasten-291034.html`
 
 **Links in diesem Artikel:**
 
-1. http://www.embedit.de
-2. http://www.e-lab.de
-3. http://www.heise.de/ct/foren/S-c-t-10-2007-S-124-Fernwirkung/forum-116199/list/
-4. http://www.heise.de/ct/07/11/links/212.shtml
-5. mailto:cm@ct.de
+1. https://www.e-lab.de/programmer/isp.html
+2. https://www.e-lab.de/
+3. https://www.heise.de/forum/c-t/Kommentare-zu-c-t-Artikeln/Fernwirkung/forum-25324/
+4. https://www.heise.de/select/ct/2007/11/softlinks/212
 
 *Copyright © 2007 Heise Medien*
