@@ -1,5 +1,343 @@
 Trace width calculations use [IPC-2221](https://www.dinmedia.de/de/norm/ipc-2221c/377902590) curve-fit formulas for PCB conductor area and then derives trace width, resistance, voltage drop, and power loss for internal and external layers.
 
+## Calculator
+
+```dataviewjs
+const thicknessUnits = [
+    { label: "oz/ft²", value: 0.0035 },
+    { label: "mil", value: 2.54e-3 },
+    { label: "mm", value: 0.1 },
+    { label: "µm", value: 1e-4 }
+];
+
+const widthUnits = [
+    { label: "mil", value: 2.54e-3 },
+    { label: "mm", value: 0.1 },
+    { label: "µm", value: 1e-4 }
+];
+
+const lengthUnits = [
+    { label: "inch", value: 0.393701 },
+    { label: "feet", value: 0.032808 },
+    { label: "mil", value: 393.7008 },
+    { label: "mm", value: 10 },
+    { label: "µm", value: 10000 },
+    { label: "cm", value: 1 },
+    { label: "m", value: 0.01 }
+];
+
+const temperatureRiseUnits = [
+    { label: "K", value: "C" },
+    { label: "°F", value: "F" }
+];
+
+const temperatureUnits = [
+    { label: "°C", value: "C" },
+    { label: "°F", value: "F" }
+];
+
+const root = dv.el("div", "", { cls: "pcb-trace-calculator" });
+root.innerHTML = `
+<style>
+.pcb-trace-calculator {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--background-primary);
+}
+.pcb-trace-calculator__title {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+.pcb-trace-calculator__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+}
+.pcb-trace-calculator__field label {
+    display: block;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+.pcb-trace-calculator__control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+.pcb-trace-calculator input,
+.pcb-trace-calculator select {
+    width: 100%;
+}
+.pcb-trace-calculator__unit {
+    min-width: 5.5rem;
+}
+.pcb-trace-calculator__results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.pcb-trace-calculator__panel {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: var(--background-secondary);
+}
+.pcb-trace-calculator__panel-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.pcb-trace-calculator__result-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(5rem, auto) minmax(4.5rem, auto);
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+.pcb-trace-calculator__result-value {
+    font-family: var(--font-monospace);
+    text-align: right;
+}
+.pcb-trace-calculator__result-unit {
+    color: var(--text-muted);
+}
+.pcb-trace-calculator__warning {
+    display: none;
+    margin-top: 0.75rem;
+    color: var(--text-warning);
+    font-size: var(--font-ui-smaller);
+}
+.pcb-trace-calculator__warning.is-visible {
+    display: block;
+}
+</style>
+<div class="pcb-trace-calculator__title">PCB Trace Width Calculator</div>
+<div class="pcb-trace-calculator__grid"></div>
+<div class="pcb-trace-calculator__results"></div>
+<div class="pcb-trace-calculator__warning"></div>
+`;
+
+const inputGrid = root.querySelector(".pcb-trace-calculator__grid");
+const resultsGrid = root.querySelector(".pcb-trace-calculator__results");
+const warning = root.querySelector(".pcb-trace-calculator__warning");
+
+const current = createNumberField(inputGrid, "Current", 10, "A");
+const thickness = createNumberField(inputGrid, "Copper thickness", 2);
+const thicknessUnit = createSelect(thickness.unit, thicknessUnits, "oz/ft²");
+const temperatureRise = createNumberField(inputGrid, "Temperature rise", 10);
+const temperatureRiseUnit = createSelect(temperatureRise.unit, temperatureRiseUnits, "C");
+const ambientTemperature = createNumberField(inputGrid, "Ambient temperature", 25);
+const ambientTemperatureUnit = createSelect(ambientTemperature.unit, temperatureUnits, "C");
+const traceLength = createNumberField(inputGrid, "Trace length", 1);
+const traceLengthUnit = createSelect(traceLength.unit, lengthUnits, "inch");
+
+const internal = createResultPanel(resultsGrid, "Internal layer", "mil");
+const external = createResultPanel(resultsGrid, "External layer in air", "mil");
+
+for (const control of [
+    current.input,
+    thickness.input,
+    thicknessUnit,
+    temperatureRise.input,
+    temperatureRiseUnit,
+    ambientTemperature.input,
+    ambientTemperatureUnit,
+    traceLength.input,
+    traceLengthUnit,
+    internal.widthUnit,
+    external.widthUnit
+]) {
+    control.addEventListener("input", update);
+    control.addEventListener("change", update);
+}
+
+update();
+
+function createNumberField(parent, label, value, unitLabel) {
+    const field = parent.createDiv({ cls: "pcb-trace-calculator__field" });
+    field.createEl("label", { text: label });
+    const row = field.createDiv({ cls: "pcb-trace-calculator__control" });
+    const input = row.createEl("input", { type: "number", attr: { step: "any" } });
+    input.value = value;
+    const unit = row.createSpan({ cls: "pcb-trace-calculator__unit" });
+
+    if (unitLabel) {
+        unit.setText(unitLabel);
+    }
+
+    return { input, unit };
+}
+
+function createSelect(parent, units, selectedValue) {
+    const select = parent.createEl("select");
+
+    for (const unit of units) {
+        const option = select.createEl("option", { text: unit.label, value: String(unit.value) });
+
+        if (unit.label === selectedValue || String(unit.value) === selectedValue) {
+            option.selected = true;
+        }
+    }
+
+    return select;
+}
+
+function createResultPanel(parent, title, widthUnit) {
+    const panel = parent.createDiv({ cls: "pcb-trace-calculator__panel" });
+    panel.createEl("div", { cls: "pcb-trace-calculator__panel-title", text: title });
+    const width = createOutputRow(panel, "Required trace width");
+    const widthUnitElement = createSelect(width.unit, widthUnits, widthUnit);
+    const resistance = createOutputRow(panel, "Resistance", "Ohms");
+    const voltageDrop = createOutputRow(panel, "Voltage drop", "Volts");
+    const powerLoss = createOutputRow(panel, "Power loss", "Watts");
+
+    return {
+        width,
+        widthUnit: widthUnitElement,
+        resistance,
+        voltageDrop,
+        powerLoss
+    };
+}
+
+function createOutputRow(parent, label, unitLabel) {
+    const row = parent.createDiv({ cls: "pcb-trace-calculator__result-row" });
+    row.createSpan({ text: label });
+    const value = row.createSpan({ cls: "pcb-trace-calculator__result-value" });
+    const unit = row.createSpan({ cls: "pcb-trace-calculator__result-unit" });
+
+    if (unitLabel) {
+        unit.setText(unitLabel);
+    }
+
+    return { value, unit };
+}
+
+function update() {
+    const values = {
+        current: Number(current.input.value),
+        thicknessCm: Number(thickness.input.value) * Number(thicknessUnit.value),
+        temperatureRiseC: convertRiseToC(Number(temperatureRise.input.value), temperatureRiseUnit.value),
+        ambientTemperatureC: convertTemperatureToC(Number(ambientTemperature.input.value), ambientTemperatureUnit.value),
+        traceLengthCm: Number(traceLength.input.value) / Number(traceLengthUnit.value)
+    };
+
+    if (!isValid(values)) {
+        setEmpty(internal);
+        setEmpty(external);
+        warning.setText("Enter positive numeric values for current, thickness, temperature rise, and trace length.");
+        warning.toggleClass("is-visible", true);
+        return;
+    }
+
+    const internalResult = calculateLayer(values, 0.024, Number(internal.widthUnit.value));
+    const externalResult = calculateLayer(values, 0.048, Number(external.widthUnit.value));
+
+    setResults(internal, internalResult);
+    setResults(external, externalResult);
+    setWarning(warning, values, internalResult, externalResult);
+}
+
+function convertRiseToC(value, unit) {
+    if (unit === "F") {
+        return value * 5 / 9;
+    }
+
+    return value;
+}
+
+function convertTemperatureToC(value, unit) {
+    if (unit === "F") {
+        return (value - 32) * 5 / 9;
+    }
+
+    return value;
+}
+
+function isValid(values) {
+    return Number.isFinite(values.current)
+        && Number.isFinite(values.thicknessCm)
+        && Number.isFinite(values.temperatureRiseC)
+        && Number.isFinite(values.ambientTemperatureC)
+        && Number.isFinite(values.traceLengthCm)
+        && values.current > 0
+        && values.thicknessCm > 0
+        && values.temperatureRiseC > 0
+        && values.traceLengthCm > 0;
+}
+
+function calculateLayer(values, k, widthUnit) {
+    const areaMilsSquared = Math.pow(values.current / (k * Math.pow(values.temperatureRiseC, 0.44)), 1 / 0.725);
+    const areaCmSquared = areaMilsSquared * 2.54 * 2.54 / 1000000;
+    const widthCm = areaCmSquared / values.thicknessCm;
+    const conductorTemperatureC = values.ambientTemperatureC + values.temperatureRiseC;
+    const copperResistivityAt25C = 17e-7;
+    const copperTemperatureCoefficient = 0.0039;
+    const resistance = copperResistivityAt25C
+        * values.traceLengthCm
+        / areaCmSquared
+        * (1 + copperTemperatureCoefficient * (conductorTemperatureC - 25));
+
+    return {
+        areaMilsSquared,
+        width: widthCm / widthUnit,
+        widthMil: widthCm / 2.54e-3,
+        resistance,
+        voltageDrop: values.current * resistance,
+        powerLoss: values.current * values.current * resistance
+    };
+}
+
+function setResults(panel, result) {
+    panel.width.value.setText(formatNumber(result.width));
+    panel.resistance.value.setText(formatNumber(result.resistance));
+    panel.voltageDrop.value.setText(formatNumber(result.voltageDrop));
+    panel.powerLoss.value.setText(formatNumber(result.powerLoss));
+}
+
+function setEmpty(panel) {
+    panel.width.value.setText("");
+    panel.resistance.value.setText("");
+    panel.voltageDrop.value.setText("");
+    panel.powerLoss.value.setText("");
+}
+
+function setWarning(warningElement, values, internalResult, externalResult) {
+    const messages = [];
+
+    if (values.current > 35) {
+        messages.push("current is above 35 A");
+    }
+
+    if (values.temperatureRiseC < 10 || values.temperatureRiseC > 100) {
+        messages.push("temperature rise is outside 10-100 K");
+    }
+
+    if (internalResult.widthMil > 400 || externalResult.widthMil > 400) {
+        messages.push("calculated width is above 0.4 inch");
+    }
+
+    if (messages.length === 0) {
+        warningElement.setText("");
+        warningElement.toggleClass("is-visible", false);
+        return;
+    }
+
+    warningElement.setText(`IPC-2221 graph range warning: ${messages.join(", ")}. Results are extrapolated.`);
+    warningElement.toggleClass("is-visible", true);
+}
+
+function formatNumber(value) {
+    if (!Number.isFinite(value)) {
+        return "";
+    }
+
+    return Number(value).toPrecision(3);
+}
+```
+
 ## Symbols
 
 | Symbol | Meaning | Unit |
