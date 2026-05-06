@@ -404,7 +404,8 @@ impl<H: EdlHardware> EdlHw<H> {
     pub fn get_adc10(&mut self, my_channel: u8) -> u16 {
         // Hand-coded equivalent of the old getadc() helper: select the mux input
         // explicitly instead of depending on compiler-provided runtime support.
-        self.io.set_admux(my_channel.wrapping_sub(1) & ADC10_CHANNEL_MASK);
+        self.io
+            .set_admux(my_channel.wrapping_sub(1) & ADC10_CHANNEL_MASK);
 
         // The Pascal loop burns roughly 3 us so the mux input can settle.
         for _ in 0..ADC10_SETTLE_CYCLES {

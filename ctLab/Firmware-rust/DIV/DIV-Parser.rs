@@ -194,14 +194,7 @@ impl<'a, H: DivRuntimeHardware> DivRuntimeAdapter<'a, H> {
 
     fn write_status_prompt(&mut self, state: &mut ParserState, err: ParserError) {
         const ERR_LABELS: [&str; 8] = [
-            "[OK]",
-            "[SRQUSR]",
-            "[BUSY]",
-            "[OVRLD]",
-            "[CMDERR]",
-            "[PARERR]",
-            "[LOCKED]",
-            "[CHKSUM]",
+            "[OK]", "[SRQUSR]", "[BUSY]", "[OVRLD]", "[CMDERR]", "[PARERR]", "[LOCKED]", "[CHKSUM]",
         ];
         const FAULT_LABELS: [&str; 4] = ["[OVRNEG]", "[OVRPOS]", "[]", "[]"];
 
@@ -288,7 +281,8 @@ impl<H: DivRuntimeHardware> DivParserHooks for DivRuntimeAdapter<'_, H> {
     }
 
     fn get_ad24(&mut self, sub_ch: u8, state: &mut ParserState) {
-        let raw = self.device.hw.read_adc24() + self.device.eeprom.ad24_offsets[self.device.range as usize];
+        let raw = self.device.hw.read_adc24()
+            + self.device.eeprom.ad24_offsets[self.device.range as usize];
         state.ad24temp = match sub_ch {
             1 => raw,
             2 => raw,
@@ -301,9 +295,8 @@ impl<H: DivRuntimeHardware> DivParserHooks for DivRuntimeAdapter<'_, H> {
     fn wait_ad10(&mut self, _state: &mut ParserState) {}
 
     fn get_ad10(&mut self, channel: u8, state: &mut ParserState) {
-        let raw =
-            i32::from(self.device.hw.read_adc10(channel))
-                + i32::from(self.device.eeprom.ad10_offsets[self.device.range as usize]);
+        let raw = i32::from(self.device.hw.read_adc10(channel))
+            + i32::from(self.device.eeprom.ad10_offsets[self.device.range as usize]);
         state.param_long_int = raw;
     }
 
@@ -404,7 +397,9 @@ impl<H: DivRuntimeHardware> DivParserHooks for DivRuntimeAdapter<'_, H> {
 
     fn write_param_long_int_ser(&mut self, state: &ParserState) {
         self.write_ch_prefix(state);
-        self.device.hw.serial_write(&state.param_long_int.to_string());
+        self.device
+            .hw
+            .serial_write(&state.param_long_int.to_string());
         self.ser_crlf();
     }
 
@@ -531,11 +526,13 @@ where
                 self.state.sub_ch = 0;
             }
             100..=115 => {
-                self.state.param_long_int = self.hooks.get_offset24((self.state.sub_ch - 100) as usize);
+                self.state.param_long_int =
+                    self.hooks.get_offset24((self.state.sub_ch - 100) as usize);
                 is_integer = true;
             }
             120..=135 => {
-                self.state.param_long_int = self.hooks.get_offset10((self.state.sub_ch - 120) as usize);
+                self.state.param_long_int =
+                    self.hooks.get_offset10((self.state.sub_ch - 120) as usize);
                 is_integer = true;
             }
             200..=215 => {
@@ -607,7 +604,8 @@ where
                     self.state.lcd_integrate = self.state.param_long_int as u8;
                     self.state.init_lcd_integrate = self.state.lcd_integrate;
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -616,25 +614,32 @@ where
                     self.state.inc_rast = self.state.param_long_int;
                     self.state.init_inc_rast = self.state.inc_rast;
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             100..=115 => {
                 if self.state.ee_unlocked {
-                    self.hooks
-                        .set_offset24((self.state.sub_ch - 100) as usize, self.state.param_long_int);
+                    self.hooks.set_offset24(
+                        (self.state.sub_ch - 100) as usize,
+                        self.state.param_long_int,
+                    );
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             120..=135 => {
                 if self.state.ee_unlocked {
-                    self.hooks
-                        .set_offset10((self.state.sub_ch - 120) as usize, self.state.param_long_int);
+                    self.hooks.set_offset10(
+                        (self.state.sub_ch - 120) as usize,
+                        self.state.param_long_int,
+                    );
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -643,7 +648,8 @@ where
                     self.hooks
                         .set_scale24((self.state.sub_ch - 200) as usize, self.state.param);
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -652,7 +658,8 @@ where
                     self.hooks
                         .set_scale10((self.state.sub_ch - 220) as usize, self.state.param);
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -660,7 +667,8 @@ where
                 if self.state.ee_unlocked {
                     self.hooks.set_trigger_mask(self.state.param_long_int as u8);
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -673,7 +681,8 @@ where
                     self.hooks
                         .set_trigger_timer_value(self.state.param_long_int as u16);
                 } else {
-                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
+                    self.hooks
+                        .serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -799,7 +808,8 @@ where
         }
 
         // `!` and `?` both request the verbose response form.
-        self.state.verbose = self.state.ser_inp_str.contains('!') || self.state.ser_inp_str.contains('?');
+        self.state.verbose =
+            self.state.ser_inp_str.contains('!') || self.state.ser_inp_str.contains('?');
 
         if let Some(check_pos) = self.state.ser_inp_str.find('$') {
             let checksum_in = parse_hex_u8_default(
@@ -811,13 +821,17 @@ where
             );
 
             let mut checksum = 0u8;
-            for byte in self.state.ser_inp_str.as_bytes()[..check_pos].iter().copied() {
+            for byte in self.state.ser_inp_str.as_bytes()[..check_pos]
+                .iter()
+                .copied()
+            {
                 checksum ^= byte;
             }
 
             // The Pascal code excludes the `$xx` suffix itself from the XOR checksum.
             if checksum != checksum_in {
-                self.hooks.serprompt(&mut self.state, ParserError::ChecksumErr);
+                self.hooks
+                    .serprompt(&mut self.state, ParserError::ChecksumErr);
                 return;
             }
         }
@@ -833,7 +847,8 @@ where
         } else {
             self.state.cmd_which = self.cmd2index();
             if self.state.cmd_which == CmdWhich::Err {
-                self.hooks.serprompt(&mut self.state, ParserError::SyntaxErr);
+                self.hooks
+                    .serprompt(&mut self.state, ParserError::SyntaxErr);
                 return;
             }
 
@@ -916,9 +931,7 @@ fn div_range_from_u8(value: u8) -> DivRange {
 
 fn range_exponent_suffix(range: DivRange) -> Option<&'static str> {
     match range {
-        DivRange::Dc250mV | DivRange::Ac250mV | DivRange::Dc25mA | DivRange::Ac25mA => {
-            Some("E-3")
-        }
+        DivRange::Dc250mV | DivRange::Ac250mV | DivRange::Dc25mA | DivRange::Ac25mA => Some("E-3"),
         DivRange::Dc250uA | DivRange::Ac250uA => Some("E-6"),
         _ => None,
     }

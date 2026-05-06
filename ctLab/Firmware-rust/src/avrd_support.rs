@@ -141,7 +141,9 @@ impl<M: Mcu> AvrdPortIo<M> {
 
     pub fn write_bit(&mut self, port: RegisterPort, bit: u8, high: bool) {
         unsafe {
-            update_u8(self.port_ptr(port), |value| set_or_clear_bit(value, bit, high));
+            update_u8(self.port_ptr(port), |value| {
+                set_or_clear_bit(value, bit, high)
+            });
         }
     }
 
@@ -164,9 +166,7 @@ impl<M: Mcu> AvrdPortIo<M> {
     }
 
     pub fn wait_for_adc(&mut self) {
-        unsafe {
-            while read_u8(M::ADCSRA) & M::ADSC_MASK != 0 {}
-        }
+        unsafe { while read_u8(M::ADCSRA) & M::ADSC_MASK != 0 {} }
     }
 
     pub fn read_adc_blocking(&mut self, channel_1_based: u8, external_ref: bool) -> u16 {

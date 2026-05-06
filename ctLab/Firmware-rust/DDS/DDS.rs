@@ -42,23 +42,16 @@ const INCR_ACC_ARRAY: [i32; 16] = [
     0, 1, 5, 10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 25_000, 25_000,
 ];
 const TERZ_ARRAY: [i32; 32] = [
-    200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300,
-    8000, 10000, 12500, 16000, 20000, 25000, 31500, 40000, 50000, 63000, 80000, 100000, 125000,
-    160000, 200000, 0,
+    200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000,
+    10000, 12500, 16000, 20000, 25000, 31500, 40000, 50000, 63000, 80000, 100000, 125000, 160000,
+    200000, 0,
 ];
 const LCD_CHARSET_0: [u8; 8] = [0x01, 0x03, 0x07, 0x0f, 0x07, 0x03, 0x01, 0x00];
 const LCD_CHARSET_1: [u8; 8] = [0x01, 0x03, 0x05, 0x09, 0x05, 0x03, 0x01, 0x00];
 const LCD_CHARSET_2: [u8; 8] = [0x01, 0x02, 0x05, 0x0a, 0x05, 0x02, 0x01, 0x00];
 
 const ERR_LABELS: [&str; 8] = [
-    "[OK]",
-    "[SRQUSR]",
-    "[BUSY]",
-    "[OVERLD]",
-    "[CMDERR]",
-    "[PARERR]",
-    "[LOCKED]",
-    "[CHKSUM]",
+    "[OK]", "[SRQUSR]", "[BUSY]", "[OVERLD]", "[CMDERR]", "[PARERR]", "[LOCKED]", "[CHKSUM]",
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -639,8 +632,10 @@ impl<H: DdsHardware> DeviceState<H> {
         }
         self.hw
             .lcd_write_line(0, &Self::format_tenths_hz(self.frequency_tenths_hz));
-        self.hw
-            .lcd_write_line(1, &Self::format_param(self.dac_level_to_rms(self.dac_level), 1));
+        self.hw.lcd_write_line(
+            1,
+            &Self::format_param(self.dac_level_to_rms(self.dac_level), 1),
+        );
     }
 
     pub fn check_limits(&mut self) -> bool {
@@ -702,15 +697,32 @@ impl<H: DdsHardware> DeviceState<H> {
         out_of_range
     }
 
-    fn parse_get_param(&mut self, sub_ch: u8, verbose: bool, raw_line: &str) -> Result<(), ErrorCode> {
+    fn parse_get_param(
+        &mut self,
+        sub_ch: u8,
+        verbose: bool,
+        raw_line: &str,
+    ) -> Result<(), ErrorCode> {
         match sub_ch {
-            0 => self.write_param_str_ser(sub_ch, &Self::format_tenths_hz(self.frequency_tenths_hz)),
-            1 => self.write_param_str_ser(sub_ch, &Self::format_param(self.dac_level_to_rms(self.dac_level), 1)),
-            2 => self.write_param_str_ser(sub_ch, &Self::format_param(self.dac_level_to_peak_mv(), 1)),
-            3 => self.write_param_str_ser(sub_ch, &Self::format_param(self.dac_level_to_db(self.dac_level), 2)),
+            0 => {
+                self.write_param_str_ser(sub_ch, &Self::format_tenths_hz(self.frequency_tenths_hz))
+            }
+            1 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.dac_level_to_rms(self.dac_level), 1),
+            ),
+            2 => self
+                .write_param_str_ser(sub_ch, &Self::format_param(self.dac_level_to_peak_mv(), 1)),
+            3 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.dac_level_to_db(self.dac_level), 2),
+            ),
             4 => self.write_param_byte_ser(sub_ch, self.waveform.as_byte()),
             5 => self.write_param_byte_ser(sub_ch, self.burst_mode),
-            10 | 99 => self.write_param_str_ser(sub_ch, &Self::format_param(self.effective_input_level_mv(), 1)),
+            10 | 99 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.effective_input_level_mv(), 1),
+            ),
             11 => self.write_param_str_ser(
                 sub_ch,
                 &Self::format_param(self.effective_input_level_mv() * PEAK_FACTOR, 1),
@@ -725,24 +737,39 @@ impl<H: DdsHardware> DeviceState<H> {
                 self.write_param_str_ser(sub_ch, &Self::format_param(value, 2));
             }
             19 => self.write_param_byte_ser(sub_ch, self.range.as_byte()),
-            20 => self.write_param_str_ser(sub_ch, &Self::format_param(self.offset_mv as Float / 1000.0, 4)),
+            20 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.offset_mv as Float / 1000.0, 4),
+            ),
             80 => self.write_param_byte_ser(sub_ch, self.panel_modify as u8),
             89 => self.write_param_byte_ser(sub_ch, self.inc_rast as u8),
             150 => self.write_param_str_ser(
                 sub_ch,
                 &Self::format_param(self.eeprom.init_frequency_tenths_hz as Float / 10.0, 1),
             ),
-            151 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_level_mv, 1)),
-            152 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_logic_level_mv, 1)),
+            151 => {
+                self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_level_mv, 1))
+            }
+            152 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.eeprom.init_logic_level_mv, 1),
+            ),
             153 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_db, 2)),
             154 => self.write_param_byte_ser(sub_ch, self.eeprom.init_wave),
             155 => self.write_param_byte_ser(sub_ch, self.eeprom.init_burst),
-            170 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_offset_v, 4)),
-            200 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.level_scale_low, 4)),
-            201 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.level_scale_high, 4)),
+            170 => {
+                self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_offset_v, 4))
+            }
+            200 => self
+                .write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.level_scale_low, 4)),
+            201 => self
+                .write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.level_scale_high, 4)),
             202 => self.write_param_str_ser(sub_ch, &Self::format_param(self.pwr_gain, 4)),
             203 => self.write_param_str_ser(sub_ch, &Self::format_param(self.attn_fac, 4)),
-            204 => self.write_param_str_ser(sub_ch, &Self::format_param(self.eeprom.init_logic_level_mv, 4)),
+            204 => self.write_param_str_ser(
+                sub_ch,
+                &Self::format_param(self.eeprom.init_logic_level_mv, 4),
+            ),
             210..=213 => self.write_param_str_ser(
                 sub_ch,
                 &Self::format_param(self.eeprom.adc_scales[(sub_ch - 210) as usize], 4),
@@ -757,7 +784,12 @@ impl<H: DdsHardware> DeviceState<H> {
         Ok(())
     }
 
-    fn parse_set_param(&mut self, sub_ch: u8, param: Float, verbose: bool) -> Result<(), ErrorCode> {
+    fn parse_set_param(
+        &mut self,
+        sub_ch: u8,
+        param: Float,
+        verbose: bool,
+    ) -> Result<(), ErrorCode> {
         if self.status.busy_flag {
             return Err(ErrorCode::BusyErr);
         }
@@ -954,10 +986,9 @@ impl<H: DdsHardware> DeviceState<H> {
         if let Some(pos) = line.find('$') {
             let body = &line[..pos];
             let checksum_text = line.get(pos + 1..pos + 3).ok_or(ErrorCode::ChecksumErr)?;
-            let expected = u8::from_str_radix(checksum_text, 16).map_err(|_| ErrorCode::ChecksumErr)?;
-            let actual = body
-                .bytes()
-                .fold(0_u8, |acc, byte| acc ^ byte);
+            let expected =
+                u8::from_str_radix(checksum_text, 16).map_err(|_| ErrorCode::ChecksumErr)?;
+            let actual = body.bytes().fold(0_u8, |acc, byte| acc ^ byte);
             if actual != expected {
                 return Err(ErrorCode::ChecksumErr);
             }
@@ -1056,7 +1087,8 @@ impl<H: DdsHardware> DeviceState<H> {
             PanelEvent::EncoderDelta(delta) => {
                 self.activity_timer_ticks = 25;
                 self.hw.set_activity_led(true);
-                self.encoder_delta_accum = self.encoder_delta_accum.saturating_add(i32::from(delta));
+                self.encoder_delta_accum =
+                    self.encoder_delta_accum.saturating_add(i32::from(delta));
                 self.incr_timer_ticks = 20;
 
                 let inc_rast = self.inc_rast.max(1);
@@ -1125,8 +1157,9 @@ impl<H: DdsHardware> DeviceState<H> {
                             self.hw.send_aux_config(index);
                         }
                         if self.waveform == Waveform::Logic {
-                            self.dac_level =
-                                self.eeprom.init_logic_level_mv / self.pwr_gain.max(0.001) / PEAK_FACTOR;
+                            self.dac_level = self.eeprom.init_logic_level_mv
+                                / self.pwr_gain.max(0.001)
+                                / PEAK_FACTOR;
                             self.db = self.dac_level_to_db(self.dac_level);
                         }
                     }
@@ -1612,7 +1645,10 @@ mod tests {
             state.hw.take_serial_output(),
             format!(
                 "#0:255=67 [OK]\r\n#0:1={}\r\n",
-                DeviceState::<MockHardware>::format_param(state.dac_level_to_rms(state.dac_level), 1)
+                DeviceState::<MockHardware>::format_param(
+                    state.dac_level_to_rms(state.dac_level),
+                    1
+                )
             )
         );
 
@@ -1645,7 +1681,10 @@ mod tests {
             left: true,
             right: true,
         });
-        assert_eq!(state.hw.take_serial_output(), "#0:255=65 [OK]\r\n#0:255=66 [OK]\r\n");
+        assert_eq!(
+            state.hw.take_serial_output(),
+            "#0:255=65 [OK]\r\n#0:255=66 [OK]\r\n"
+        );
     }
 
     #[test]
@@ -1679,11 +1718,7 @@ mod tests {
         assert_eq!(state.hw.serial_baud_calls, vec![(51, true)]);
         assert_eq!(
             state.hw.lcd_custom_chars,
-            vec![
-                (0, LCD_CHARSET_0),
-                (1, LCD_CHARSET_1),
-                (2, LCD_CHARSET_2),
-            ]
+            vec![(0, LCD_CHARSET_0), (1, LCD_CHARSET_1), (2, LCD_CHARSET_2),]
         );
         assert_eq!(
             state.hw.lcd_lines,
@@ -1692,8 +1727,14 @@ mod tests {
                 (1, EE_NOT_PROGRAMMED_STR.to_string()),
             ]
         );
-        assert_eq!(state.hw.delay_calls, vec![1000, 150, 150, 150, 150, 500, 250]);
-        assert_eq!(state.hw.activity_led_states, vec![true, false, true, false, true, false]);
+        assert_eq!(
+            state.hw.delay_calls,
+            vec![1000, 150, 150, 150, 150, 500, 250]
+        );
+        assert_eq!(
+            state.hw.activity_led_states,
+            vec![true, false, true, false, true, false]
+        );
         assert_eq!(state.hw.frequency_words.len(), 2);
         assert_eq!(state.hw.amplitude_words.len(), 2);
         assert_eq!(

@@ -399,7 +399,8 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
         // Integrating mode forms a simple 1:1 running average with the previous
         // stored sample, which suppresses noise without extra buffer state.
         state.ad16_long += LongInt::from(state.adc_raw_array[previous_mux_ch]);
-        state.adc_raw_array[previous_mux_ch] = (state.ad16_long >> 1) as Integer; // integrieren
+        state.adc_raw_array[previous_mux_ch] = (state.ad16_long >> 1) as Integer;
+    // integrieren
     } else {
         // Direct mode keeps the freshly averaged four-sample ADC result.
         state.adc_raw_array[previous_mux_ch] = state.ad16_long as Integer; // direkt

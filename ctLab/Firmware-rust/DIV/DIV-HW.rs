@@ -108,8 +108,7 @@ pub fn shift_in_2400<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
 
     // Negative readings are sign-extended to preserve the LTC2400 two's-complement format.
     let msb = if state.negative_flag { 0xFF } else { top };
-    state.ad24_temp =
-        ((msb as u32) << 24) | ((b2 as u32) << 16) | ((b1 as u32) << 8) | (b0 as u32);
+    state.ad24_temp = ((msb as u32) << 24) | ((b2 as u32) << 16) | ((b1 as u32) << 8) | (b0 as u32);
 
     // Overrange is treated as hard clipping and forced to the full-scale positive code.
     if state.over_voltage_flag {
@@ -146,12 +145,11 @@ pub fn on_sys_tick<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
         state.ad24_integrate0 = state.ad24_temp_fast_integrated;
 
         // Slow integration averages the current sample with the previous three filter states.
-        state.ad24_temp_slow_integrated = (
-            state.ad24_temp
-                + state.ad24_integrate1
-                + state.ad24_integrate2
-                + state.ad24_integrate3
-        ) / 4;
+        state.ad24_temp_slow_integrated = (state.ad24_temp
+            + state.ad24_integrate1
+            + state.ad24_integrate2
+            + state.ad24_integrate3)
+            / 4;
         state.ad24_integrate3 = state.ad24_integrate2;
         state.ad24_integrate2 = state.ad24_integrate1;
         state.ad24_integrate1 = state.ad24_temp_slow_integrated;

@@ -13,9 +13,8 @@ pub const VERS1_STR: &str = "3.10 [DIV by CM/c't 03/2007]";
 pub const VERS3_STR: &str = "DIV 3.10";
 
 pub const RANGE_STR_ARR: [&str; 16] = [
-    "DC 250mV", "DC  2.5V", "DC   25V", "DC  250V", "AC 250mV", "AC  2.5V", "AC   25V",
-    "AC  250V", "DC 250uA", "DC  25mA", "DC  2.5A", "DC   10A", "AC 250uA", "AC  25mA",
-    "AC  2.5A", "AC   10A",
+    "DC 250mV", "DC  2.5V", "DC   25V", "DC  250V", "AC 250mV", "AC  2.5V", "AC   25V", "AC  250V",
+    "DC 250uA", "DC  25mA", "DC  2.5A", "DC   10A", "AC 250uA", "AC  25mA", "AC  2.5A", "AC   10A",
 ];
 
 pub const CMD_STR_ARR: [&str; 16] = [
@@ -218,16 +217,10 @@ impl<H: DivHardware> DeviceState<H> {
         // bit7=busy, bit6=user request, bit5=overload, bit4=EEPROM write enable,
         // bits3..0=fault or error source. This simplified port only emits the label.
         let labels = [
-            "[OK]",
-            "[SRQUSR]",
-            "[BUSY]",
-            "[OVRLD]",
-            "[CMDERR]",
-            "[PARERR]",
-            "[LOCKED]",
-            "[CHKSUM]",
+            "[OK]", "[SRQUSR]", "[BUSY]", "[OVRLD]", "[CMDERR]", "[PARERR]", "[LOCKED]", "[CHKSUM]",
         ];
-        self.hw.serial_write(labels[(err as usize).min(labels.len() - 1)]);
+        self.hw
+            .serial_write(labels[(err as usize).min(labels.len() - 1)]);
         self.ser_crlf();
     }
 
@@ -240,7 +233,8 @@ impl<H: DivHardware> DeviceState<H> {
     }
 
     pub fn show_range(&mut self) {
-        self.hw.lcd_write_line(1, RANGE_STR_ARR[self.range as usize]);
+        self.hw
+            .lcd_write_line(1, RANGE_STR_ARR[self.range as usize]);
     }
 
     pub fn write_param_lcd(&mut self) {

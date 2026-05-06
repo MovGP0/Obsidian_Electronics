@@ -516,7 +516,10 @@ mod tests {
     #[test]
     fn integer_tuning_word_matches_pascal_digit_sum() {
         assert_eq!(DdsHardwareState::dds_tuning_word_integer(10_000), 64_000);
-        assert_eq!(DdsHardwareState::dds_tuning_word_integer(12_345_670), 79_012_288);
+        assert_eq!(
+            DdsHardwareState::dds_tuning_word_integer(12_345_670),
+            79_012_288
+        );
     }
 
     #[test]

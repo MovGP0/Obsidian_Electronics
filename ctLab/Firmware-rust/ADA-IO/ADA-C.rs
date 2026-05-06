@@ -56,25 +56,17 @@ pub const EGG_STR: &str = "28.5 [Michaela, ich liebe dich!]";
 pub const ERR_SUB_CH: u8 = 255;
 
 pub const ERR_STR_ARR: [&str; 8] = [
-    "[OK]",
-    "[SRQUSR]",
-    "[BUSY]",
-    "[OVERLD]",
-    "[CMDERR]",
-    "[PARERR]",
-    "[LOCKED]",
-    "[CHKSUM]",
+    "[OK]", "[SRQUSR]", "[BUSY]", "[OVERLD]", "[CMDERR]", "[PARERR]", "[LOCKED]", "[CHKSUM]",
 ];
 
 pub const CMD_STR_ARR: [&str; 25] = [
-    "TRG", "STR", "IDN", "VAL", "OFS", "SCL", "RAW", "PIO", "DIR", "DSP", "ALL", "OPT",
-    "TRM", "TRT", "TRL", "ICB", "ICW", "ICS", "ICT", "ICA", "REF", "WEN", "ERC", "SBD",
-    "NOP",
+    "TRG", "STR", "IDN", "VAL", "OFS", "SCL", "RAW", "PIO", "DIR", "DSP", "ALL", "OPT", "TRM",
+    "TRT", "TRL", "ICB", "ICW", "ICS", "ICT", "ICA", "REF", "WEN", "ERC", "SBD", "NOP",
 ];
 
 pub const CMD2_SUB_CH_ARR: [u8; 25] = [
-    249, 255, 254, 0, 100, 200, 50, 30, 40, 80, 95, 150, 240, 247, 248, 230, 231, 232, 233,
-    239, 246, 250, 251, 252, 0,
+    249, 255, 254, 0, 100, 200, 50, 30, 40, 80, 95, 150, 240, 247, 248, 230, 231, 232, 233, 239,
+    246, 250, 251, 252, 0,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -171,7 +163,10 @@ impl CmdWhich {
     }
 
     pub fn requires_parameter_on_set(self) -> bool {
-        !matches!(self, Self::Trg | Self::Str | Self::Idn | Self::Erc | Self::Err)
+        !matches!(
+            self,
+            Self::Trg | Self::Str | Self::Idn | Self::Erc | Self::Err
+        )
     }
 }
 
@@ -209,13 +204,12 @@ impl Default for EepromData {
     fn default() -> Self {
         Self {
             offset_array: [
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -40, -40, -40, -40, -40, -40, -40, -40, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -40, -40, -40, -40, -40, -40, -40, -40, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,
             ],
             scale_array: [
-                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 100.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-                1.0, 1.0, 1.0, 0.0, 3185.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 200.0,
-                3200.0,
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 100.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 0.0, 3185.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 200.0, 3200.0,
             ],
             dir_init_array: [0; 8],
             trig_mask_array: [0; 4],
@@ -481,7 +475,8 @@ impl<H: AdaHardware> DeviceState<H> {
         match my_sub_ch {
             0..=7 => {
                 self.param_int = self.hw.get_adc(my_sub_ch + 1);
-                self.param = ((self.param_int as i32 + self.eeprom.offset_array[my_sub_ch as usize] as i32)
+                self.param = ((self.param_int as i32
+                    + self.eeprom.offset_array[my_sub_ch as usize] as i32)
                     as Float
                     * self.eeprom.scale_array[my_sub_ch as usize])
                     / self.base_scale_ad10;
@@ -489,7 +484,8 @@ impl<H: AdaHardware> DeviceState<H> {
             }
             10..=17 => {
                 self.param_int = self.adc_raw_array[(my_sub_ch - 10) as usize];
-                self.param = ((self.param_int as i32 + self.eeprom.offset_array[my_sub_ch as usize] as i32)
+                self.param = ((self.param_int as i32
+                    + self.eeprom.offset_array[my_sub_ch as usize] as i32)
                     as Float
                     * self.eeprom.scale_array[my_sub_ch as usize])
                     / self.base_scale_ad16;
@@ -575,12 +571,22 @@ impl<H: AdaHardware> DeviceState<H> {
             4
         };
         self.param_to_str();
-        format!("{}{}{}", self.write_ch_prefix(), self.param_str, Self::ser_crlf())
+        format!(
+            "{}{}{}",
+            self.write_ch_prefix(),
+            self.param_str,
+            Self::ser_crlf()
+        )
     }
 
     pub fn write_param_int(&mut self) -> String {
         self.param_str = self.param_int.to_string();
-        format!("{}{}{}", self.write_ch_prefix(), self.param_str, Self::ser_crlf())
+        format!(
+            "{}{}{}",
+            self.write_ch_prefix(),
+            self.param_str,
+            Self::ser_crlf()
+        )
     }
 
     pub fn write_features(&self) -> String {
@@ -848,7 +854,8 @@ impl<H: AdaHardware> DeviceState<H> {
                 is_integer = true;
             }
             233 => {
-                self.param_int = (self.hw.twi_inp_word(self.i2c_slave_adr).swap_bytes() >> 7) as i16;
+                self.param_int =
+                    (self.hw.twi_inp_word(self.i2c_slave_adr).swap_bytes() >> 7) as i16;
                 self.param = self.param_int as Float / 2.0;
             }
             234 => {
@@ -941,7 +948,8 @@ impl<H: AdaHardware> DeviceState<H> {
                 }
                 self.require_unlocked()?;
                 self.param_text_str = self.extract_bracket_text();
-                self.eeprom.param_text_array[self.param_byte as usize] = self.param_text_str.clone();
+                self.eeprom.param_text_array[self.param_byte as usize] =
+                    self.param_text_str.clone();
             }
             89 | 159 => {
                 self.require_unlocked()?;
@@ -990,7 +998,9 @@ impl<H: AdaHardware> DeviceState<H> {
                 let _ = self.hw.twi_out(self.i2c_slave_adr, self.param_int as u16);
             }
             232 => {
-                let _ = self.hw.twi_out(self.i2c_slave_adr, (self.param_int as u16).swap_bytes());
+                let _ = self
+                    .hw
+                    .twi_out(self.i2c_slave_adr, (self.param_int as u16).swap_bytes());
             }
             239 => {
                 self.i2c_slave_adr = self.param_byte;
@@ -1312,7 +1322,10 @@ impl<H: AdaHardware> DeviceState<H> {
     }
 
     fn extract_bracket_text(&self) -> String {
-        match (self.ser_inp_str.find('['), self.ser_inp_str[self.ser_inp_ptr..].find(']')) {
+        match (
+            self.ser_inp_str.find('['),
+            self.ser_inp_str[self.ser_inp_ptr..].find(']'),
+        ) {
             (Some(start), Some(end)) => {
                 let start = start + 1;
                 let end = self.ser_inp_ptr + end;
@@ -1558,13 +1571,41 @@ mod tests {
         assert_eq!(state.hw.trigger_edge_positive, Some(true));
         assert_eq!(state.hw.internal_reference, Some(true));
         assert_eq!(state.hw.baud, Some((51, true)));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:159=7\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:240=129\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:247=10\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:248=1\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:246=1\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line.contains("#0:252=115\r\n")));
-        assert!(state.hw.serial_out.iter().any(|line| line == "#7:1=foreign\r\n"));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:159=7\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:240=129\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:247=10\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:248=1\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:246=1\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line.contains("#0:252=115\r\n")));
+        assert!(state
+            .hw
+            .serial_out
+            .iter()
+            .any(|line| line == "#7:1=foreign\r\n"));
         assert!(state.hw.serial_out.iter().any(|line| line == "1:VAL0?\r\n"));
     }
 

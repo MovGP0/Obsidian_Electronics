@@ -6,5 +6,6 @@
   "readableLineLength": false,
   "spellcheckLanguages": null,
   "attachmentFolderPath": "Attachements",
-  "defaultViewMode": "source"
+  "defaultViewMode": "source",
+  "showUnsupportedFiles": true
 }
