@@ -3,6 +3,8 @@
 // This file keeps the original parser structure and lookup tables readable,
 // while moving board-specific I/O and ADC behavior behind a hook trait.
 
+use crate::div::{DeviceState as DivDeviceState, DivHardware as DivRuntimeHardware, DivRange};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum CmdWhich {
@@ -134,6 +136,7 @@ impl Default for ParserState {
 }
 
 pub trait DivParserHooks {
+    fn is_busy(&self) -> bool;
     fn get_ad24(&mut self, sub_ch: u8, state: &mut ParserState);
     fn wait_ad24(&mut self, state: &mut ParserState);
     fn wait_ad10(&mut self, state: &mut ParserState);
@@ -142,6 +145,20 @@ pub trait DivParserHooks {
     fn param_scale24(&mut self, state: &mut ParserState);
     fn param_scale10(&mut self, state: &mut ParserState);
     fn is_ac_range(&self, state: &ParserState) -> bool;
+    fn get_range(&self) -> u8;
+    fn get_offset24(&self, index: usize) -> i32;
+    fn set_offset24(&mut self, index: usize, value: i32);
+    fn get_offset10(&self, index: usize) -> i32;
+    fn set_offset10(&mut self, index: usize, value: i32);
+    fn get_scale24(&self, index: usize) -> f32;
+    fn set_scale24(&mut self, index: usize, value: f32);
+    fn get_scale10(&self, index: usize) -> f32;
+    fn set_scale10(&mut self, index: usize, value: f32);
+    fn get_trigger_mask(&self) -> u8;
+    fn set_trigger_mask(&mut self, value: u8);
+    fn get_trigger_timer_value(&self) -> u16;
+    fn set_trigger_timer_value(&mut self, value: u16);
+    fn trigger_now(&mut self);
     fn check_limits(&mut self, state: &mut ParserState);
     fn switch_range(&mut self, state: &mut ParserState);
     fn show_range(&mut self, state: &mut ParserState);
@@ -152,10 +169,279 @@ pub trait DivParserHooks {
     fn write_ser_inp(&mut self, input: &str);
     fn write_str(&mut self, text: &str);
     fn ser_crlf(&mut self);
-    fn serprompt(&mut self, err: ParserError);
+    fn serprompt(&mut self, state: &mut ParserState, err: ParserError);
 
     fn set_activity_timer(&mut self, ticks: u8);
     fn set_activity_led_low(&mut self);
+}
+
+pub struct DivRuntimeAdapter<'a, H: DivRuntimeHardware> {
+    pub device: &'a mut DivDeviceState<H>,
+    pub busy: bool,
+    pub activity_timer_ticks: Option<u8>,
+    pub activity_led_low_count: usize,
+}
+
+impl<'a, H: DivRuntimeHardware> DivRuntimeAdapter<'a, H> {
+    pub fn new(device: &'a mut DivDeviceState<H>) -> Self {
+        Self {
+            device,
+            busy: false,
+            activity_timer_ticks: None,
+            activity_led_low_count: 0,
+        }
+    }
+
+    fn write_status_prompt(&mut self, state: &mut ParserState, err: ParserError) {
+        const ERR_LABELS: [&str; 8] = [
+            "[OK]",
+            "[SRQUSR]",
+            "[BUSY]",
+            "[OVRLD]",
+            "[CMDERR]",
+            "[PARERR]",
+            "[LOCKED]",
+            "[CHKSUM]",
+        ];
+        const FAULT_LABELS: [&str; 4] = ["[OVRNEG]", "[OVRPOS]", "[]", "[]"];
+
+        let original_sub_ch = state.sub_ch;
+        state.sub_ch = 255;
+        self.write_ch_prefix(state);
+        state.sub_ch = original_sub_ch;
+
+        let fault_flags = self.fault_flags();
+        let mut status = 0u8;
+        if self.busy {
+            status |= 0x80;
+        }
+        if err == ParserError::UserReq {
+            status |= 0x40;
+        }
+        if fault_flags != 0 || state.overload_flag {
+            status |= 0x20;
+        }
+        if state.ee_unlocked {
+            status |= 0x10;
+        }
+
+        if err == ParserError::OvlErr {
+            status |= fault_flags;
+        } else {
+            status |= err as u8;
+            if err != ParserError::NoErr && err != ParserError::UserReq {
+                state.errcount += 1;
+            }
+        }
+
+        self.device.hw.serial_write(&status.to_string());
+        if fault_flags != 0 {
+            for (bit, label) in FAULT_LABELS.iter().enumerate() {
+                if (fault_flags & (1 << bit)) != 0 {
+                    self.device.hw.serial_write(" ");
+                    self.device.hw.serial_write(label);
+                }
+            }
+        } else {
+            self.device.hw.serial_write(" ");
+            self.device
+                .hw
+                .serial_write(ERR_LABELS[(err as usize).min(ERR_LABELS.len() - 1)]);
+        }
+        self.ser_crlf();
+    }
+
+    fn write_formatted_param(&mut self, state: &ParserState, overload: bool) {
+        self.write_ch_prefix(state);
+        if overload && state.sub_ch < 20 {
+            self.device.hw.serial_write("-9999 [OVERLD]");
+            self.ser_crlf();
+            return;
+        }
+
+        self.device
+            .hw
+            .serial_write(&format_serial_param(state.param));
+        if state.sub_ch < 20 {
+            if let Some(suffix) = range_exponent_suffix(self.device.range) {
+                self.device.hw.serial_write(suffix);
+            }
+        }
+        self.ser_crlf();
+    }
+
+    fn fault_flags(&self) -> u8 {
+        let mut flags = 0u8;
+        if self.device.overload_negative {
+            flags |= 0x01;
+        }
+        if self.device.overload_positive {
+            flags |= 0x02;
+        }
+        flags
+    }
+}
+
+impl<H: DivRuntimeHardware> DivParserHooks for DivRuntimeAdapter<'_, H> {
+    fn is_busy(&self) -> bool {
+        self.busy
+    }
+
+    fn get_ad24(&mut self, sub_ch: u8, state: &mut ParserState) {
+        let raw = self.device.hw.read_adc24() + self.device.eeprom.ad24_offsets[self.device.range as usize];
+        state.ad24temp = match sub_ch {
+            1 => raw,
+            2 => raw,
+            _ => raw,
+        };
+    }
+
+    fn wait_ad24(&mut self, _state: &mut ParserState) {}
+
+    fn wait_ad10(&mut self, _state: &mut ParserState) {}
+
+    fn get_ad10(&mut self, channel: u8, state: &mut ParserState) {
+        let raw =
+            i32::from(self.device.hw.read_adc10(channel))
+                + i32::from(self.device.eeprom.ad10_offsets[self.device.range as usize]);
+        state.param_long_int = raw;
+    }
+
+    fn get_adc(&mut self, channel: u8) -> i32 {
+        i32::from(self.device.hw.read_adc10(channel))
+    }
+
+    fn param_scale24(&mut self, state: &mut ParserState) {
+        state.param = self.device.param_scale_24(state.ad24temp);
+    }
+
+    fn param_scale10(&mut self, state: &mut ParserState) {
+        let raw = state.param_long_int as i16;
+        state.param = self.device.param_scale_10(raw);
+    }
+
+    fn is_ac_range(&self, _state: &ParserState) -> bool {
+        self.device.is_ac_range()
+    }
+
+    fn get_range(&self) -> u8 {
+        self.device.range as u8
+    }
+
+    fn get_offset24(&self, index: usize) -> i32 {
+        self.device.eeprom.ad24_offsets[index]
+    }
+
+    fn set_offset24(&mut self, index: usize, value: i32) {
+        self.device.eeprom.ad24_offsets[index] = value;
+    }
+
+    fn get_offset10(&self, index: usize) -> i32 {
+        i32::from(self.device.eeprom.ad10_offsets[index])
+    }
+
+    fn set_offset10(&mut self, index: usize, value: i32) {
+        self.device.eeprom.ad10_offsets[index] = value as i16;
+    }
+
+    fn get_scale24(&self, index: usize) -> f32 {
+        self.device.eeprom.ad24_scales[index]
+    }
+
+    fn set_scale24(&mut self, index: usize, value: f32) {
+        self.device.eeprom.ad24_scales[index] = value;
+    }
+
+    fn get_scale10(&self, index: usize) -> f32 {
+        self.device.eeprom.ad10_scales[index]
+    }
+
+    fn set_scale10(&mut self, index: usize, value: f32) {
+        self.device.eeprom.ad10_scales[index] = value;
+    }
+
+    fn get_trigger_mask(&self) -> u8 {
+        self.device.eeprom.trigger_mode
+    }
+
+    fn set_trigger_mask(&mut self, value: u8) {
+        self.device.eeprom.trigger_mode = value;
+    }
+
+    fn get_trigger_timer_value(&self) -> u16 {
+        self.device.eeprom.trigger_timer_ms
+    }
+
+    fn set_trigger_timer_value(&mut self, value: u16) {
+        self.device.eeprom.trigger_timer_ms = value;
+    }
+
+    fn trigger_now(&mut self) {
+        self.device.trigger_pending = true;
+    }
+
+    fn check_limits(&mut self, state: &mut ParserState) {
+        state.check_limit_err = ParserError::NoErr;
+        if state.range > 127 {
+            state.range = 0;
+            state.check_limit_err = ParserError::ParamErr;
+        }
+        if state.range > 15 {
+            state.range = 15;
+            state.check_limit_err = ParserError::ParamErr;
+        }
+    }
+
+    fn switch_range(&mut self, state: &mut ParserState) {
+        let range = div_range_from_u8(state.range);
+        self.device.switch_range(range);
+        state.range = self.device.range as u8;
+    }
+
+    fn show_range(&mut self, _state: &mut ParserState) {
+        self.device.show_range();
+    }
+
+    fn write_param_long_int_ser(&mut self, state: &ParserState) {
+        self.write_ch_prefix(state);
+        self.device.hw.serial_write(&state.param_long_int.to_string());
+        self.ser_crlf();
+    }
+
+    fn write_param_ser(&mut self, state: &ParserState, overload: bool) {
+        self.write_formatted_param(state, overload);
+    }
+
+    fn write_ch_prefix(&mut self, state: &ParserState) {
+        self.device
+            .hw
+            .serial_write(&format!("#{}:{}=", state.slave_ch, state.sub_ch));
+    }
+
+    fn write_ser_inp(&mut self, input: &str) {
+        self.device.hw.serial_write(input);
+        self.ser_crlf();
+    }
+
+    fn write_str(&mut self, text: &str) {
+        self.device.hw.serial_write(text);
+    }
+
+    fn ser_crlf(&mut self) {
+        self.device.ser_crlf();
+    }
+
+    fn serprompt(&mut self, state: &mut ParserState, err: ParserError) {
+        self.write_status_prompt(state, err);
+    }
+
+    fn set_activity_timer(&mut self, ticks: u8) {
+        self.activity_timer_ticks = Some(ticks);
+    }
+
+    fn set_activity_led_low(&mut self) {
+        self.activity_led_low_count += 1;
+    }
 }
 
 pub struct DivParser<H> {
@@ -191,6 +477,7 @@ where
                 self.hooks.param_scale24(&mut self.state);
             }
             19 => {
+                self.state.range = self.hooks.get_range();
                 self.state.param_long_int = i32::from(self.state.range);
                 is_integer = true;
             }
@@ -244,30 +531,30 @@ where
                 self.state.sub_ch = 0;
             }
             100..=115 => {
-                self.state.param_long_int = self.state.offset_array24[(self.state.sub_ch - 100) as usize];
+                self.state.param_long_int = self.hooks.get_offset24((self.state.sub_ch - 100) as usize);
                 is_integer = true;
             }
             120..=135 => {
-                self.state.param_long_int = self.state.offset_array10[(self.state.sub_ch - 120) as usize];
+                self.state.param_long_int = self.hooks.get_offset10((self.state.sub_ch - 120) as usize);
                 is_integer = true;
             }
             200..=215 => {
-                self.state.param = self.state.scale_array24[(self.state.sub_ch - 200) as usize];
+                self.state.param = self.hooks.get_scale24((self.state.sub_ch - 200) as usize);
             }
             220..=235 => {
-                self.state.param = self.state.scale_array10[(self.state.sub_ch - 220) as usize];
+                self.state.param = self.hooks.get_scale10((self.state.sub_ch - 220) as usize);
             }
             240 => {
                 is_integer = true;
-                self.state.param_long_int = i32::from(self.state.trig_mask);
+                self.state.param_long_int = i32::from(self.hooks.get_trigger_mask());
             }
             247 => {
                 is_integer = true;
-                self.state.param_long_int = i32::from(self.state.trig_timer_value);
+                self.state.param_long_int = i32::from(self.hooks.get_trigger_timer_value());
             }
             249 => {
-                self.state.trigger = true;
-                self.hooks.serprompt(ParserError::NoErr);
+                self.hooks.trigger_now();
+                self.hooks.serprompt(&mut self.state, ParserError::NoErr);
                 return;
             }
             251 => {
@@ -287,11 +574,11 @@ where
                 return;
             }
             255 => {
-                self.hooks.serprompt(ParserError::NoErr);
+                self.hooks.serprompt(&mut self.state, ParserError::NoErr);
                 return;
             }
             _ => {
-                self.hooks.serprompt(ParserError::ParamErr);
+                self.hooks.serprompt(&mut self.state, ParserError::ParamErr);
                 return;
             }
         }
@@ -320,7 +607,7 @@ where
                     self.state.lcd_integrate = self.state.param_long_int as u8;
                     self.state.init_lcd_integrate = self.state.lcd_integrate;
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
@@ -329,65 +616,70 @@ where
                     self.state.inc_rast = self.state.param_long_int;
                     self.state.init_inc_rast = self.state.inc_rast;
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             100..=115 => {
                 if self.state.ee_unlocked {
-                    self.state.offset_array24[(self.state.sub_ch - 100) as usize] = self.state.param_long_int;
+                    self.hooks
+                        .set_offset24((self.state.sub_ch - 100) as usize, self.state.param_long_int);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             120..=135 => {
                 if self.state.ee_unlocked {
-                    self.state.offset_array10[(self.state.sub_ch - 120) as usize] = self.state.param_long_int;
+                    self.hooks
+                        .set_offset10((self.state.sub_ch - 120) as usize, self.state.param_long_int);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             200..=215 => {
                 if self.state.ee_unlocked {
-                    self.state.scale_array24[(self.state.sub_ch - 200) as usize] = self.state.param;
+                    self.hooks
+                        .set_scale24((self.state.sub_ch - 200) as usize, self.state.param);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             220..=235 => {
                 if self.state.ee_unlocked {
-                    self.state.scale_array10[(self.state.sub_ch - 220) as usize] = self.state.param;
+                    self.hooks
+                        .set_scale10((self.state.sub_ch - 220) as usize, self.state.param);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             240 => {
                 if self.state.ee_unlocked {
-                    self.state.trig_mask = self.state.param_long_int as u8;
+                    self.hooks.set_trigger_mask(self.state.param_long_int as u8);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             247 => {
                 if self.state.ee_unlocked {
                     if (1..=9).contains(&self.state.param_long_int) {
-                        self.hooks.serprompt(ParserError::ParamErr);
+                        self.hooks.serprompt(&mut self.state, ParserError::ParamErr);
                         return;
                     }
-                    self.state.trig_timer_value = self.state.param_long_int as u16;
+                    self.hooks
+                        .set_trigger_timer_value(self.state.param_long_int as u16);
                 } else {
-                    self.hooks.serprompt(ParserError::LockedErr);
+                    self.hooks.serprompt(&mut self.state, ParserError::LockedErr);
                     return;
                 }
             }
             249 => {
-                self.state.trigger = true;
-                self.hooks.serprompt(ParserError::NoErr);
+                self.hooks.trigger_now();
+                self.hooks.serprompt(&mut self.state, ParserError::NoErr);
                 return;
             }
             250 => {}
@@ -395,7 +687,7 @@ where
                 self.state.errcount = self.state.param_long_int;
             }
             _ => {
-                self.hooks.serprompt(ParserError::ParamErr);
+                self.hooks.serprompt(&mut self.state, ParserError::ParamErr);
                 return;
             }
         }
@@ -406,7 +698,8 @@ where
             self.state.ee_unlocked = true;
         }
         if self.state.verbose || self.state.check_limit_err != ParserError::NoErr {
-            self.hooks.serprompt(self.state.check_limit_err);
+            let err = self.state.check_limit_err;
+            self.hooks.serprompt(&mut self.state, err);
         }
     }
 
@@ -461,7 +754,7 @@ where
     pub fn parse_sub_ch(&mut self) {
         if self.state.ser_inp_str.is_empty() {
             // Empty input is treated as a no-op status poll.
-            self.hooks.serprompt(ParserError::NoErr);
+            self.hooks.serprompt(&mut self.state, ParserError::NoErr);
             return;
         }
 
@@ -500,6 +793,11 @@ where
             return;
         }
 
+        if self.hooks.is_busy() {
+            self.hooks.serprompt(&mut self.state, ParserError::BusyErr);
+            return;
+        }
+
         // `!` and `?` both request the verbose response form.
         self.state.verbose = self.state.ser_inp_str.contains('!') || self.state.ser_inp_str.contains('?');
 
@@ -519,7 +817,7 @@ where
 
             // The Pascal code excludes the `$xx` suffix itself from the XOR checksum.
             if checksum != checksum_in {
-                self.hooks.serprompt(ParserError::ChecksumErr);
+                self.hooks.serprompt(&mut self.state, ParserError::ChecksumErr);
                 return;
             }
         }
@@ -535,7 +833,7 @@ where
         } else {
             self.state.cmd_which = self.cmd2index();
             if self.state.cmd_which == CmdWhich::Err {
-                self.hooks.serprompt(ParserError::SyntaxErr);
+                self.hooks.serprompt(&mut self.state, ParserError::SyntaxErr);
                 return;
             }
 
@@ -554,7 +852,7 @@ where
         }
 
         let Some(eq_pos) = self.state.ser_inp_str.find('=') else {
-            self.hooks.serprompt(ParserError::ParamErr);
+            self.hooks.serprompt(&mut self.state, ParserError::ParamErr);
             return;
         };
 
@@ -564,7 +862,7 @@ where
             self.state.param = parse_f32_default(&self.state.param_str, 0.0);
             self.state.param_long_int = self.state.param as i32;
         } else if self.state.cmd_which >= CmdWhich::Val {
-            self.hooks.serprompt(ParserError::ParamErr);
+            self.hooks.serprompt(&mut self.state, ParserError::ParamErr);
             return;
         }
 
@@ -593,4 +891,164 @@ fn parse_f32_default(value: &str, default: f32) -> f32 {
 
 fn parse_hex_u8_default(value: &str, default: u8) -> u8 {
     u8::from_str_radix(value.trim(), 16).unwrap_or(default)
+}
+
+fn div_range_from_u8(value: u8) -> DivRange {
+    match value {
+        0 => DivRange::Dc250mV,
+        1 => DivRange::Dc2V5,
+        2 => DivRange::Dc25V,
+        3 => DivRange::Dc250V,
+        4 => DivRange::Ac250mV,
+        5 => DivRange::Ac2V5,
+        6 => DivRange::Ac25V,
+        7 => DivRange::Ac250V,
+        8 => DivRange::Dc250uA,
+        9 => DivRange::Dc25mA,
+        10 => DivRange::Dc2A5,
+        11 => DivRange::Dc10A,
+        12 => DivRange::Ac250uA,
+        13 => DivRange::Ac25mA,
+        14 => DivRange::Ac2A5,
+        _ => DivRange::Ac10A,
+    }
+}
+
+fn range_exponent_suffix(range: DivRange) -> Option<&'static str> {
+    match range {
+        DivRange::Dc250mV | DivRange::Ac250mV | DivRange::Dc25mA | DivRange::Ac25mA => {
+            Some("E-3")
+        }
+        DivRange::Dc250uA | DivRange::Ac250uA => Some("E-6"),
+        _ => None,
+    }
+}
+
+fn format_serial_param(value: f32) -> String {
+    format!("{value:.6}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, Clone, Default)]
+    struct MockHardware {
+        serial: String,
+        lcd_lines: Vec<(u8, String)>,
+        last_range: Option<DivRange>,
+        ad24: i32,
+        ad10: [i16; 8],
+    }
+
+    impl DivRuntimeHardware for MockHardware {
+        fn read_adc10(&mut self, channel_1_based: u8) -> i16 {
+            self.ad10[channel_1_based as usize]
+        }
+
+        fn read_adc24(&mut self) -> i32 {
+            self.ad24
+        }
+
+        fn set_range(&mut self, range: DivRange) {
+            self.last_range = Some(range);
+        }
+
+        fn serial_write(&mut self, text: &str) {
+            self.serial.push_str(text);
+        }
+
+        fn lcd_write_line(&mut self, row: u8, text: &str) {
+            self.lcd_lines.push((row, text.to_string()));
+        }
+    }
+
+    fn run_frame(parser: &mut DivParser<DivRuntimeAdapter<'_, MockHardware>>, frame: &str) {
+        parser.state.ser_inp_str = frame.to_string();
+        parser.parse_sub_ch();
+    }
+
+    fn new_parser() -> DivParser<DivRuntimeAdapter<'static, MockHardware>> {
+        let device = Box::new(DivDeviceState::new(MockHardware::default()));
+        let leaked = Box::leak(device);
+        let hooks = DivRuntimeAdapter::new(leaked);
+        let mut parser = DivParser::new(hooks);
+        parser.state.slave_ch = 1;
+        parser.state.current_ch = 1;
+        parser
+    }
+
+    #[test]
+    fn busy_commands_fail_before_execution() {
+        let mut parser = new_parser();
+        parser.hooks.busy = true;
+
+        run_frame(&mut parser, "1:RNG?");
+
+        assert_eq!(parser.hooks.device.hw.serial, "#1:255=130 [BUSY]\r\n");
+        assert_eq!(parser.hooks.activity_timer_ticks, None);
+    }
+
+    #[test]
+    fn calibration_and_range_writes_hit_live_device_state() {
+        let mut parser = new_parser();
+
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:RNG=5");
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:OFS 0=42");
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:OFS 20=7");
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:SCL 0=1.5");
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:SCL 20=2.5");
+
+        assert_eq!(parser.hooks.device.range, DivRange::Ac2V5);
+        assert_eq!(parser.hooks.device.hw.last_range, Some(DivRange::Ac2V5));
+        assert_eq!(parser.hooks.device.eeprom.ad24_offsets[0], 42);
+        assert_eq!(parser.hooks.device.eeprom.ad10_offsets[0], 7);
+        assert_eq!(parser.hooks.device.eeprom.ad24_scales[0], 1.5);
+        assert_eq!(parser.hooks.device.eeprom.ad10_scales[0], 2.5);
+        assert!(!parser.state.ee_unlocked);
+    }
+
+    #[test]
+    fn trigger_commands_update_runtime_state() {
+        let mut parser = new_parser();
+
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:TRM=3");
+        run_frame(&mut parser, "1:WEN=1");
+        run_frame(&mut parser, "1:TRT=25");
+        run_frame(&mut parser, "1:TRG?");
+
+        assert_eq!(parser.hooks.device.eeprom.trigger_mode, 3);
+        assert_eq!(parser.hooks.device.eeprom.trigger_timer_ms, 25);
+        assert!(parser.hooks.device.trigger_pending);
+        assert!(parser.hooks.device.hw.serial.ends_with("#1:255=0 [OK]\r\n"));
+    }
+
+    #[test]
+    fn forwarded_frames_preserve_pascal_wire_format() {
+        let mut parser = new_parser();
+
+        run_frame(&mut parser, "#2:19=5");
+        run_frame(&mut parser, "2:IDN?");
+
+        assert_eq!(parser.hooks.device.hw.serial, "#2:19=5\r\n2:IDN?\r\n");
+    }
+
+    #[test]
+    fn replies_use_prefixed_pascal_framing() {
+        let mut parser = new_parser();
+
+        run_frame(&mut parser, "1:IDN?");
+        run_frame(&mut parser, "1:RNG?");
+
+        assert_eq!(
+            parser.hooks.device.hw.serial,
+            "#1:254=3.10 [DIV by CM/c't 03/2007] \r\n#1:19=1\r\n"
+        );
+    }
 }

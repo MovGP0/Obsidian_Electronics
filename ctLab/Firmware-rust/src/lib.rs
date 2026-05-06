@@ -18,5 +18,11 @@ pub mod dds;
 #[path = "../DIV/DIV-HW.rs"]
 pub mod div_hw;
 
+#[path = "../DIV/DIV.rs"]
+pub mod div;
+
+#[path = "../DIV/DIV-Parser.rs"]
+pub mod div_parser;
+
 #[path = "../EDL/EDL-HW.rs"]
 pub mod edl_hw;
