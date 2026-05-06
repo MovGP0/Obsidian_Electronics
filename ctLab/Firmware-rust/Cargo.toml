@@ -1,0 +1,10 @@
+[package]
+name = "ctlab-firmware-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+avrd = { version = "1.0.0", features = ["all-mcus"] }
+
+[lib]
+path = "src/lib.rs"
