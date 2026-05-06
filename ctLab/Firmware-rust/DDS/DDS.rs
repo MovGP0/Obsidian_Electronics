@@ -38,11 +38,17 @@ const SQUARE_DAC_FACTOR: Float = 0.707_11;
 const PEAK_FACTOR: Float = 2.828_427_1;
 const DDS_FACTORS: [u32; 8] = [64_000_000, 6_400_000, 640_000, 64_000, 6_400, 640, 64, 6];
 const INP_GAINS: [Float; 4] = [0.1, 1.0, 10.0, 100.0];
+const INCR_ACC_ARRAY: [i32; 16] = [
+    0, 1, 5, 10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 25_000, 25_000,
+];
 const TERZ_ARRAY: [i32; 32] = [
     200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300,
     8000, 10000, 12500, 16000, 20000, 25000, 31500, 40000, 50000, 63000, 80000, 100000, 125000,
     160000, 200000, 0,
 ];
+const LCD_CHARSET_0: [u8; 8] = [0x01, 0x03, 0x07, 0x0f, 0x07, 0x03, 0x01, 0x00];
+const LCD_CHARSET_1: [u8; 8] = [0x01, 0x03, 0x05, 0x09, 0x05, 0x03, 0x01, 0x00];
+const LCD_CHARSET_2: [u8; 8] = [0x01, 0x02, 0x05, 0x0a, 0x05, 0x02, 0x01, 0x00];
 
 const ERR_LABELS: [&str; 8] = [
     "[OK]",
@@ -265,6 +271,16 @@ pub trait DdsHardware {
     }
     fn serial_write(&mut self, text: &str);
     fn serial_read(&mut self) -> Option<char>;
+    fn set_serial_baud_register(&mut self, _register: u8, _double_speed: bool) {}
+    fn read_slave_channel(&mut self) -> u8 {
+        0
+    }
+    fn set_activity_led(&mut self, _enabled: bool) {}
+    fn delay_ms(&mut self, _milliseconds: u16) {}
+    fn lcd_setup(&mut self) -> bool {
+        true
+    }
+    fn lcd_define_custom_char(&mut self, _slot: u8, _bitmap: [u8; 8]) {}
     fn lcd_write_line(&mut self, row: u8, text: &str);
 }
 
@@ -274,6 +290,13 @@ pub enum PanelEvent {
     ToggleFine,
     NextModify,
     PrevModify,
+    Buttons {
+        enter: bool,
+        left: bool,
+        right: bool,
+    },
+    IncrTimerElapsed,
+    DisplayTimerElapsed,
     ReleaseBusy,
 }
 
@@ -305,6 +328,15 @@ pub struct DeviceState<H> {
     pub input_gain_fac: Float,
     pub panel_modify: Modify,
     pub inc_rast: i32,
+    pub incr_fine: bool,
+    pub encoder_delta_accum: i32,
+    pub lcd_present: bool,
+    pub serial_baud_reg: u8,
+    pub burst_timer_ticks: u8,
+    pub activity_timer_ticks: u8,
+    pub display_timer_ticks: u16,
+    pub incr_timer_ticks: u16,
+    pub level_range_high: bool,
     pub changed_flag: bool,
     pub first_turn: bool,
     pub err_count: i32,
@@ -342,6 +374,15 @@ impl<H: DdsHardware> DeviceState<H> {
             input_gain_fac: 1.0,
             panel_modify: Modify::FreqSel,
             inc_rast: 4,
+            incr_fine: false,
+            encoder_delta_accum: 0,
+            lcd_present: false,
+            serial_baud_reg: 51,
+            burst_timer_ticks: 0,
+            activity_timer_ticks: 0,
+            display_timer_ticks: 0,
+            incr_timer_ticks: 0,
+            level_range_high: false,
             changed_flag: false,
             first_turn: true,
             err_count: 0,
@@ -352,6 +393,7 @@ impl<H: DdsHardware> DeviceState<H> {
         state.patch_copy_from_ee();
         state.switch_range();
         state.db = state.dac_level_to_db(state.dac_level);
+        state.level_range_high = state.dac_level > 1_000.0;
         state
     }
 
@@ -377,6 +419,23 @@ impl<H: DdsHardware> DeviceState<H> {
 
     fn format_tenths_hz(value: i32) -> String {
         Self::format_param(value as Float / 10.0, 1)
+    }
+
+    fn pascal_add_byte(base: u8, delta: i32) -> u8 {
+        base.wrapping_add(delta as u8)
+    }
+
+    fn emit_user_srq(&mut self, status_offset: u8) {
+        let masked_status = self.status.as_byte() & 0x2f;
+        self.ser_prompt(
+            ErrorCode::NoErr,
+            masked_status.wrapping_add(status_offset),
+            true,
+        );
+    }
+
+    fn parse_get_param_for_panel(&mut self, sub_ch: u8) {
+        let _ = self.parse_get_param(sub_ch, true, "");
     }
 
     fn write_ch_prefix(&mut self, sub_ch: u8) {
@@ -433,6 +492,7 @@ impl<H: DdsHardware> DeviceState<H> {
         self.attn_fac = self.eeprom.init_attn_fac;
         self.attn_switch_point = self.dac_level_max / self.attn_fac.max(0.001);
         self.burst_gate_open = true;
+        self.level_range_high = self.dac_level > 1_000.0;
         self.set_limits();
     }
 
@@ -556,6 +616,7 @@ impl<H: DdsHardware> DeviceState<H> {
 
     pub fn apply_output_state(&mut self) {
         self.switch_range();
+        self.level_range_high = self.dac_level > 1_000.0;
         self.hw.send_dds_frequency_word(self.dds_tuning_word());
         self.hw
             .send_amplitude_word(self.dac_level.clamp(0.0, u16::MAX as Float) as u16);
@@ -566,10 +627,16 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn param_str_on_lcd(&mut self) {
+        if !self.lcd_present {
+            return;
+        }
         self.hw.lcd_write_line(1, &self.param_str);
     }
 
     pub fn soll_werte_on_lcd(&mut self) {
+        if !self.lcd_present {
+            return;
+        }
         self.hw
             .lcd_write_line(0, &Self::format_tenths_hz(self.frequency_tenths_hz));
         self.hw
@@ -985,52 +1052,78 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn handle_panel_event(&mut self, event: PanelEvent) {
-        self.status.busy_flag = true;
-        self.changed_flag = true;
-
         match event {
-            PanelEvent::ToggleFine => {
-                self.ser_prompt(ErrorCode::NoErr, self.status.as_byte().wrapping_add(67), true);
-                self.first_turn = false;
-            }
-            PanelEvent::NextModify => {
-                self.panel_modify = self.panel_modify.next();
-                self.ser_prompt(ErrorCode::NoErr, self.status.as_byte().wrapping_add(65), true);
-                self.first_turn = false;
-            }
-            PanelEvent::PrevModify => {
-                self.panel_modify = self.panel_modify.prev();
-                self.ser_prompt(ErrorCode::NoErr, self.status.as_byte().wrapping_add(66), true);
-                self.first_turn = false;
-            }
-            PanelEvent::ReleaseBusy => {
-                if !self.first_turn {
-                    self.ser_prompt(ErrorCode::NoErr, self.status.as_byte().wrapping_add(64), true);
-                }
-                self.first_turn = true;
-                self.status.busy_flag = false;
-                self.changed_flag = false;
-                self.soll_werte_on_lcd();
-            }
             PanelEvent::EncoderDelta(delta) => {
+                self.activity_timer_ticks = 25;
+                self.hw.set_activity_led(true);
+                self.encoder_delta_accum = self.encoder_delta_accum.saturating_add(i32::from(delta));
+                self.incr_timer_ticks = 20;
+
+                let inc_rast = self.inc_rast.max(1);
+                if self.encoder_delta_accum.abs() < inc_rast {
+                    return;
+                }
+
+                self.status.busy_flag = true;
+                self.changed_flag = true;
+
+                let scaled_delta = self.encoder_delta_accum / inc_rast;
+                self.encoder_delta_accum = 0;
+
+                let sign = scaled_delta.signum();
+                let accel_index =
+                    (scaled_delta.unsigned_abs() as usize).min(INCR_ACC_ARRAY.len() - 1);
+                let accelerated_delta = sign * INCR_ACC_ARRAY[accel_index];
+                let acc_int10 = accelerated_delta * 10;
+                let acc_float = accelerated_delta as Float;
+                self.display_timer_ticks = 150;
+
                 if self.first_turn {
-                    self.ser_prompt(ErrorCode::NoErr, self.status.as_byte().wrapping_add(67), true);
+                    self.emit_user_srq(67);
                 }
 
                 match self.panel_modify {
                     Modify::FreqSel => {
-                        self.frequency_tenths_hz = self
-                            .frequency_tenths_hz
-                            .saturating_add(i32::from(delta) * 10);
+                        if self.incr_fine {
+                            if self.first_turn {
+                                self.frequency_tenths_hz = (self.frequency_tenths_hz / 10) * 10;
+                            }
+                            self.frequency_tenths_hz =
+                                self.frequency_tenths_hz.saturating_add(acc_int10);
+                        } else {
+                            self.terz_num = Self::pascal_add_byte(self.terz_num, scaled_delta);
+                            self.check_limits();
+                            self.frequency_tenths_hz = TERZ_ARRAY[self.terz_num as usize];
+                        }
+                        self.parse_get_param_for_panel(0);
                     }
                     Modify::AmplSel | Modify::PeakSel => {
-                        self.dac_level += delta as Float;
-                        self.db = self.dac_level_to_db(self.dac_level);
+                        if self.incr_fine {
+                            if self.first_turn {
+                                self.dac_level = self.dac_level.trunc();
+                            }
+                            self.dac_level += acc_float;
+                            self.check_limits();
+                            self.db = self.dac_level_to_db(self.dac_level);
+                        } else {
+                            if self.first_turn {
+                                self.db = self.db.trunc();
+                            }
+                            self.db += acc_float;
+                            self.dac_level = self.db_to_dac_level(self.db);
+                        }
+                        self.parse_get_param_for_panel(1);
                     }
                     Modify::WaveSel => {
-                        let next = (i16::from(self.waveform.as_byte()) + delta).clamp(0, 249) as u8;
-                        self.waveform = Waveform::from_byte(next);
+                        let next_wave =
+                            Self::pascal_add_byte(self.waveform.as_byte(), accelerated_delta);
+                        self.waveform = Waveform::from_byte(next_wave);
                         self.set_limits();
+                        self.check_limits();
+                        self.parse_get_param_for_panel(4);
+                        if let Waveform::External(index) = self.waveform {
+                            self.hw.send_aux_config(index);
+                        }
                         if self.waveform == Waveform::Logic {
                             self.dac_level =
                                 self.eeprom.init_logic_level_mv / self.pwr_gain.max(0.001) / PEAK_FACTOR;
@@ -1038,16 +1131,28 @@ impl<H: DdsHardware> DeviceState<H> {
                         }
                     }
                     Modify::BurstSel => {
-                        let next = (i16::from(self.burst_mode) + delta).clamp(0, 100) as u8;
-                        self.burst_mode = next;
+                        self.burst_mode = Self::pascal_add_byte(self.burst_mode, accelerated_delta);
+                        self.check_limits();
+                        self.parse_get_param_for_panel(5);
                     }
                     Modify::DcSel => {
-                        self.offset_mv = self.offset_mv.saturating_add(i32::from(delta) * 5);
+                        if self.incr_fine {
+                            self.offset_mv = self.offset_mv.saturating_add(accelerated_delta * 5);
+                        } else {
+                            if self.first_turn {
+                                self.offset_mv = (self.offset_mv / 100) * 100;
+                            }
+                            self.offset_mv = self.offset_mv.saturating_add(acc_int10 * 10);
+                        }
+                        self.parse_get_param_for_panel(20);
                     }
                     Modify::InpSel => {
-                        let next = (i16::from(self.range.as_byte()) + delta).clamp(0, 3) as u8;
-                        self.range = InputRange::from_byte(next);
+                        self.display_timer_ticks = 10;
+                        let next_range = Self::pascal_add_byte(self.range.as_byte(), scaled_delta);
+                        self.range = InputRange::from_byte(next_range);
+                        self.check_limits();
                         self.switch_range();
+                        self.parse_get_param_for_panel(19);
                     }
                 }
 
@@ -1055,6 +1160,71 @@ impl<H: DdsHardware> DeviceState<H> {
                 self.apply_output_state();
                 self.soll_werte_on_lcd();
                 self.first_turn = false;
+            }
+            PanelEvent::ToggleFine => {
+                self.handle_panel_event(PanelEvent::Buttons {
+                    enter: true,
+                    left: false,
+                    right: false,
+                });
+            }
+            PanelEvent::NextModify => {
+                self.handle_panel_event(PanelEvent::Buttons {
+                    enter: false,
+                    left: true,
+                    right: false,
+                });
+            }
+            PanelEvent::PrevModify => {
+                self.handle_panel_event(PanelEvent::Buttons {
+                    enter: false,
+                    left: false,
+                    right: true,
+                });
+            }
+            PanelEvent::Buttons { enter, left, right } => {
+                if !(enter || left || right) {
+                    return;
+                }
+
+                self.status.busy_flag = true;
+                self.changed_flag = true;
+
+                if enter {
+                    self.emit_user_srq(67);
+                    self.incr_fine = !self.incr_fine;
+                }
+                if left {
+                    self.emit_user_srq(65);
+                    self.panel_modify = self.panel_modify.next();
+                }
+                if right {
+                    self.emit_user_srq(66);
+                    self.panel_modify = self.panel_modify.prev();
+                }
+
+                self.display_timer_ticks = 150;
+                self.apply_output_state();
+                self.soll_werte_on_lcd();
+                self.first_turn = false;
+            }
+            PanelEvent::IncrTimerElapsed => {
+                self.incr_timer_ticks = 20;
+                if !self.first_turn {
+                    self.emit_user_srq(64);
+                }
+                self.first_turn = true;
+            }
+            PanelEvent::DisplayTimerElapsed => {
+                self.display_timer_ticks = 25;
+                self.incr_fine = false;
+                self.status.busy_flag = false;
+                self.changed_flag = false;
+                self.hw.set_activity_led(false);
+                self.soll_werte_on_lcd();
+            }
+            PanelEvent::ReleaseBusy => {
+                self.handle_panel_event(PanelEvent::DisplayTimerElapsed);
             }
         }
     }
@@ -1090,21 +1260,66 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn init_all(&mut self) {
+        let mut baud_reg = self.eeprom.ee_ser_baud_reg;
+        if !(9..=239).contains(&baud_reg) {
+            self.eeprom.ee_ser_baud_reg = 51;
+            baud_reg = 51;
+        }
+        self.serial_baud_reg = baud_reg;
+        self.hw.set_serial_baud_register(baud_reg, true);
+
         self.patch_copy_from_ee();
+        self.slave_channel = self.hw.read_slave_channel();
+        self.hw.set_activity_led(true);
+
+        self.lcd_present = self.hw.lcd_setup();
+        if self.lcd_present {
+            self.hw.lcd_define_custom_char(0, LCD_CHARSET_0);
+            self.hw.lcd_define_custom_char(1, LCD_CHARSET_1);
+            self.hw.lcd_define_custom_char(2, LCD_CHARSET_2);
+            self.hw.lcd_write_line(0, VERS3_STR);
+            if self.eeprom.ee_initialized != EEPROM_INITIALIZED {
+                self.hw.lcd_write_line(1, EE_NOT_PROGRAMMED_STR);
+            } else {
+                self.hw
+                    .lcd_write_line(1, &format!("{ADR_STR}{}", self.slave_channel));
+            }
+        }
+
         self.old_range = InputRange::NoRange;
         self.range = InputRange::Ac1V;
         self.switch_range();
+        self.hw.delay_ms(1000);
+        if self.slave_channel > 0 {
+            for _ in 0..self.slave_channel {
+                self.hw.set_activity_led(false);
+                self.hw.delay_ms(150);
+                self.hw.set_activity_led(true);
+                self.hw.delay_ms(150);
+            }
+        }
+        self.hw.set_activity_led(false);
         self.status = RuntimeStatus::default();
         self.burst_count = 1;
         self.burst_gate_open = true;
+        self.burst_timer_ticks = 1;
         self.current_channel = 255;
         self.panel_modify = Modify::FreqSel;
+        self.incr_fine = false;
+        self.encoder_delta_accum = 0;
+        self.activity_timer_ticks = 0;
+        self.display_timer_ticks = 0;
+        self.incr_timer_ticks = 0;
         self.first_turn = true;
         self.err_count = 0;
         self.err_flag = false;
         self.changed_flag = true;
         self.ser_input.clear();
         while self.hw.serial_read().is_some() {}
+        self.level_range_high = self.dac_level > 1_000.0;
+        self.hw.delay_ms(500);
+        self.apply_output_state();
+        self.hw.delay_ms(250);
         self.apply_output_state();
         self.db = self.dac_level_to_db(self.dac_level);
         self.write_ch_prefix(254);
@@ -1131,6 +1346,12 @@ mod tests {
         frequency_words: Vec<u32>,
         amplitude_words: Vec<u16>,
         lcd_lines: Vec<(u8, String)>,
+        lcd_custom_chars: Vec<(u8, [u8; 8])>,
+        lcd_setup_result: bool,
+        serial_baud_calls: Vec<(u8, bool)>,
+        activity_led_states: Vec<bool>,
+        delay_calls: Vec<u16>,
+        slave_channel: u8,
         input_level_mv: Float,
         input_overload: bool,
     }
@@ -1180,6 +1401,30 @@ mod tests {
 
         fn serial_read(&mut self) -> Option<char> {
             self.serial_in.pop_front()
+        }
+
+        fn set_serial_baud_register(&mut self, register: u8, double_speed: bool) {
+            self.serial_baud_calls.push((register, double_speed));
+        }
+
+        fn read_slave_channel(&mut self) -> u8 {
+            self.slave_channel
+        }
+
+        fn set_activity_led(&mut self, enabled: bool) {
+            self.activity_led_states.push(enabled);
+        }
+
+        fn delay_ms(&mut self, milliseconds: u16) {
+            self.delay_calls.push(milliseconds);
+        }
+
+        fn lcd_setup(&mut self) -> bool {
+            self.lcd_setup_result
+        }
+
+        fn lcd_define_custom_char(&mut self, slot: u8, bitmap: [u8; 8]) {
+            self.lcd_custom_chars.push((slot, bitmap));
         }
 
         fn lcd_write_line(&mut self, row: u8, text: &str) {
@@ -1307,21 +1552,153 @@ mod tests {
     }
 
     #[test]
-    fn init_all_restores_defaults_and_emits_prefixed_banner() {
+    fn panel_loop_restores_coarse_fine_frequency_and_busy_semantics() {
         let mut state = DeviceState::new(MockHardware::default());
-        state.eeprom.ee_initialized = 0;
-        state.frequency_tenths_hz = 55_555;
-        state.process_serial_command("RNG=3!");
+        state.inc_rast = 2;
+        state.lcd_present = true;
+
+        state.handle_panel_event(PanelEvent::EncoderDelta(2));
+        assert_eq!(state.frequency_tenths_hz, 12_500);
+        assert!(state.status.busy_flag);
+        assert_eq!(
+            state.hw.take_serial_output(),
+            "#0:255=67 [OK]\r\n#0:0=1250.0\r\n"
+        );
+
+        state.process_serial_command("FRQ");
+        assert_eq!(state.hw.take_serial_output(), "#0:0=1250.0\r\n");
+
+        state.process_serial_command("FRQ=1300.0!");
+        assert_eq!(state.frequency_tenths_hz, 12_500);
+        assert_eq!(state.hw.take_serial_output(), "#0:255=2 [BUSY]\r\n");
+
+        state.handle_panel_event(PanelEvent::Buttons {
+            enter: true,
+            left: false,
+            right: false,
+        });
+        assert!(state.incr_fine);
+        assert_eq!(state.hw.take_serial_output(), "#0:255=67 [OK]\r\n");
+
+        state.handle_panel_event(PanelEvent::IncrTimerElapsed);
+        assert_eq!(state.hw.take_serial_output(), "#0:255=64 [OK]\r\n");
+
+        state.frequency_tenths_hz = 12_345;
+        state.first_turn = true;
+        state.handle_panel_event(PanelEvent::EncoderDelta(2));
+        assert_eq!(state.frequency_tenths_hz, 12_350);
+        assert_eq!(
+            state.hw.take_serial_output(),
+            "#0:255=67 [OK]\r\n#0:0=1235.0\r\n"
+        );
+
+        state.handle_panel_event(PanelEvent::DisplayTimerElapsed);
+        assert!(!state.status.busy_flag);
+        assert!(!state.incr_fine);
+    }
+
+    #[test]
+    fn panel_loop_restores_amplitude_wave_and_service_transitions() {
+        let mut state = DeviceState::new(MockHardware::default());
+        state.inc_rast = 1;
+        state.panel_modify = Modify::AmplSel;
+        state.incr_fine = true;
+        state.dac_level = 123.7;
+        state.first_turn = true;
+
+        state.handle_panel_event(PanelEvent::EncoderDelta(1));
+        assert!((state.dac_level - 124.0).abs() < 0.01);
+        assert_eq!(
+            state.hw.take_serial_output(),
+            format!(
+                "#0:255=67 [OK]\r\n#0:1={}\r\n",
+                DeviceState::<MockHardware>::format_param(state.dac_level_to_rms(state.dac_level), 1)
+            )
+        );
+
+        state.handle_panel_event(PanelEvent::IncrTimerElapsed);
         state.hw.take_serial_output();
+        state.incr_fine = false;
+        state.first_turn = true;
+        state.db = 1.8;
+        state.dac_level = state.db_to_dac_level(state.db);
+        state.handle_panel_event(PanelEvent::EncoderDelta(2));
+        assert!((state.db - 6.0).abs() < 0.01);
+
+        state.panel_modify = Modify::WaveSel;
+        state.first_turn = true;
+        state.waveform = Waveform::Square;
+        state.handle_panel_event(PanelEvent::EncoderDelta(1));
+        assert_eq!(state.waveform, Waveform::Logic);
+        assert!((state.dac_level_to_peak_mv() - state.eeprom.init_logic_level_mv).abs() < 0.5);
+
+        state.handle_panel_event(PanelEvent::IncrTimerElapsed);
+        state.hw.take_serial_output();
+        state.first_turn = true;
+        state.handle_panel_event(PanelEvent::EncoderDelta(1));
+        assert_eq!(state.waveform, Waveform::External(0));
+        assert_eq!(state.hw.aux_configs.last(), Some(&0));
+        state.hw.take_serial_output();
+
+        state.handle_panel_event(PanelEvent::Buttons {
+            enter: false,
+            left: true,
+            right: true,
+        });
+        assert_eq!(state.hw.take_serial_output(), "#0:255=65 [OK]\r\n#0:255=66 [OK]\r\n");
+    }
+
+    #[test]
+    fn init_all_restores_startup_setup_and_banner_semantics() {
+        let mut state = DeviceState::new(MockHardware {
+            lcd_setup_result: true,
+            slave_channel: 2,
+            ..Default::default()
+        });
+        state.eeprom.ee_initialized = 0;
+        state.eeprom.ee_ser_baud_reg = 5;
+        state.frequency_tenths_hz = 55_555;
+        state.hw.push_serial("stale-input");
 
         state.init_all();
 
-        assert_eq!(state.frequency_tenths_hz, state.eeprom.init_frequency_tenths_hz);
+        assert_eq!(state.eeprom.ee_ser_baud_reg, 51);
+        assert_eq!(state.serial_baud_reg, 51);
+        assert_eq!(state.slave_channel, 2);
+        assert!(state.lcd_present);
         assert_eq!(state.range, InputRange::Ac1V);
         assert_eq!(state.panel_modify, Modify::FreqSel);
+        assert_eq!(state.current_channel, 255);
+        assert_eq!(state.err_count, 0);
+        assert_eq!(state.burst_count, 1);
+        assert_eq!(state.burst_timer_ticks, 1);
+        assert!(state.changed_flag);
+        assert!(state.first_turn);
+        assert!(!state.incr_fine);
+        assert!(state.hw.serial_in.is_empty());
+        assert_eq!(state.hw.serial_baud_calls, vec![(51, true)]);
+        assert_eq!(
+            state.hw.lcd_custom_chars,
+            vec![
+                (0, LCD_CHARSET_0),
+                (1, LCD_CHARSET_1),
+                (2, LCD_CHARSET_2),
+            ]
+        );
+        assert_eq!(
+            state.hw.lcd_lines,
+            vec![
+                (0, VERS3_STR.to_string()),
+                (1, EE_NOT_PROGRAMMED_STR.to_string()),
+            ]
+        );
+        assert_eq!(state.hw.delay_calls, vec![1000, 150, 150, 150, 150, 500, 250]);
+        assert_eq!(state.hw.activity_led_states, vec![true, false, true, false, true, false]);
+        assert_eq!(state.hw.frequency_words.len(), 2);
+        assert_eq!(state.hw.amplitude_words.len(), 2);
         assert_eq!(
             state.hw.take_serial_output(),
-            format!("#0:254={VERS1_STR}{EE_NOT_PROGRAMMED_STR}\r\n")
+            format!("#2:254={VERS1_STR}{EE_NOT_PROGRAMMED_STR}\r\n")
         );
     }
 }
