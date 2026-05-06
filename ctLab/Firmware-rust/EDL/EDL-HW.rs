@@ -9,10 +9,19 @@ use core::marker::PhantomData;
 
 use crate::avrd_support::{Atmega32, Atmega644, AvrdPortIo, Mcu, RegisterPort};
 
+#[cfg(target_arch = "avr")]
+const AVR_SREG_ADDRESS: *mut u8 = 0x5f as *mut u8;
+#[cfg(target_arch = "avr")]
+const AVR_SREG_INTERRUPT_ENABLE_MASK: u8 = 0x80;
+
 pub const ADC10_CHANNEL_MASK: u8 = 0x07;
 pub const ADCSRA_START_DIV128: u8 = 0xC7;
 pub const ADCSRA_BUSY_BIT: u8 = 1 << 6;
 pub const ADC10_SETTLE_CYCLES: usize = 15;
+#[cfg(target_arch = "avr")]
+const EDL_CONTROL_BIT_PORT_IO_ADDRESS: u8 = 0x18;
+#[cfg(target_arch = "avr")]
+const EDL_CONTROL_BIT_PIN_IO_ADDRESS: u8 = 0x16;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ControlBit {
@@ -54,11 +63,24 @@ pub trait EdlHardware {
     fn read_adcl(&self) -> u8;
     fn read_adch(&self) -> u8;
 
+    fn begin_interrupt_exclusion(&mut self) -> u8 {
+        0
+    }
+
+    fn end_interrupt_exclusion(&mut self, _saved_status: u8) {}
+
     fn nop(&mut self) {}
+
+    fn settle_adc10_mux(&mut self) {
+        for _ in 0..ADC10_SETTLE_CYCLES {
+            self.nop();
+        }
+    }
 }
 
 pub struct EdlAvrd<M: Mcu> {
     io: AvrdPortIo<M>,
+    saved_status: u8,
     _marker: PhantomData<M>,
 }
 
@@ -69,6 +91,7 @@ impl<M: Mcu> Default for EdlAvrd<M> {
     fn default() -> Self {
         Self {
             io: AvrdPortIo::default(),
+            saved_status: 0,
             _marker: PhantomData,
         }
     }
@@ -84,25 +107,27 @@ impl<M: Mcu> EdlAvrd<M> {
 
 impl<M: Mcu> EdlHardware for EdlAvrd<M> {
     fn set_control_bit(&mut self, bit: ControlBit, high: bool) {
-        let bit_number = match bit {
-            ControlBit::Sclk => 7,
-            ControlBit::SDataOut => 5,
-            ControlBit::StrDac => 3,
-            ControlBit::StrAd16 => 4,
-            ControlBit::SDataIn1 => 6,
-        };
-        self.io.write_bit(RegisterPort::B, bit_number, high);
+        #[cfg(target_arch = "avr")]
+        {
+            set_edl_control_bit_single_instruction(bit, high);
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            self.set_control_bit_fallback(bit, high);
+        }
     }
 
     fn read_control_bit(&self, bit: ControlBit) -> bool {
-        let bit_number = match bit {
-            ControlBit::Sclk => 7,
-            ControlBit::SDataOut => 5,
-            ControlBit::StrDac => 3,
-            ControlBit::StrAd16 => 4,
-            ControlBit::SDataIn1 => 6,
-        };
-        self.io.read_bit(RegisterPort::B, bit_number)
+        #[cfg(target_arch = "avr")]
+        {
+            read_edl_control_bit_with_skip(bit)
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            self.read_control_bit_fallback(bit)
+        }
     }
 
     fn set_trigger_out(&mut self, _high: bool) {}
@@ -112,7 +137,15 @@ impl<M: Mcu> EdlHardware for EdlAvrd<M> {
     }
 
     fn set_ad16_mpx(&mut self, high: bool) {
-        self.io.write_bit(RegisterPort::B, 1, high);
+        #[cfg(target_arch = "avr")]
+        {
+            set_edl_ad16_mpx_single_instruction(high);
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            self.io.write_bit(RegisterPort::B, 1, high);
+        }
     }
 
     fn set_admux(&mut self, value: u8) {
@@ -139,9 +172,254 @@ impl<M: Mcu> EdlHardware for EdlAvrd<M> {
         unsafe { crate::avrd_support::read_u8(M::ADCH) }
     }
 
+    fn begin_interrupt_exclusion(&mut self) -> u8 {
+        #[cfg(target_arch = "avr")]
+        {
+            self.saved_status = unsafe { core::ptr::read_volatile(AVR_SREG_ADDRESS) };
+            unsafe {
+                core::ptr::write_volatile(
+                    AVR_SREG_ADDRESS,
+                    self.saved_status & !AVR_SREG_INTERRUPT_ENABLE_MASK,
+                );
+            }
+            self.saved_status
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            self.saved_status
+        }
+    }
+
+    fn end_interrupt_exclusion(&mut self, saved_status: u8) {
+        #[cfg(target_arch = "avr")]
+        unsafe {
+            core::ptr::write_volatile(AVR_SREG_ADDRESS, saved_status);
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            self.saved_status = saved_status;
+        }
+    }
+
     fn nop(&mut self) {
         self.io.spin_delay_cycles(1);
     }
+
+    fn settle_adc10_mux(&mut self) {
+        #[cfg(target_arch = "avr")]
+        unsafe {
+            core::arch::asm!(
+                "ldi {counter}, 15",
+                "2:",
+                "dec {counter}",
+                "brne 2b",
+                counter = lateout(reg_upper) _,
+                options(nomem, nostack)
+            );
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            for _ in 0..ADC10_SETTLE_CYCLES {
+                self.io.spin_delay_cycles(1);
+            }
+        }
+    }
+}
+
+impl<M: Mcu> EdlAvrd<M> {
+    fn set_control_bit_fallback(&mut self, bit: ControlBit, high: bool) {
+        let bit_number = match bit {
+            ControlBit::Sclk => 7,
+            ControlBit::SDataOut => 5,
+            ControlBit::StrDac => 3,
+            ControlBit::StrAd16 => 4,
+            ControlBit::SDataIn1 => 6,
+        };
+        self.io.write_bit(RegisterPort::B, bit_number, high);
+    }
+
+    fn read_control_bit_fallback(&self, bit: ControlBit) -> bool {
+        let bit_number = match bit {
+            ControlBit::Sclk => 7,
+            ControlBit::SDataOut => 5,
+            ControlBit::StrDac => 3,
+            ControlBit::StrAd16 => 4,
+            ControlBit::SDataIn1 => 6,
+        };
+        self.io.read_bit(RegisterPort::B, bit_number)
+    }
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_control_bit_single_instruction(bit: ControlBit, high: bool) {
+    match (bit, high) {
+        (ControlBit::Sclk, true) => set_edl_port_b_bit_7(),
+        (ControlBit::Sclk, false) => clear_edl_port_b_bit_7(),
+        (ControlBit::SDataOut, true) => set_edl_port_b_bit_5(),
+        (ControlBit::SDataOut, false) => clear_edl_port_b_bit_5(),
+        (ControlBit::StrDac, true) => set_edl_port_b_bit_3(),
+        (ControlBit::StrDac, false) => clear_edl_port_b_bit_3(),
+        (ControlBit::StrAd16, true) => set_edl_port_b_bit_4(),
+        (ControlBit::StrAd16, false) => clear_edl_port_b_bit_4(),
+        (ControlBit::SDataIn1, true) => set_edl_port_b_bit_6(),
+        (ControlBit::SDataIn1, false) => clear_edl_port_b_bit_6(),
+    }
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_control_bit_with_skip(bit: ControlBit) -> bool {
+    let value = match bit {
+        ControlBit::Sclk => read_edl_pin_b_bit_7_with_skip(),
+        ControlBit::SDataOut => read_edl_pin_b_bit_5_with_skip(),
+        ControlBit::StrDac => read_edl_pin_b_bit_3_with_skip(),
+        ControlBit::StrAd16 => read_edl_pin_b_bit_4_with_skip(),
+        ControlBit::SDataIn1 => read_edl_pin_b_bit_6_with_skip(),
+    };
+    value != 0
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_ad16_mpx_single_instruction(high: bool) {
+    if high {
+        set_edl_port_b_bit_1();
+    } else {
+        clear_edl_port_b_bit_1();
+    }
+}
+
+#[cfg(target_arch = "avr")]
+macro_rules! edl_sbi {
+    ($bit:literal) => {
+        unsafe {
+            core::arch::asm!(
+                "sbi {port}, {bit}",
+                port = const EDL_CONTROL_BIT_PORT_IO_ADDRESS,
+                bit = const $bit,
+                options(nomem, nostack, preserves_flags)
+            );
+        }
+    };
+}
+
+#[cfg(target_arch = "avr")]
+macro_rules! edl_cbi {
+    ($bit:literal) => {
+        unsafe {
+            core::arch::asm!(
+                "cbi {port}, {bit}",
+                port = const EDL_CONTROL_BIT_PORT_IO_ADDRESS,
+                bit = const $bit,
+                options(nomem, nostack, preserves_flags)
+            );
+        }
+    };
+}
+
+#[cfg(target_arch = "avr")]
+macro_rules! edl_sbic_read {
+    ($bit:literal) => {{
+        let value: u8;
+        unsafe {
+            core::arch::asm!(
+                "ldi {value}, 0",
+                "sbic {pin}, {bit}",
+                "ldi {value}, 1",
+                pin = const EDL_CONTROL_BIT_PIN_IO_ADDRESS,
+                bit = const $bit,
+                value = lateout(reg_upper) value,
+                options(nomem, nostack, preserves_flags)
+            );
+        }
+        value
+    }};
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_1() {
+    edl_sbi!(1);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_1() {
+    edl_cbi!(1);
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_3() {
+    edl_sbi!(3);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_3() {
+    edl_cbi!(3);
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_4() {
+    edl_sbi!(4);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_4() {
+    edl_cbi!(4);
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_5() {
+    edl_sbi!(5);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_5() {
+    edl_cbi!(5);
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_6() {
+    edl_sbi!(6);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_6() {
+    edl_cbi!(6);
+}
+
+#[cfg(target_arch = "avr")]
+fn set_edl_port_b_bit_7() {
+    edl_sbi!(7);
+}
+
+#[cfg(target_arch = "avr")]
+fn clear_edl_port_b_bit_7() {
+    edl_cbi!(7);
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_pin_b_bit_3_with_skip() -> u8 {
+    edl_sbic_read!(3)
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_pin_b_bit_4_with_skip() -> u8 {
+    edl_sbic_read!(4)
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_pin_b_bit_5_with_skip() -> u8 {
+    edl_sbic_read!(5)
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_pin_b_bit_6_with_skip() -> u8 {
+    edl_sbic_read!(6)
+}
+
+#[cfg(target_arch = "avr")]
+fn read_edl_pin_b_bit_7_with_skip() -> u8 {
+    edl_sbic_read!(7)
 }
 
 #[derive(Debug, Clone)]
@@ -299,11 +577,15 @@ impl<H: EdlHardware> EdlHw<H> {
     }
 
     pub fn shift_in_1864(&mut self) {
+        let saved_status = self.io.begin_interrupt_exclusion();
+
         self.set(ControlBit::Sclk, false);
         self.set(ControlBit::StrAd16, false);
 
         // The LTC1864 needs a short quiet period after /CONV goes low before the
-        // 16-bit sample can be shifted out.
+        // 16-bit sample can be shifted out. The Pascal path runs this in the
+        // SysTick ISR with interrupts excluded, so keep the clock train
+        // contiguous even when the Rust routine is called directly.
         self.io.nop();
         self.io.nop();
         self.io.nop();
@@ -316,6 +598,7 @@ impl<H: EdlHardware> EdlHw<H> {
         // while the firmware processes the sample it just collected.
         self.set(ControlBit::StrAd16, true);
         self.set(ControlBit::Sclk, false);
+        self.io.end_interrupt_exclusion(saved_status);
     }
 
     pub fn on_sys_tick(&mut self) {
@@ -408,9 +691,7 @@ impl<H: EdlHardware> EdlHw<H> {
             .set_admux(my_channel.wrapping_sub(1) & ADC10_CHANNEL_MASK);
 
         // The Pascal loop burns roughly 3 us so the mux input can settle.
-        for _ in 0..ADC10_SETTLE_CYCLES {
-            self.io.nop();
-        }
+        self.io.settle_adc10_mux();
 
         // 0xC7 starts a conversion with the AVR ADC prescaler at 128.
         self.io.write_adcsra(ADCSRA_START_DIV128);
@@ -473,5 +754,220 @@ impl<H: EdlHardware> EdlHw<H> {
 
     fn set(&mut self, bit: ControlBit, high: bool) {
         self.io.set_control_bit(bit, high);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::{Cell, RefCell};
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    enum Event {
+        Control(ControlBit, bool),
+        Read(ControlBit),
+        TriggerOut(bool),
+        TriggerInRead,
+        Ad16Mpx(bool),
+        Admux(u8),
+        AdcsraWrite(u8),
+        AdcsraRead(u8),
+        AdclRead(u8),
+        AdchRead(u8),
+        BeginInterruptExclusion,
+        EndInterruptExclusion(u8),
+        Nop,
+    }
+
+    #[derive(Debug)]
+    struct MockHardware {
+        events: RefCell<Vec<Event>>,
+        input_bits: Vec<bool>,
+        input_index: Cell<usize>,
+        trigger_in: bool,
+        saved_status: u8,
+    }
+
+    impl Default for MockHardware {
+        fn default() -> Self {
+            Self {
+                events: RefCell::new(Vec::new()),
+                input_bits: Vec::new(),
+                input_index: Cell::new(0),
+                trigger_in: true,
+                saved_status: 0xa5,
+            }
+        }
+    }
+
+    impl MockHardware {
+        fn with_adc16_word(word: u16) -> Self {
+            Self {
+                input_bits: (0..16).rev().map(|bit| word & (1 << bit) != 0).collect(),
+                ..Self::default()
+            }
+        }
+
+        fn count_events(&self, event: Event) -> usize {
+            self.events
+                .borrow()
+                .iter()
+                .filter(|candidate| **candidate == event)
+                .count()
+        }
+
+        fn event_index(&self, event: Event) -> usize {
+            self.events
+                .borrow()
+                .iter()
+                .position(|candidate| *candidate == event)
+                .expect("event was not recorded")
+        }
+
+        fn first_event(&self) -> Option<Event> {
+            self.events.borrow().first().copied()
+        }
+
+        fn last_event(&self) -> Option<Event> {
+            self.events.borrow().last().copied()
+        }
+
+        fn events_snapshot(&self) -> Vec<Event> {
+            self.events.borrow().clone()
+        }
+    }
+
+    impl EdlHardware for MockHardware {
+        fn set_control_bit(&mut self, bit: ControlBit, high: bool) {
+            self.events.borrow_mut().push(Event::Control(bit, high));
+        }
+
+        fn read_control_bit(&self, bit: ControlBit) -> bool {
+            self.events.borrow_mut().push(Event::Read(bit));
+            if bit != ControlBit::SDataIn1 {
+                return false;
+            }
+
+            let index = self.input_index.get();
+            self.input_index.set(index + 1);
+            self.input_bits[index]
+        }
+
+        fn set_trigger_out(&mut self, high: bool) {
+            self.events.borrow_mut().push(Event::TriggerOut(high));
+        }
+
+        fn read_trigger_in(&self) -> bool {
+            self.events.borrow_mut().push(Event::TriggerInRead);
+            self.trigger_in
+        }
+
+        fn set_ad16_mpx(&mut self, high: bool) {
+            self.events.borrow_mut().push(Event::Ad16Mpx(high));
+        }
+
+        fn set_admux(&mut self, value: u8) {
+            self.events.borrow_mut().push(Event::Admux(value));
+        }
+
+        fn write_adcsra(&mut self, value: u8) {
+            self.events.borrow_mut().push(Event::AdcsraWrite(value));
+        }
+
+        fn read_adcsra(&self) -> u8 {
+            self.events.borrow_mut().push(Event::AdcsraRead(0));
+            0
+        }
+
+        fn read_adcl(&self) -> u8 {
+            self.events.borrow_mut().push(Event::AdclRead(0));
+            0
+        }
+
+        fn read_adch(&self) -> u8 {
+            self.events.borrow_mut().push(Event::AdchRead(0));
+            0
+        }
+
+        fn begin_interrupt_exclusion(&mut self) -> u8 {
+            self.events
+                .borrow_mut()
+                .push(Event::BeginInterruptExclusion);
+            self.saved_status
+        }
+
+        fn end_interrupt_exclusion(&mut self, saved_status: u8) {
+            self.events
+                .borrow_mut()
+                .push(Event::EndInterruptExclusion(saved_status));
+        }
+
+        fn nop(&mut self) {
+            self.events.borrow_mut().push(Event::Nop);
+        }
+    }
+
+    #[test]
+    fn shift_in_1864_excludes_interrupts_for_the_full_adc16_clock_train() {
+        let mut hw = EdlHw::new(MockHardware::with_adc16_word(0xb65a));
+
+        hw.shift_in_1864();
+
+        assert_eq!(hw.state.ad16_temp, 0xb65a);
+        assert_eq!(hw.io.first_event(), Some(Event::BeginInterruptExclusion));
+        assert_eq!(hw.io.last_event(), Some(Event::EndInterruptExclusion(0xa5)));
+        assert_eq!(hw.io.count_events(Event::Read(ControlBit::SDataIn1)), 16);
+        assert_eq!(hw.io.count_events(Event::Nop), 3);
+        let events = hw.io.events_snapshot();
+        assert_eq!(
+            &events[events.len() - 3..],
+            &[
+                Event::Control(ControlBit::StrAd16, true),
+                Event::Control(ControlBit::Sclk, false),
+                Event::EndInterruptExclusion(0xa5),
+            ]
+        );
+    }
+
+    #[test]
+    fn on_sys_tick_starts_with_interrupt_safe_adc16_read_before_pwm_work() {
+        let mut hw = EdlHw::new(MockHardware::with_adc16_word(0x2468));
+        hw.state.pw_on_off = true;
+        hw.state.pw_counter = 2;
+        hw.state.dac_type = DacType::Dac8501;
+        hw.state.dac_temp_on = 0x1234;
+
+        hw.on_sys_tick();
+
+        let begin = hw.io.event_index(Event::BeginInterruptExclusion);
+        let end = hw.io.event_index(Event::EndInterruptExclusion(0xa5));
+        let trigger = hw.io.event_index(Event::TriggerInRead);
+
+        assert_eq!(begin, 0);
+        assert!(begin < end);
+        assert!(end < trigger);
+        assert_eq!(hw.state.ad16_temp, 0x2468);
+    }
+
+    #[test]
+    fn get_adc10_keeps_mux_settle_before_starting_conversion() {
+        let mut hw = EdlHw::new(MockHardware::default());
+
+        let value = hw.get_adc10(4);
+
+        assert_eq!(value, 0);
+        let events = hw.io.events_snapshot();
+        assert_eq!(events[0], Event::Admux(3));
+        assert_eq!(
+            events[1..=ADC10_SETTLE_CYCLES],
+            [Event::Nop; ADC10_SETTLE_CYCLES]
+        );
+        assert_eq!(
+            events[ADC10_SETTLE_CYCLES + 1],
+            Event::AdcsraWrite(ADCSRA_START_DIV128)
+        );
+        assert_eq!(events[ADC10_SETTLE_CYCLES + 2], Event::AdcsraRead(0));
+        assert_eq!(events[ADC10_SETTLE_CYCLES + 3], Event::AdclRead(0));
+        assert_eq!(events[ADC10_SETTLE_CYCLES + 4], Event::AdchRead(0));
     }
 }

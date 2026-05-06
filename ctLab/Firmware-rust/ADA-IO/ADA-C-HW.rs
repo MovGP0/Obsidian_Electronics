@@ -17,6 +17,23 @@ pub type LongInt = i32;
 pub const MUX_CHANNEL_COUNT: usize = 8;
 pub const ADC16_SAMPLES_PER_TICK: usize = 4;
 pub const PORTC_MUX_BASE: Byte = 0b1100_0011;
+pub const ADC16_DISCARD_CONVERSION_DELAY_CYCLES: u16 = avr_dec_brne_delay_cycles(15);
+pub const DAC_SETTLE_DELAY_CYCLES: u16 = avr_dec_brne_delay_cycles(4);
+pub const ADC10_CHANNEL_MASK: Byte = 0x07;
+pub const ADC10_INTERNAL_REFERENCE_MASK: Byte = 0xC0;
+pub const ADC10_SETTLE_DELAY_CYCLES: u16 = avr_dec_brne_delay_cycles(10);
+pub const ADCSRA_START_DIV128: Byte = 0xC7;
+pub const ADCSRA_BUSY_BIT: Byte = 1 << 6;
+
+#[cfg(target_arch = "avr")]
+const AVR_SREG_ADDRESS: *mut Byte = 0x5f as *mut Byte;
+#[cfg(target_arch = "avr")]
+const AVR_SREG_INTERRUPT_ENABLE_MASK: Byte = 0x80;
+
+const fn avr_dec_brne_delay_cycles(iterations: u16) -> u16 {
+    // ldi + repeated dec/brne costs exactly 3 * n cycles for n > 0.
+    iterations * 3
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Signal {
@@ -33,8 +50,22 @@ pub trait AdacHardware {
     fn set_signal(&mut self, signal: Signal, high: bool);
     fn read_signal(&self, signal: Signal) -> bool;
     fn set_port_c(&mut self, value: Byte);
+    fn set_admux(&mut self, value: Byte);
+    fn write_adcsra(&mut self, value: Byte);
+    fn read_adcsra(&self) -> Byte;
+    fn read_adcl(&self) -> Byte;
+    fn read_adch(&self) -> Byte;
+    fn begin_interrupt_exclusion(&mut self) -> Byte {
+        0
+    }
 
-    fn wait_cycles(&mut self, cycles: Byte) {
+    fn end_interrupt_exclusion(&mut self, _saved_status: Byte) {}
+
+    fn nop(&mut self) {
+        self.wait_cycles(1);
+    }
+
+    fn wait_cycles(&mut self, cycles: u16) {
         for _ in 0..cycles {
             core::hint::spin_loop();
         }
@@ -94,8 +125,67 @@ impl<M: Mcu> AdacHardware for AdacAvrd<M> {
         self.io.write_port(RegisterPort::C, value);
     }
 
-    fn wait_cycles(&mut self, cycles: Byte) {
-        self.io.spin_delay_cycles(cycles.into());
+    fn set_admux(&mut self, value: Byte) {
+        unsafe {
+            crate::avrd_support::write_u8(M::ADMUX, value);
+        }
+    }
+
+    fn write_adcsra(&mut self, value: Byte) {
+        unsafe {
+            crate::avrd_support::write_u8(M::ADCSRA, value);
+        }
+    }
+
+    fn read_adcsra(&self) -> Byte {
+        unsafe { crate::avrd_support::read_u8(M::ADCSRA) }
+    }
+
+    fn read_adcl(&self) -> Byte {
+        unsafe { crate::avrd_support::read_u8(M::ADCL) }
+    }
+
+    fn read_adch(&self) -> Byte {
+        unsafe { crate::avrd_support::read_u8(M::ADCH) }
+    }
+
+    fn begin_interrupt_exclusion(&mut self) -> Byte {
+        #[cfg(target_arch = "avr")]
+        {
+            let saved_status = unsafe { core::ptr::read_volatile(AVR_SREG_ADDRESS) };
+            unsafe {
+                core::ptr::write_volatile(
+                    AVR_SREG_ADDRESS,
+                    saved_status & !AVR_SREG_INTERRUPT_ENABLE_MASK,
+                );
+            }
+            saved_status
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            0
+        }
+    }
+
+    fn end_interrupt_exclusion(&mut self, saved_status: Byte) {
+        #[cfg(target_arch = "avr")]
+        unsafe {
+            core::ptr::write_volatile(AVR_SREG_ADDRESS, saved_status);
+        }
+
+        #[cfg(not(target_arch = "avr"))]
+        {
+            let _ = saved_status;
+        }
+    }
+
+    fn nop(&mut self) {
+        self.io.spin_delay_cycles(1);
+    }
+
+    fn wait_cycles(&mut self, cycles: u16) {
+        self.io.spin_delay_cycles(cycles);
     }
 
     fn wait_for_adc10_complete(&mut self) {
@@ -128,6 +218,10 @@ fn set_low(hw: &mut impl AdacHardware, signal: Signal) {
 
 fn set_high(hw: &mut impl AdacHardware, signal: Signal) {
     hw.set_signal(signal, true);
+}
+
+fn nop(hw: &mut impl AdacHardware) {
+    hw.nop();
 }
 
 fn msb_is_set(value: Byte) -> bool {
@@ -177,7 +271,7 @@ pub fn shift_out1257(hw: &mut impl AdacHardware, state: &AdacState) {
 
         set_high(hw, Signal::SClk);
         acca <<= 1;
-        hw.wait_cycles(1);
+        nop(hw);
         set_low(hw, Signal::SDataOut);
         set_low(hw, Signal::SClk);
     }
@@ -193,7 +287,7 @@ pub fn shift_out1257(hw: &mut impl AdacHardware, state: &AdacState) {
 
         set_high(hw, Signal::SClk);
         acca <<= 1;
-        hw.wait_cycles(1);
+        nop(hw);
         set_low(hw, Signal::SDataOut);
         set_low(hw, Signal::SClk);
     }
@@ -206,7 +300,7 @@ pub fn shift_out1257(hw: &mut impl AdacHardware, state: &AdacState) {
 
     set_high(hw, Signal::SClk);
     set_low(hw, Signal::StrDac);
-    hw.wait_cycles(1);
+    nop(hw);
     set_low(hw, Signal::SDataOut);
     set_low(hw, Signal::SClk);
     set_high(hw, Signal::StrDac);
@@ -229,7 +323,7 @@ pub fn shift_out1655(hw: &mut impl AdacHardware, state: &AdacState) {
 
         set_high(hw, Signal::SClk);
         acca <<= 1;
-        hw.wait_cycles(1);
+        nop(hw);
         set_low(hw, Signal::SDataOut);
         set_low(hw, Signal::SClk);
     }
@@ -267,7 +361,7 @@ pub fn shift_out714(hw: &mut impl AdacHardware, state: &AdacState) {
         }
 
         acca <<= 1;
-        hw.wait_cycles(1);
+        nop(hw);
         set_high(hw, Signal::SClk);
         set_low(hw, Signal::SDataOut);
     }
@@ -281,27 +375,30 @@ pub fn shift_out714(hw: &mut impl AdacHardware, state: &AdacState) {
         }
 
         acca <<= 1;
-        hw.wait_cycles(1);
+        nop(hw);
         set_high(hw, Signal::SClk);
         set_low(hw, Signal::SDataOut);
     }
 
     set_low(hw, Signal::SClk);
-    hw.wait_cycles(1);
+    nop(hw);
     set_low(hw, Signal::StrDac);
-    hw.wait_cycles(1);
+    nop(hw);
     set_high(hw, Signal::SClk);
-    hw.wait_cycles(1);
+    nop(hw);
     set_high(hw, Signal::StrDac);
 }
 
 // Holt ADraw aus LTC1864, Interrupt waehrend dieser Zeit gesperrt.
 pub fn shift_in1864(hw: &mut impl AdacHardware, state: &mut AdacState) {
-    // Assert chip-select and keep the conversion transaction contiguous; the
-    // original routine did this with interrupts blocked around the bit loop.
+    let saved_status = hw.begin_interrupt_exclusion();
+
+    // Assert chip-select and keep the conversion transaction contiguous.
     set_low(hw, Signal::StrAd16);
     set_low(hw, Signal::SClk);
-    hw.wait_cycles(3);
+    nop(hw);
+    nop(hw);
+    nop(hw);
 
     let hi = shift_in_byte_1864(hw);
     let lo = shift_in_byte_1864(hw);
@@ -309,8 +406,9 @@ pub fn shift_in1864(hw: &mut impl AdacHardware, state: &mut AdacState) {
     state.ad_raw = Word::from_be_bytes([hi, lo]);
 
     set_high(hw, Signal::SClk);
-    hw.wait_cycles(1);
+    nop(hw);
     set_high(hw, Signal::StrAd16);
+    hw.end_interrupt_exclusion(saved_status);
 }
 
 // Sende PortArray-Bytes an 4094-SR.
@@ -326,22 +424,29 @@ pub fn shift_out_sr(hw: &mut impl AdacHardware, state: &AdacState) {
     shift_out_sr_byte(hw, state.port_sr0); // LSB Level zuletzt
 
     set_high(hw, Signal::StrSr);
-    hw.wait_cycles(2);
+    nop(hw);
+    nop(hw);
     set_low(hw, Signal::StrSr);
     set_high(hw, Signal::SClk);
 }
 
-/*
 pub fn get_adc10(hw: &mut impl AdacHardware, my_channel: Byte, ext_ref: bool) -> Word {
     // Zu-Fuss-Implementation der getadc()-Funktion.
-    //
-    // The original Pascal implementation is commented out as well. Keeping it
-    // here as a sketch avoids inventing register details that are not present
-    // in this source file alone.
-    let _ = (hw, my_channel, ext_ref);
-    todo!("ADC10 helper was commented out in the original Pascal source");
+    let mux = my_channel.wrapping_sub(1) & ADC10_CHANNEL_MASK;
+    let reference = if ext_ref {
+        ADC10_INTERNAL_REFERENCE_MASK
+    } else {
+        0
+    };
+
+    hw.set_admux(reference | mux);
+    hw.wait_cycles(ADC10_SETTLE_DELAY_CYCLES);
+    hw.write_adcsra(ADCSRA_START_DIV128);
+
+    while (hw.read_adcsra() & ADCSRA_BUSY_BIT) != 0 {}
+
+    Word::from(hw.read_adcl()) | (Word::from(hw.read_adch()) << 8)
 }
-*/
 
 // Interrupt-Routine, alle 1 ms, dauert etwa 41 us bei DA16.
 pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
@@ -355,7 +460,7 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
 
         // The first post-switch conversion is intentionally discarded so the
         // external ADC sees the full settling interval before we accumulate data.
-        hw.wait_cycles(15);
+        hw.wait_cycles(ADC16_DISCARD_CONVERSION_DELAY_CYCLES);
 
         for _ in 0..ADC16_SAMPLES_PER_TICK {
             shift_in1864(hw, state);
@@ -390,7 +495,7 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
 
     // Give the new DAC code time to settle before storing the measurement that
     // belongs to the previously active channel.
-    hw.wait_cycles(4);
+    hw.wait_cycles(DAC_SETTLE_DELAY_CYCLES);
 
     // Only average and store after the DAC settle delay; the Pascal code makes
     // the same point because this sample still belongs to `previous_mux_ch`.
@@ -410,4 +515,276 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
 
     // Auf AD-Wandlung AD10 warten, falls Systick "ueberfahren" wurde.
     hw.wait_for_adc10_complete();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::{Cell, RefCell};
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    enum Event {
+        Signal(Signal, bool),
+        PortC(Byte),
+        Read(Signal),
+        Admux(Byte),
+        AdcsraWrite(Byte),
+        AdcsraRead(Byte),
+        AdclRead(Byte),
+        AdchRead(Byte),
+        BeginInterruptExclusion,
+        EndInterruptExclusion(Byte),
+        Nop,
+        WaitCycles(u16),
+        WaitForAdc10Complete,
+    }
+
+    #[derive(Debug, Default)]
+    struct TestHardware {
+        events: RefCell<Vec<Event>>,
+        input_bits: Vec<bool>,
+        input_index: Cell<usize>,
+        next_status: Byte,
+        adcsra_reads: Vec<Byte>,
+        adcsra_read_index: Cell<usize>,
+        adcl: Byte,
+        adch: Byte,
+    }
+
+    impl TestHardware {
+        fn with_input_word(word: Word) -> Self {
+            let input_bits = (0..16).rev().map(|bit| word & (1 << bit) != 0).collect();
+
+            Self {
+                events: RefCell::new(Vec::new()),
+                input_bits,
+                input_index: Cell::new(0),
+                next_status: 0xa5,
+                adcsra_reads: Vec::new(),
+                adcsra_read_index: Cell::new(0),
+                adcl: 0,
+                adch: 0,
+            }
+        }
+
+        fn with_adc10(adcsra_reads: Vec<Byte>, adcl: Byte, adch: Byte) -> Self {
+            Self {
+                adcsra_reads,
+                adcl,
+                adch,
+                ..Self::default()
+            }
+        }
+
+        fn count_events(&self, event: Event) -> usize {
+            self.events
+                .borrow()
+                .iter()
+                .filter(|candidate| **candidate == event)
+                .count()
+        }
+
+        fn contains_event(&self, event: Event) -> bool {
+            self.events.borrow().contains(&event)
+        }
+
+        fn first_event(&self) -> Option<Event> {
+            self.events.borrow().first().copied()
+        }
+
+        fn last_event(&self) -> Option<Event> {
+            self.events.borrow().last().copied()
+        }
+
+        fn has_event_window(&self, window: &[Event]) -> bool {
+            self.events
+                .borrow()
+                .windows(window.len())
+                .any(|candidate| candidate == window)
+        }
+    }
+
+    impl AdacHardware for TestHardware {
+        fn set_signal(&mut self, signal: Signal, high: bool) {
+            self.events.borrow_mut().push(Event::Signal(signal, high));
+        }
+
+        fn read_signal(&self, signal: Signal) -> bool {
+            self.events.borrow_mut().push(Event::Read(signal));
+            let index = self.input_index.get();
+            self.input_index.set(index + 1);
+            self.input_bits[index]
+        }
+
+        fn set_port_c(&mut self, value: Byte) {
+            self.events.borrow_mut().push(Event::PortC(value));
+        }
+
+        fn set_admux(&mut self, value: Byte) {
+            self.events.borrow_mut().push(Event::Admux(value));
+        }
+
+        fn write_adcsra(&mut self, value: Byte) {
+            self.events.borrow_mut().push(Event::AdcsraWrite(value));
+        }
+
+        fn read_adcsra(&self) -> Byte {
+            let index = self.adcsra_read_index.get();
+            let value = self.adcsra_reads.get(index).copied().unwrap_or(0);
+            self.adcsra_read_index.set(index + 1);
+            self.events.borrow_mut().push(Event::AdcsraRead(value));
+            value
+        }
+
+        fn read_adcl(&self) -> Byte {
+            self.events.borrow_mut().push(Event::AdclRead(self.adcl));
+            self.adcl
+        }
+
+        fn read_adch(&self) -> Byte {
+            self.events.borrow_mut().push(Event::AdchRead(self.adch));
+            self.adch
+        }
+
+        fn begin_interrupt_exclusion(&mut self) -> Byte {
+            self.events
+                .borrow_mut()
+                .push(Event::BeginInterruptExclusion);
+            self.next_status
+        }
+
+        fn end_interrupt_exclusion(&mut self, saved_status: Byte) {
+            self.events
+                .borrow_mut()
+                .push(Event::EndInterruptExclusion(saved_status));
+        }
+
+        fn nop(&mut self) {
+            self.events.borrow_mut().push(Event::Nop);
+        }
+
+        fn wait_cycles(&mut self, cycles: u16) {
+            self.events.borrow_mut().push(Event::WaitCycles(cycles));
+        }
+
+        fn wait_for_adc10_complete(&mut self) {
+            self.events.borrow_mut().push(Event::WaitForAdc10Complete);
+        }
+    }
+
+    #[test]
+    fn shift_in1864_blocks_interrupts_for_the_whole_ltc1864_transaction() {
+        let mut hw = TestHardware::with_input_word(0xb65a);
+        let mut state = AdacState::default();
+
+        shift_in1864(&mut hw, &mut state);
+
+        assert_eq!(state.ad_raw, 0xb65a);
+        assert_eq!(hw.first_event(), Some(Event::BeginInterruptExclusion));
+        assert_eq!(hw.last_event(), Some(Event::EndInterruptExclusion(0xa5)));
+        assert_eq!(hw.count_events(Event::Read(Signal::SDataIn1)), 16);
+        assert_eq!(hw.count_events(Event::Nop), 4);
+    }
+
+    #[test]
+    fn dac_shift_routines_keep_pascal_nop_timing() {
+        let state = AdacState {
+            dac_temp: 0xa55a,
+            ..AdacState::default()
+        };
+
+        let mut hw = TestHardware::default();
+        shift_out1257(&mut hw, &state);
+        assert_eq!(hw.count_events(Event::Nop), 12);
+
+        let mut hw = TestHardware::default();
+        shift_out1655(&mut hw, &state);
+        assert_eq!(hw.count_events(Event::Nop), 8);
+
+        let mut hw = TestHardware::default();
+        shift_out714(&mut hw, &state);
+        assert_eq!(hw.count_events(Event::Nop), 19);
+    }
+
+    #[test]
+    fn shift_register_strobe_keeps_pascal_nop_timing() {
+        let state = AdacState {
+            port_sr0: 0x11,
+            port_sr1: 0x22,
+            port_sr2: 0x44,
+            port_sr3: 0x88,
+            ..AdacState::default()
+        };
+        let mut hw = TestHardware::default();
+
+        shift_out_sr(&mut hw, &state);
+
+        assert_eq!(hw.count_events(Event::Nop), 2);
+        assert!(hw.has_event_window(&[
+            Event::Signal(Signal::StrSr, true),
+            Event::Nop,
+            Event::Nop,
+            Event::Signal(Signal::StrSr, false),
+        ]));
+    }
+
+    #[test]
+    fn on_sys_tick_uses_pascal_delay_loop_cycle_counts() {
+        let mut hw = TestHardware::with_input_word(0x8004);
+        hw.input_bits
+            .extend((0..16).rev().map(|bit| 0x8008 & (1 << bit) != 0));
+        hw.input_bits
+            .extend((0..16).rev().map(|bit| 0x800c & (1 << bit) != 0));
+        hw.input_bits
+            .extend((0..16).rev().map(|bit| 0x8010 & (1 << bit) != 0));
+
+        let mut state = AdacState {
+            adc16_present: true,
+            mux_ch: 7,
+            ..AdacState::default()
+        };
+
+        on_sys_tick(&mut hw, &mut state);
+
+        assert!(hw.contains_event(Event::WaitCycles(ADC16_DISCARD_CONVERSION_DELAY_CYCLES)));
+        assert!(hw.contains_event(Event::WaitCycles(DAC_SETTLE_DELAY_CYCLES)));
+        assert!(!hw.contains_event(Event::WaitCycles(15)));
+        assert!(!hw.contains_event(Event::WaitCycles(4)));
+    }
+
+    #[test]
+    fn get_adc10_matches_pascal_register_sequence() {
+        let mut hw =
+            TestHardware::with_adc10(vec![ADCSRA_BUSY_BIT, ADCSRA_BUSY_BIT, 0], 0x34, 0x12);
+
+        let result = get_adc10(&mut hw, 5, true);
+
+        assert_eq!(result, 0x1234);
+        assert_eq!(
+            *hw.events.borrow(),
+            vec![
+                Event::Admux(ADC10_INTERNAL_REFERENCE_MASK | 4),
+                Event::WaitCycles(ADC10_SETTLE_DELAY_CYCLES),
+                Event::AdcsraWrite(ADCSRA_START_DIV128),
+                Event::AdcsraRead(ADCSRA_BUSY_BIT),
+                Event::AdcsraRead(ADCSRA_BUSY_BIT),
+                Event::AdcsraRead(0),
+                Event::AdclRead(0x34),
+                Event::AdchRead(0x12),
+            ]
+        );
+    }
+
+    #[test]
+    fn get_adc10_wraps_and_masks_pascal_byte_channel() {
+        let mut hw = TestHardware::with_adc10(vec![0], 0, 0);
+
+        let result = get_adc10(&mut hw, 0, false);
+
+        assert_eq!(result, 0);
+        assert_eq!(
+            hw.events.borrow().first(),
+            Some(&Event::Admux(ADC10_CHANNEL_MASK))
+        );
+    }
 }

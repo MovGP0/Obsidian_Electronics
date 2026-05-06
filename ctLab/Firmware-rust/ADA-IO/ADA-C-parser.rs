@@ -8,7 +8,7 @@
 //! Hardware-facing helpers are intentionally lightweight stubs so the parser
 //! logic remains readable and can be integrated with a real backend later.
 
-use std::mem;
+use std::{collections::VecDeque, mem};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CmdWhich {
@@ -141,7 +141,10 @@ impl CmdWhich {
     }
 
     pub fn requires_parameter_on_set(self) -> bool {
-        self >= CmdWhich::Val && self != CmdWhich::Err
+        !matches!(
+            self,
+            CmdWhich::Trg | CmdWhich::Str | CmdWhich::Idn | CmdWhich::Err
+        )
     }
 }
 
@@ -183,7 +186,9 @@ pub struct ParseContext {
     pub ee_unlocked: bool,
     pub modify: u8,
     pub inc_rast: i32,
+    pub inc_rast_def: i32,
     pub integrate_ad16: bool,
+    pub init_integrate_ad16: bool,
     pub ext_ref: u8,
     pub trig_timer_value: u16,
     pub trig_level: u8,
@@ -203,10 +208,34 @@ pub struct ParseContext {
     pub port_init_array: [u8; 8],
     pub dir_init_array: [u8; 8],
     pub trig_mask_array: [u8; 4],
+    pub adc10_raw_array: [i32; 8],
+    pub adc_raw_array: [i32; 8],
+    pub port_array: [u8; 8],
+    pub io_pin_array: [u8; 8],
+    pub dir_output_array: [u8; 8],
+    pub io_present: bool,
+    pub dac12_present: bool,
+    pub dac16_present: bool,
+    pub dac714_present: bool,
+    pub adc16_present: bool,
+    pub lcd_present: bool,
+    pub base_scale_ad10: f32,
+    pub base_scale_ad16: f32,
+    pub base_scale_da12: f32,
+    pub base_scale_da16: f32,
+    pub internal_reference: bool,
+    pub trigger_positive_edge: bool,
+    pub i2c_byte_reads: VecDeque<u8>,
+    pub i2c_word_reads: VecDeque<u16>,
+    pub i2c_writes: Vec<(u8, u16)>,
+    pub shift_register_writes: Vec<[u8; 8]>,
 }
 
 impl Default for ParseContext {
     fn default() -> Self {
+        let mut offset_array = [0; 28];
+        offset_array[10..=17].fill(-40);
+
         Self {
             ser_inp_str: String::new(),
             ser_inp_ptr: 0,
@@ -222,12 +251,14 @@ impl Default for ParseContext {
             changed_flag: false,
             ee_unlocked: false,
             modify: 0,
-            inc_rast: 0,
+            inc_rast: 4,
+            inc_rast_def: 4,
             integrate_ad16: false,
-            ext_ref: 0,
+            init_integrate_ad16: false,
+            ext_ref: 1,
             trig_timer_value: 0,
             trig_level: 0,
-            ee_ser_baud_reg: 0,
+            ee_ser_baud_reg: 51,
             err_count: 0,
             status: 0,
             i2c_slave_adr: 0,
@@ -238,11 +269,35 @@ impl Default for ParseContext {
             param_text_array: vec![String::new(); 38],
             dac_raw_array: [0; 8],
             dac_value_array: [0.0; 8],
-            offset_array: [0; 28],
-            scale_array: [0.0; 30],
+            offset_array,
+            scale_array: [
+                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 100.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                1.0, 1.0, 0.0, 3185.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 200.0, 3200.0,
+            ],
             port_init_array: [0; 8],
             dir_init_array: [0; 8],
             trig_mask_array: [0; 4],
+            adc10_raw_array: [0; 8],
+            adc_raw_array: [0; 8],
+            port_array: [0; 8],
+            io_pin_array: [0; 8],
+            dir_output_array: [0; 8],
+            io_present: false,
+            dac12_present: false,
+            dac16_present: false,
+            dac714_present: false,
+            adc16_present: false,
+            lcd_present: false,
+            base_scale_ad10: 100.0,
+            base_scale_ad16: 3185.0,
+            base_scale_da12: 200.0,
+            base_scale_da16: 3200.0,
+            internal_reference: false,
+            trigger_positive_edge: false,
+            i2c_byte_reads: VecDeque::new(),
+            i2c_word_reads: VecDeque::new(),
+            i2c_writes: Vec::new(),
+            shift_register_writes: Vec::new(),
         }
     }
 }
@@ -321,7 +376,8 @@ impl AdaIoParser {
                 is_integer = true;
             }
             70..=77 => {
-                self.ctx.param_int = i32::from(self.ctx.dac_raw_array[(self.ctx.sub_ch - 70) as usize]);
+                self.ctx.param_int =
+                    i32::from(self.ctx.dac_raw_array[(self.ctx.sub_ch - 70) as usize]);
                 is_integer = true;
             }
             80 => {
@@ -397,11 +453,13 @@ impl AdaIoParser {
                 is_integer = true;
             }
             180..=187 => {
-                self.ctx.param_int = i32::from(self.ctx.port_init_array[(self.ctx.sub_ch - 180) as usize]);
+                self.ctx.param_int =
+                    i32::from(self.ctx.port_init_array[(self.ctx.sub_ch - 180) as usize]);
                 is_integer = true;
             }
             190..=197 => {
-                self.ctx.param_int = i32::from(self.ctx.dir_init_array[(self.ctx.sub_ch - 190) as usize]);
+                self.ctx.param_int =
+                    i32::from(self.ctx.dir_init_array[(self.ctx.sub_ch - 190) as usize]);
                 is_integer = true;
             }
             200..=229 => {
@@ -441,7 +499,8 @@ impl AdaIoParser {
                 is_integer = true;
             }
             240..=243 => {
-                self.ctx.param_int = i32::from(self.ctx.trig_mask_array[(self.ctx.sub_ch - 240) as usize]);
+                self.ctx.param_int =
+                    i32::from(self.ctx.trig_mask_array[(self.ctx.sub_ch - 240) as usize]);
                 is_integer = true;
             }
             247 => {
@@ -533,6 +592,7 @@ impl AdaIoParser {
                     return Err(ParseError::LockedErr);
                 }
                 self.ctx.inc_rast = self.ctx.param_int;
+                self.ctx.inc_rast_def = self.ctx.inc_rast;
             }
             100..=127 => {
                 let index = (self.ctx.sub_ch - 100) as usize;
@@ -556,6 +616,7 @@ impl AdaIoParser {
                     return Err(ParseError::LockedErr);
                 }
                 self.ctx.integrate_ad16 = self.ctx.param_byte > 0;
+                self.ctx.init_integrate_ad16 = self.ctx.integrate_ad16;
             }
             180..=187 => {
                 let index = (self.ctx.sub_ch - 180) as usize;
@@ -657,6 +718,7 @@ impl AdaIoParser {
         }
 
         self.ctx.ser_inp_ptr = 0;
+        let mut replies = Vec::new();
 
         if has_main_ch {
             let is_param = self.parse_extract();
@@ -666,9 +728,10 @@ impl AdaIoParser {
             self.skip_char(':');
             if is_omni {
                 // Omni commands are forwarded so every slave can act on them.
-                return Ok(vec![Reply::Echo(self.ctx.ser_inp_str.clone())]);
+                replies.push(Reply::Echo(self.ctx.ser_inp_str.clone()));
+            } else {
+                self.ctx.current_ch = self.parse_u8(&self.ctx.param_str)?;
             }
-            self.ctx.current_ch = self.parse_u8(&self.ctx.param_str)?;
         }
 
         if !is_omni && has_main_ch && self.ctx.current_ch != self.ctx.slave_ch {
@@ -686,7 +749,8 @@ impl AdaIoParser {
                 .ser_inp_str
                 .get(check_pos + 1..check_pos + 3)
                 .ok_or(ParseError::ChecksumErr)?;
-            let check_sum_in = u8::from_str_radix(supplied, 16).map_err(|_| ParseError::ChecksumErr)?;
+            let check_sum_in =
+                u8::from_str_radix(supplied, 16).map_err(|_| ParseError::ChecksumErr)?;
             let mut check_sum = 0u8;
             for ch in self.ctx.ser_inp_str[..check_pos].bytes() {
                 check_sum ^= ch;
@@ -720,11 +784,16 @@ impl AdaIoParser {
         };
 
         // The parser stores sub-channels as absolute offsets into the dispatch tables.
-        let sub_ch_value = self.parse_u8_or_wildcard(&self.ctx.param_str)?;
+        let sub_ch_value = if self.ctx.param_str.trim().is_empty() {
+            0
+        } else {
+            self.parse_u8_or_wildcard(&self.ctx.param_str)?
+        };
         self.ctx.sub_ch = sub_ch_value.saturating_add(sub_ch_offset);
 
         if is_request {
-            self.parse_get_param()
+            replies.extend(self.parse_get_param()?);
+            Ok(replies)
         } else {
             if let Some(equal_pos) = self.ctx.ser_inp_str.find('=') {
                 self.ctx.ser_inp_ptr = equal_pos + 1;
@@ -740,7 +809,8 @@ impl AdaIoParser {
                 return Err(ParseError::ParamErr);
             }
 
-            self.parse_set_param()
+            replies.extend(self.parse_set_param()?);
+            Ok(replies)
         }
     }
 
@@ -767,7 +837,10 @@ impl AdaIoParser {
     }
 
     fn parse_f32(&self, value: &str) -> Result<f32, ParseError> {
-        value.trim().parse::<f32>().map_err(|_| ParseError::ParamErr)
+        value
+            .trim()
+            .parse::<f32>()
+            .map_err(|_| ParseError::ParamErr)
     }
 
     fn extract_bracket_text(&self) -> String {
@@ -777,7 +850,9 @@ impl AdaIoParser {
             .map(|idx| idx + self.ctx.ser_inp_ptr);
 
         match (start, end) {
-            (Some(start), Some(end)) if end >= start => self.ctx.ser_inp_str[start..end].to_string(),
+            (Some(start), Some(end)) if end >= start => {
+                self.ctx.ser_inp_str[start..end].to_string()
+            }
             _ => String::new(),
         }
     }
@@ -807,7 +882,26 @@ impl AdaIoParser {
     }
 
     fn write_features(&self) -> String {
-        String::new()
+        let mut features = String::new();
+
+        if self.ctx.dac12_present {
+            features.push_str("DA12 ");
+        }
+        if self.ctx.dac714_present || self.ctx.dac16_present {
+            features.push_str("DA16 ");
+        }
+        if self.ctx.adc16_present {
+            features.push_str("AD16 ");
+        }
+        if self.ctx.io_present {
+            features.push_str("IO32 ");
+        }
+        if self.ctx.lcd_present {
+            features.push_str("LCD ");
+        }
+
+        features.push(']');
+        features
     }
 
     fn status_reply(&self, error: ParseError, status: u8) -> Reply {
@@ -815,45 +909,384 @@ impl AdaIoParser {
     }
 
     fn get_new_value(&mut self, sub_ch: u8) -> bool {
+        self.ctx.param_int = 0;
+        self.ctx.param = 0.0;
+
         match sub_ch {
-            30..=37 | 50..=67 => {
-                self.ctx.param_int = i32::from(sub_ch);
-                true
-            }
-            _ => {
-                self.ctx.param = sub_ch as f32;
+            0..=7 => {
+                let index = sub_ch as usize;
+                self.ctx.param_int = self.ctx.adc10_raw_array[index];
+                self.ctx.param = ((self.ctx.param_int + self.ctx.offset_array[index]) as f32
+                    * self.ctx.scale_array[index])
+                    / self.ctx.base_scale_ad10;
                 false
             }
+            10..=17 => {
+                let index = (sub_ch - 10) as usize;
+                let scale_index = sub_ch as usize;
+                self.ctx.param_int = self.ctx.adc_raw_array[index];
+                self.ctx.param = ((self.ctx.param_int + self.ctx.offset_array[scale_index]) as f32
+                    * self.ctx.scale_array[scale_index])
+                    / self.ctx.base_scale_ad16;
+                false
+            }
+            20..=27 => {
+                self.ctx.param = self.ctx.dac_value_array[(sub_ch - 20) as usize];
+                false
+            }
+            30..=37 => {
+                self.ctx.param_int = i32::from(self.get_port(sub_ch - 30));
+                true
+            }
+            40..=47 => {
+                self.ctx.param_int = i32::from(self.ctx.dir_init_array[(sub_ch - 40) as usize]);
+                true
+            }
+            _ => false,
         }
     }
 
-    fn set_dac(&mut self, _sub_ch: u8) {}
+    fn set_dac(&mut self, sub_ch: u8) {
+        if !(20..=27).contains(&sub_ch) {
+            return;
+        }
 
-    fn set_port(&mut self, _index: u8, _value: u8) {}
+        let index = (sub_ch - 20) as usize;
+        let offset = self.ctx.offset_array[sub_ch as usize];
+        let scale = self.ctx.scale_array[sub_ch as usize];
+        let value = self.ctx.dac_value_array[index];
 
-    fn set_dir(&mut self, _index: u8, _value: u8) {}
+        if self.ctx.dac714_present {
+            let raw = (self.ctx.base_scale_da16 * (value * scale)) as i32 + offset;
+            self.ctx.dac_raw_array[index] = raw.clamp(-32767, 32767) as i16 as u16;
+        }
 
-    fn set_base_scales(&mut self) {}
+        if self.ctx.dac16_present {
+            let raw = (self.ctx.base_scale_da16 * (value * scale)) as i32 + offset;
+            self.ctx.dac_raw_array[index] = (0x8000_i32 - raw.clamp(-32767, 32767)) as u16;
+        }
 
-    fn set_reference_mode(&mut self, _internal_reference: bool) {}
+        if self.ctx.dac12_present {
+            let raw = (self.ctx.base_scale_da12 * (value * scale)) as i32 + offset;
+            self.ctx.dac_raw_array[index] = (0x0800_i32 - raw.clamp(-2047, 2047)) as u16;
+        }
+    }
 
-    fn set_trigger_edge(&mut self, _positive_edge: bool) {}
+    fn get_port(&mut self, index: u8) -> u8 {
+        if self.ctx.io_present {
+            self.ctx.io_pin_array[index as usize]
+        } else {
+            self.ctx.port_array[index as usize]
+        }
+    }
+
+    fn set_port(&mut self, index: u8, value: u8) {
+        self.ctx.port_array[index as usize] = value;
+
+        if self.ctx.io_present {
+            self.ctx.i2c_slave_adr = index + 0x38;
+            self.ctx.param_int = 0x0100 + i32::from(value);
+            self.twi_out_word(self.ctx.i2c_slave_adr, self.ctx.param_int as u16);
+        } else {
+            self.ctx.shift_register_writes.push(self.ctx.port_array);
+        }
+    }
+
+    fn set_dir(&mut self, index: u8, value: u8) {
+        if self.ctx.io_present {
+            self.ctx.dir_output_array[index as usize] = value;
+        }
+    }
+
+    fn set_base_scales(&mut self) {
+        self.ctx.base_scale_ad10 = self.ctx.scale_array[9];
+        self.ctx.base_scale_ad16 = self.ctx.scale_array[19];
+        self.ctx.base_scale_da12 = self.ctx.scale_array[28];
+        self.ctx.base_scale_da16 = self.ctx.scale_array[29];
+    }
+
+    fn set_reference_mode(&mut self, internal_reference: bool) {
+        self.ctx.internal_reference = internal_reference;
+    }
+
+    fn set_trigger_edge(&mut self, positive_edge: bool) {
+        self.ctx.trigger_positive_edge = positive_edge;
+    }
 
     fn set_sys_timer_activity(&mut self) {}
 
     fn twi_inp_byte(&mut self, _slave: u8) -> u8 {
-        0
+        self.ctx.i2c_byte_reads.pop_front().unwrap_or_default()
     }
 
     fn twi_inp_word(&mut self, _slave: u8) -> u16 {
-        0
+        self.ctx.i2c_word_reads.pop_front().unwrap_or_default()
     }
 
-    fn twi_out_byte(&mut self, _slave: u8, _value: u8) {}
+    fn twi_out_byte(&mut self, slave: u8, value: u8) {
+        self.ctx.i2c_writes.push((slave, u16::from(value)));
+    }
 
-    fn twi_out_word(&mut self, _slave: u8, _value: u16) {}
+    fn twi_out_word(&mut self, slave: u8, value: u16) {
+        self.ctx.i2c_writes.push((slave, value));
+    }
 
     pub fn take_context(&mut self) -> ParseContext {
         mem::take(&mut self.ctx)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{AdaIoParser, ParseError, Reply};
+
+    fn checksum(frame: &str) -> String {
+        let checksum = frame.bytes().fold(0u8, |acc, ch| acc ^ ch);
+        format!("{frame}${checksum:02X}")
+    }
+
+    fn assert_float_reply(reply: &Reply, expected_sub_ch: u8, expected_value: f32) {
+        match reply {
+            Reply::Float { sub_ch, value } => {
+                assert_eq!(*sub_ch, expected_sub_ch);
+                assert!((*value - expected_value).abs() < f32::EPSILON);
+            }
+            other => panic!("expected float reply, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn omni_frames_are_forwarded_and_executed_locally() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "*:TRG".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(replies[0], Reply::Echo("*:TRG".to_string()));
+        assert_eq!(
+            replies[1],
+            Reply::Status {
+                error: ParseError::NoErr,
+                status: 0,
+            }
+        );
+        assert!(parser.ctx.trigger);
+        assert!(parser.ctx.led_activity_low);
+    }
+
+    #[test]
+    fn mnemonic_commands_accept_missing_subchannel() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "0:TRT?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Int {
+                sub_ch: 247,
+                value: 0,
+            }]
+        );
+    }
+
+    #[test]
+    fn omni_frames_validate_checksum_before_local_execution() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "*:TRG$00".to_string();
+
+        let result = parser.parse_sub_ch();
+
+        assert_eq!(result, Err(ParseError::ChecksumErr));
+        assert!(!parser.ctx.trigger);
+        assert!(!parser.ctx.led_activity_low);
+    }
+
+    #[test]
+    fn omni_frames_with_valid_checksum_refresh_activity_and_execute() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = checksum("*:TRG");
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert!(matches!(replies.first(), Some(Reply::Echo(_))));
+        assert!(parser.ctx.trigger);
+        assert!(parser.ctx.led_activity_low);
+    }
+
+    #[test]
+    fn live_adc_reads_use_pascal_scaling_tables() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.adc10_raw_array[0] = 123;
+        parser.ctx.offset_array[0] = 2;
+        parser.ctx.scale_array[0] = 2.0;
+        parser.ctx.ser_inp_str = "0:VAL 0?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_float_reply(&replies[0], 0, 2.5);
+
+        parser.ctx.adc_raw_array[0] = 3225;
+        parser.ctx.ser_inp_str = "0:VAL 10?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_float_reply(&replies[0], 10, 1.0);
+    }
+
+    #[test]
+    fn raw_adc_aliases_return_integer_samples() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.adc_raw_array[0] = 3225;
+        parser.ctx.ser_inp_str = "0:RAW 10?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Int {
+                sub_ch: 60,
+                value: 3225,
+            }]
+        );
+    }
+
+    #[test]
+    fn dac_set_updates_raw_output_value() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.dac12_present = true;
+        parser.ctx.ser_inp_str = "0:VAL 20=1.0".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Status {
+                error: ParseError::NoErr,
+                status: 0,
+            }]
+        );
+        assert_eq!(parser.ctx.dac_value_array[0], 1.0);
+        assert_eq!(parser.ctx.dac_raw_array[0], 0x0800 - 200);
+    }
+
+    #[test]
+    fn port_outputs_update_shift_register_state_without_i2c_expander() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "0:PIO 3=85".to_string();
+
+        parser.parse_sub_ch().unwrap();
+
+        assert_eq!(parser.ctx.port_array[3], 85);
+        assert_eq!(parser.ctx.shift_register_writes.last().unwrap()[3], 85);
+        assert!(parser.ctx.i2c_writes.is_empty());
+    }
+
+    #[test]
+    fn port_outputs_use_pascal_i2c_expander_command_when_present() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.io_present = true;
+        parser.ctx.ser_inp_str = "0:PIO 3=85".to_string();
+
+        parser.parse_sub_ch().unwrap();
+
+        assert_eq!(parser.ctx.port_array[3], 85);
+        assert_eq!(parser.ctx.i2c_slave_adr, 0x3b);
+        assert_eq!(parser.ctx.param_int, 0x0155);
+        assert_eq!(parser.ctx.i2c_writes, vec![(0x3b, 0x0155)]);
+        assert!(parser.ctx.shift_register_writes.is_empty());
+    }
+
+    #[test]
+    fn i2c_commands_read_and_write_pascal_payloads() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.i2c_slave_adr = 0x48;
+        parser.ctx.i2c_byte_reads.push_back(0x5a);
+        parser.ctx.ser_inp_str = "0:ICB?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Int {
+                sub_ch: 230,
+                value: 0x5a,
+            }]
+        );
+
+        parser.ctx.i2c_word_reads.push_back(0x1234);
+        parser.ctx.ser_inp_str = "0:ICS?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Int {
+                sub_ch: 232,
+                value: 0x3412,
+            }]
+        );
+
+        parser.ctx.ser_inp_str = "0:ICW=4660".to_string();
+        parser.parse_sub_ch().unwrap();
+        parser.ctx.ser_inp_str = "0:ICS=4660".to_string();
+        parser.parse_sub_ch().unwrap();
+
+        assert_eq!(parser.ctx.i2c_writes, vec![(0x48, 0x1234), (0x48, 0x3412)]);
+    }
+
+    #[test]
+    fn eeprom_backed_options_update_runtime_and_default_mirrors() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "0:WEN=1".to_string();
+        parser.parse_sub_ch().unwrap();
+        parser.ctx.ser_inp_str = "0:OPT 9=6".to_string();
+
+        parser.parse_sub_ch().unwrap();
+
+        assert_eq!(parser.ctx.inc_rast, 6);
+        assert_eq!(parser.ctx.inc_rast_def, 6);
+        assert!(!parser.ctx.ee_unlocked);
+
+        parser.ctx.ser_inp_str = "0:WEN=1".to_string();
+        parser.parse_sub_ch().unwrap();
+        parser.ctx.ser_inp_str = "0:OPT 7=1".to_string();
+
+        parser.parse_sub_ch().unwrap();
+
+        assert!(parser.ctx.integrate_ad16);
+        assert!(parser.ctx.init_integrate_ad16);
+    }
+
+    #[test]
+    fn idn_reply_includes_pascal_feature_suffix() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.vers1_str = "1.742 [ADA by CM/c't 04/2007; ".to_string();
+        parser.ctx.dac12_present = true;
+        parser.ctx.dac16_present = true;
+        parser.ctx.adc16_present = true;
+        parser.ctx.io_present = true;
+        parser.ctx.lcd_present = true;
+        parser.ctx.ser_inp_str = "0:IDN?".to_string();
+
+        let replies = parser.parse_sub_ch().unwrap();
+
+        assert_eq!(
+            replies,
+            vec![Reply::Text(
+                "0:1.742 [ADA by CM/c't 04/2007; DA12 DA16 AD16 IO32 LCD ]".to_string()
+            )]
+        );
+    }
+
+    #[test]
+    fn erc_set_requires_value_like_pascal_command_table() {
+        let mut parser = AdaIoParser::default();
+        parser.ctx.ser_inp_str = "0:ERC=".to_string();
+
+        let result = parser.parse_sub_ch();
+
+        assert_eq!(result, Err(ParseError::ParamErr));
+        assert_eq!(parser.ctx.err_count, 0);
     }
 }

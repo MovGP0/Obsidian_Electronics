@@ -14,7 +14,7 @@
 // constants, state, and algorithm flow readable, but replaces AVR-specific
 // hardware access with mockable helpers. It is not yet a verified embedded build.
 
-use std::fmt::Write as _;
+use std::{collections::VecDeque, fmt::Write as _};
 
 const PROC_CLOCK: u32 = 16_000_000;
 const TWI_PRESC: u8 = 0;
@@ -42,25 +42,19 @@ const OVERLOAD_STR: &str = " OVERLD ";
 const RATE_SEL_STR: &str = "SmplRate";
 const ERR_SUB_CH: u8 = 255;
 const EE_INITIALIZED_MAGIC: u16 = 0xAA55;
+const LCD_COLUMNS: usize = 8;
+const LCD_CURSOR_CHAR: char = '\u{5}';
+const LCD_OVERLOAD_BLOCK_CHAR: char = '\u{6}';
+const LCD_ZERO_DB_MARK_CHAR: char = '\u{7}';
+const BUTTON_UNUSED_BITS_MASK: u8 = 0b1100_0111;
+const BUTTON_RELEASED: u8 = 0xff;
 
 const ERR_STR_ARR: [&str; 8] = [
-    "[OK]",
-    "[SRQUSR]",
-    "[BUSY]",
-    "[OVERLD]",
-    "[CMDERR]",
-    "[PARERR]",
-    "[LOCKED]",
-    "[CHKSUM]",
+    "[OK]", "[SRQUSR]", "[BUSY]", "[OVERLD]", "[CMDERR]", "[PARERR]", "[LOCKED]", "[CHKSUM]",
 ];
 
 const RATE_STR_ARR: [&str; 6] = [
-    "C 48kHz",
-    "C 96kHz",
-    "C192kHz",
-    "P 48kHz",
-    "P 96kHz",
-    "P192kHz",
+    "C 48kHz", "C 96kHz", "C192kHz", "P 48kHz", "P 96kHz", "P192kHz",
 ];
 
 const CMD_STR_ARR: [&str; 13] = [
@@ -86,14 +80,10 @@ const ADC_RANGE_SCALES_DIV: [u16; 8] = [100, 100, 1000, 1000, 10000, 1000, 10000
 enum CmdWhich {
     Str,
     Idn,
-    Trg,
     Val,
-    Wav,
-    Bst,
-    Aux,
+    Smp,
     Inl,
     Rng,
-    Ofs,
     Dsp,
     All,
     Scl,
@@ -189,15 +179,22 @@ struct MockHardware {
     port_c: u8,
     port_d: u8,
     pin_d: u8,
+    adc_config: u8,
     adc_values: [u16; 8],
     i2c_registers: [u8; 256],
     lcd_lines: [String; 2],
     lcd_present: bool,
+    serial_input: VecDeque<char>,
     serial_output: String,
     aux_serial_log: Vec<u8>,
+    aux_serial_bits: Vec<bool>,
+    uart_baud_reg: u8,
+    uart_double_speed: bool,
     led_activity: bool,
     rotary_value: i32,
     button_temp: u8,
+    button_debounce_sample: u8,
+    button_waiting_for_release: bool,
 }
 
 impl MockHardware {
@@ -213,19 +210,60 @@ impl MockHardware {
         self.i2c_registers[register as usize]
     }
 
+    fn set_aux_serial_line(&mut self, high: bool) {
+        if high {
+            self.port_b |= 1 << B_SER_AUX;
+        } else {
+            self.port_b &= !(1 << B_SER_AUX);
+        }
+        self.aux_serial_bits.push(high);
+    }
+
     fn lcd_write_line(&mut self, row: usize, text: String) {
         if row < self.lcd_lines.len() {
-            self.lcd_lines[row] = text;
+            self.lcd_lines[row] = Self::lcd_fixed_text(&text);
         }
     }
 
-    fn lcd_bar_out(&mut self, row: usize, value: u8) {
-        let mut line = String::new();
-        let segments = usize::from(value / 32).min(7);
-        for _ in 0..segments {
-            line.push('#');
+    fn lcd_fixed_text(text: &str) -> String {
+        let mut line: String = text.chars().take(LCD_COLUMNS).collect();
+        while line.chars().count() < LCD_COLUMNS {
+            line.push(' ');
         }
-        self.lcd_write_line(row, line);
+        line
+    }
+
+    fn serial_read_timeout(&mut self, _timeout_ticks: u8) -> Option<char> {
+        self.serial_input.pop_front()
+    }
+
+    fn serial_pending(&self) -> bool {
+        !self.serial_input.is_empty()
+    }
+
+    fn lcd_bar_out(&mut self, row: usize, value: u8) {
+        let mut line = vec![' '; LCD_COLUMNS];
+        let segments = usize::from(value / 32).min(7);
+        for column in 1..=segments {
+            line[column] = '#';
+        }
+        self.lcd_write_line(row, line.into_iter().collect());
+    }
+
+    fn lcd_write_bargraph_line(&mut self, row: usize, channel: char, value: u8) {
+        let mut line = vec![' '; LCD_COLUMNS];
+        line[0] = channel;
+        let segments = usize::from(value / 32).min(7);
+        for column in 1..=segments {
+            line[column] = '#';
+        }
+        if value < 96 {
+            line[6] = LCD_ZERO_DB_MARK_CHAR;
+        }
+        if value > 180 {
+            line[7] = LCD_OVERLOAD_BLOCK_CHAR;
+        }
+        self.lcd_write_line(row, line.into_iter().collect());
     }
 }
 
@@ -236,15 +274,22 @@ impl Default for MockHardware {
             port_c: 0,
             port_d: 0,
             pin_d: 0,
+            adc_config: 0,
             adc_values: [0; 8],
             i2c_registers: [0; 256],
             lcd_lines: [String::new(), String::new()],
             lcd_present: false,
+            serial_input: VecDeque::new(),
             serial_output: String::new(),
             aux_serial_log: Vec::new(),
+            aux_serial_bits: Vec::new(),
+            uart_baud_reg: 0,
+            uart_double_speed: false,
             led_activity: false,
             rotary_value: 0,
             button_temp: 0xff,
+            button_debounce_sample: BUTTON_RELEASED,
+            button_waiting_for_release: false,
         }
     }
 }
@@ -404,8 +449,13 @@ impl AcvState {
     }
 
     fn ser_aux(&mut self, my_byte: u8) {
-        // Original code bit-bangs 19200 baud on PB4. This port records the byte.
+        // Original code bit-bangs 19200 baud on PB4: start bit, 8 data bits LSB first, stop bit.
         self.hw.aux_serial_log.push(my_byte);
+        self.hw.set_aux_serial_line(false);
+        for bit in 0..8 {
+            self.hw.set_aux_serial_line(my_byte & (1 << bit) != 0);
+        }
+        self.hw.set_aux_serial_line(true);
     }
 
     fn mul_div_int(value: u16, mult: u16, div: u16) -> u16 {
@@ -432,8 +482,11 @@ impl AcvState {
         } else {
             self.right_level_byte = (self.right_level >> 2) as u8;
             self.scale_mult = self.eeprom.adc_scales_r[self.gain as usize];
-            self.right_level_scaled =
-                i32::from(Self::mul_div_int(self.right_level, self.scale_mult, self.scale_div));
+            self.right_level_scaled = i32::from(Self::mul_div_int(
+                self.right_level,
+                self.scale_mult,
+                self.scale_div,
+            ));
         }
 
         if self.left_level > 1019 {
@@ -443,8 +496,11 @@ impl AcvState {
         } else {
             self.left_level_byte = (self.left_level >> 2) as u8;
             self.scale_mult = self.eeprom.adc_scales_l[self.gain as usize];
-            self.left_level_scaled =
-                i32::from(Self::mul_div_int(self.left_level, self.scale_mult, self.scale_div));
+            self.left_level_scaled = i32::from(Self::mul_div_int(
+                self.left_level,
+                self.scale_mult,
+                self.scale_div,
+            ));
         }
     }
 
@@ -511,12 +567,15 @@ impl AcvState {
 
         match self.spdif_rate {
             Spdif::C96Khz | Spdif::P96Khz => {
+                self.hw.adc_config = 0b0100_0101;
                 self.i2c_out_adr10(0x04, 0b0100_0000);
             }
             Spdif::C192Khz | Spdif::P192Khz => {
+                self.hw.adc_config = 0b0100_0110;
                 self.i2c_out_adr10(0x04, 0b0111_0000);
             }
             _ => {
+                self.hw.adc_config = 0b0100_0100;
                 self.i2c_out_adr10(0x04, 0b0110_0000);
             }
         }
@@ -618,12 +677,12 @@ impl AcvState {
                 if self.incr_enter {
                     self.eeprom.init_gain = self.gain;
                 }
-                // Same measurement path as the mV view, but rendered as a bargraph.
+                // Same measurement path as the mV view, but rendered as the PM-8 bargraph panel.
                 self.get_levels();
-                self.hw.lcd_write_line(0, self.upper_channel.to_string());
-                self.hw.lcd_write_line(1, self.lower_channel.to_string());
-                self.hw.lcd_bar_out(0, self.left_level_byte);
-                self.hw.lcd_bar_out(1, self.right_level_byte);
+                self.hw
+                    .lcd_write_bargraph_line(0, self.upper_channel, self.left_level_byte);
+                self.hw
+                    .lcd_write_bargraph_line(1, self.lower_channel, self.right_level_byte);
             }
             Modify::GainSel => {
                 if self.incr_enter {
@@ -632,23 +691,30 @@ impl AcvState {
                 let my_gain = i32::from(self.gain) * 10 - 20;
                 self.gain_str = format!("{:+3}", my_gain);
                 self.hw
-                    .lcd_write_line(0, format!("{}{}", self.gain_str, DB_STR));
+                    .lcd_write_line(0, format!("{}{}{}", self.gain_str, DB_STR, LCD_CURSOR_CHAR));
                 self.hw.lcd_write_line(1, GAIN_SEL_STR.to_string());
             }
             Modify::AuxCmdSel => {
                 if self.incr_enter {
                     self.eeprom.init_aux_cmd = self.aux_cmd;
                 }
-                self.hw
-                    .lcd_write_line(0, format!("{AUX_CMD_SEL_STR} {:02X}", self.aux_cmd));
+                self.hw.lcd_write_line(
+                    0,
+                    format!("{AUX_CMD_SEL_STR} {:02X} {LCD_CURSOR_CHAR}", self.aux_cmd),
+                );
                 self.hw.lcd_write_line(1, AUX_CMD_STR.to_string());
             }
             Modify::RateSel => {
                 if self.incr_enter {
                     self.eeprom.init_rate = self.spdif_rate;
                 }
-                self.hw
-                    .lcd_write_line(0, RATE_STR_ARR[self.spdif_rate as usize].to_string());
+                self.hw.lcd_write_line(
+                    0,
+                    format!(
+                        "{}{LCD_CURSOR_CHAR}",
+                        RATE_STR_ARR[self.spdif_rate as usize]
+                    ),
+                );
                 self.hw.lcd_write_line(1, RATE_SEL_STR.to_string());
             }
         }
@@ -907,16 +973,16 @@ impl AcvState {
                     0 => CmdWhich::Str,
                     1 => CmdWhich::Idn,
                     2 => CmdWhich::Val,
-                    3 => CmdWhich::Wav,
-                    4 => CmdWhich::Bst,
-                    5 => CmdWhich::Aux,
-                    6 => CmdWhich::Inl,
-                    7 => CmdWhich::Rng,
-                    8 => CmdWhich::Dsp,
-                    9 => CmdWhich::All,
-                    10 => CmdWhich::Scl,
-                    11 => CmdWhich::Wen,
-                    12 => CmdWhich::Erc,
+                    3 => CmdWhich::Smp,
+                    4 => CmdWhich::Inl,
+                    5 => CmdWhich::Rng,
+                    6 => CmdWhich::Dsp,
+                    7 => CmdWhich::All,
+                    8 => CmdWhich::Scl,
+                    9 => CmdWhich::Wen,
+                    10 => CmdWhich::Erc,
+                    11 => CmdWhich::Sbd,
+                    12 => CmdWhich::Nop,
                     _ => CmdWhich::Err,
                 };
             }
@@ -1070,7 +1136,7 @@ impl AcvState {
 
     fn chores(&mut self) {}
 
-    pub fn push_serial_char(&mut self, my_char: char) {
+    fn process_serial_char(&mut self, my_char: char) {
         // Keep only printable 7-bit ASCII and treat carriage return as end-of-command.
         if (' '..='\u{7f}').contains(&my_char) {
             self.ser_inp_str.push(my_char);
@@ -1084,10 +1150,49 @@ impl AcvState {
         }
     }
 
+    pub fn push_serial_char(&mut self, my_char: char) {
+        self.hw.serial_input.push_back(my_char);
+    }
+
+    pub fn check_ser(&mut self) {
+        while let Some(my_char) = self.hw.serial_read_timeout(2) {
+            self.process_serial_char(my_char);
+        }
+    }
+
     fn check_delay(&mut self, my_delay: u8) {
-        // The Pascal firmware used this delay to keep polling work alive between UI samples.
+        // The Pascal firmware services serial input during UI delays.
         for _ in 0..my_delay {
+            self.check_ser();
             self.chores();
+        }
+    }
+
+    fn masked_button_sample(button_temp: u8) -> u8 {
+        button_temp | BUTTON_UNUSED_BITS_MASK
+    }
+
+    fn front_panel_button_event(&mut self, button_temp: Option<u8>) -> Option<u8> {
+        let button_temp = Self::masked_button_sample(button_temp?);
+        self.hw.button_temp = button_temp;
+
+        if button_temp == BUTTON_RELEASED {
+            self.hw.button_debounce_sample = BUTTON_RELEASED;
+            self.hw.button_waiting_for_release = false;
+            return None;
+        }
+
+        if self.hw.button_waiting_for_release {
+            return None;
+        }
+
+        if self.hw.button_debounce_sample == button_temp {
+            self.hw.button_waiting_for_release = true;
+            Some(button_temp)
+        } else {
+            self.check_delay(1);
+            self.hw.button_debounce_sample = button_temp;
+            None
         }
     }
 
@@ -1099,8 +1204,11 @@ impl AcvState {
         if !(9..=239).contains(&self.eeprom.ee_ser_baud_reg) {
             self.eeprom.ee_ser_baud_reg = 51;
         }
+        self.hw.uart_baud_reg = self.eeprom.ee_ser_baud_reg;
+        self.hw.uart_double_speed = true;
 
         self.patch_copy_from_ee();
+        self.hw.adc_config = 0;
         self.slave_ch = (!self.hw.pin_d) >> 5;
         self.hw.led_activity = false;
         self.hw.lcd_present = true;
@@ -1139,6 +1247,7 @@ impl AcvState {
         self.bar_graph_delay_timer.set(150);
         self.aux_cmd = self.eeprom.init_aux_cmd;
         self.ser_aux(self.aux_cmd);
+        self.hw.adc_config = 0b0100_0000;
         self.init_spdif();
 
         if self.eeprom.init_lr_swap {
@@ -1151,13 +1260,14 @@ impl AcvState {
     }
 
     pub fn main_loop_step(&mut self, new_rotary_value: i32, button_temp: Option<u8>) {
+        self.check_ser();
         self.hw.rotary_value = new_rotary_value;
 
         if self.activity_timer.is_zero() {
             self.hw.led_activity = true;
         }
 
-        if self.hw.lcd_present {
+        if self.hw.lcd_present && !self.hw.serial_pending() {
             self.incr_value = self.hw.rotary_value;
 
             if self.incr_value != self.old_incr_value {
@@ -1225,34 +1335,31 @@ impl AcvState {
 
             self.check_delay(1);
 
-            if let Some(button_temp) = button_temp {
-                self.hw.button_temp = button_temp;
-                if button_temp != 0xff {
-                    // Front-panel buttons are wired active-low.
-                    self.changed_flag = true;
-                    self.set_busy_flag(true);
+            if let Some(button_temp) = self.front_panel_button_event(button_temp) {
+                // Front-panel buttons are wired active-low.
+                self.changed_flag = true;
+                self.set_busy_flag(true);
 
-                    let button_enter = button_temp & (1 << 3) == 0;
-                    let button_left = button_temp & (1 << 5) == 0;
-                    let button_right = button_temp & (1 << 4) == 0;
+                let button_enter = button_temp & (1 << 3) == 0;
+                let button_left = button_temp & (1 << 5) == 0;
+                let button_right = button_temp & (1 << 4) == 0;
 
-                    if button_enter {
-                        self.ser_prompt(Error::NoErr, self.status.wrapping_add(67));
-                        self.incr_enter = true;
-                    }
-                    if button_left {
-                        self.ser_prompt(Error::NoErr, self.status.wrapping_add(65));
-                        self.modify = Self::next_modify(self.modify);
-                    }
-                    if button_right {
-                        self.ser_prompt(Error::NoErr, self.status.wrapping_add(66));
-                        self.modify = Self::prev_modify(self.modify);
-                    }
-
-                    self.display_timer.set(10);
-                    self.soll_werte_on_lcd();
-                    self.first_turn = false;
+                if button_enter {
+                    self.ser_prompt(Error::NoErr, self.status.wrapping_add(67));
+                    self.incr_enter = true;
                 }
+                if button_left {
+                    self.ser_prompt(Error::NoErr, self.status.wrapping_add(65));
+                    self.modify = Self::next_modify(self.modify);
+                }
+                if button_right {
+                    self.ser_prompt(Error::NoErr, self.status.wrapping_add(66));
+                    self.modify = Self::prev_modify(self.modify);
+                }
+
+                self.display_timer.set(10);
+                self.soll_werte_on_lcd();
+                self.first_turn = false;
             }
         }
 
@@ -1317,5 +1424,163 @@ impl AcvState {
             Modify::LevelBarDispl => Modify::GainSel,
             Modify::MvDispl => Modify::LevelBarDispl,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn named_commands_use_pascal_subchannel_table_order() {
+        let expectations = [
+            ("STR", 255),
+            ("IDN", 254),
+            ("VAL", 0),
+            ("SMP", 8),
+            ("INL", 10),
+            ("RNG", 19),
+            ("DSP", 80),
+            ("ALL", 99),
+            ("SCL", 200),
+            ("WEN", 250),
+            ("ERC", 251),
+            ("SBD", 252),
+            ("NOP", 0),
+        ];
+
+        let mut state = AcvState::default();
+        for (command, sub_ch) in expectations {
+            state.param_str = command.to_string();
+            let cmd_which = state.cmd_to_index();
+
+            assert_ne!(cmd_which, CmdWhich::Err);
+            assert_eq!(CMD2_SUB_CH_ARR[cmd_which as usize], sub_ch);
+        }
+    }
+
+    #[test]
+    fn ser_aux_bit_bangs_pb4_lsb_first_and_leaves_line_high() {
+        let mut state = AcvState::default();
+        state.hw.port_b = PORTB_INIT;
+
+        state.ser_aux(0b1010_0101);
+
+        assert_eq!(state.hw.aux_serial_log, vec![0b1010_0101]);
+        assert_eq!(
+            state.hw.aux_serial_bits,
+            vec![false, true, false, true, false, false, true, false, true, true]
+        );
+        assert_ne!(state.hw.port_b & (1 << B_SER_AUX), 0);
+    }
+
+    #[test]
+    fn init_spdif_updates_adc_board_config_for_sample_rate() {
+        let mut state = AcvState::default();
+
+        state.spdif_rate = Spdif::C48Khz;
+        state.init_spdif();
+        assert_eq!(state.hw.adc_config, 0b0100_0100);
+        assert_eq!(state.hw.i2c_registers[0x04], 0b0110_0000);
+
+        state.spdif_rate = Spdif::P96Khz;
+        state.init_spdif();
+        assert_eq!(state.hw.adc_config, 0b0100_0101);
+        assert_eq!(state.hw.i2c_registers[0x04], 0b0100_0000);
+
+        state.spdif_rate = Spdif::C192Khz;
+        state.init_spdif();
+        assert_eq!(state.hw.adc_config, 0b0100_0110);
+        assert_eq!(state.hw.i2c_registers[0x04], 0b0111_0000);
+    }
+
+    #[test]
+    fn init_all_applies_stored_uart_baud_register() {
+        let mut state = AcvState::default();
+        state.eeprom.ee_ser_baud_reg = 100;
+
+        state.init_all();
+
+        assert_eq!(state.hw.uart_baud_reg, 100);
+        assert!(state.hw.uart_double_speed);
+    }
+
+    #[test]
+    fn init_all_restores_default_uart_baud_register_when_stored_value_is_invalid() {
+        let mut state = AcvState::default();
+        state.eeprom.ee_ser_baud_reg = 8;
+
+        state.init_all();
+
+        assert_eq!(state.eeprom.ee_ser_baud_reg, 51);
+        assert_eq!(state.hw.uart_baud_reg, 51);
+        assert!(state.hw.uart_double_speed);
+    }
+
+    #[test]
+    fn check_delay_services_queued_serial_input() {
+        let mut state = AcvState::default();
+
+        for ch in "8\r".chars() {
+            state.push_serial_char(ch);
+        }
+        assert!(state.hw.serial_output.is_empty());
+
+        state.check_delay(1);
+
+        assert_eq!(state.hw.serial_output, "#0:8=0\r\n");
+        assert!(state.hw.serial_input.is_empty());
+    }
+
+    #[test]
+    fn front_panel_buttons_require_debounce_and_release_before_repeating() {
+        let mut state = AcvState::default();
+        state.hw.lcd_present = true;
+        state.display_timer.set(10);
+        state.incr_timer.set(20);
+        state.modify = Modify::GainSel;
+
+        let left_pressed = 0b1101_1111;
+        state.main_loop_step(0, Some(left_pressed));
+        assert_eq!(state.modify, Modify::GainSel);
+
+        state.main_loop_step(0, Some(left_pressed));
+        assert_eq!(state.modify, Modify::LevelBarDispl);
+
+        state.main_loop_step(0, Some(left_pressed));
+        assert_eq!(state.modify, Modify::LevelBarDispl);
+
+        state.main_loop_step(0, Some(BUTTON_RELEASED));
+        state.main_loop_step(0, Some(left_pressed));
+        assert_eq!(state.modify, Modify::LevelBarDispl);
+
+        state.main_loop_step(0, Some(left_pressed));
+        assert_eq!(state.modify, Modify::MvDispl);
+    }
+
+    #[test]
+    fn level_bar_display_preserves_channel_columns_and_pascal_markers() {
+        let mut state = AcvState::default();
+        state.hw.lcd_present = true;
+        state.modify = Modify::LevelBarDispl;
+        state.hw.adc_values[3] = 320;
+        state.hw.adc_values[4] = 800;
+
+        state.soll_werte_on_lcd();
+
+        assert_eq!(state.hw.lcd_lines[0], "L##   \u{7} ");
+        assert_eq!(state.hw.lcd_lines[1], "R######\u{6}");
+    }
+
+    #[test]
+    fn lcd_menu_pages_include_pascal_cursor_glyph_and_fixed_width_rows() {
+        let mut state = AcvState::default();
+        state.modify = Modify::GainSel;
+        state.gain = 2;
+
+        state.soll_werte_on_lcd();
+
+        assert_eq!(state.hw.lcd_lines[0], " +0 dB \u{5}");
+        assert_eq!(state.hw.lcd_lines[1], GAIN_SEL_STR);
     }
 }
