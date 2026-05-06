@@ -26,3 +26,6 @@ pub mod div_parser;
 
 #[path = "../EDL/EDL-HW.rs"]
 pub mod edl_hw;
+
+#[path = "../EDL/EDL.rs"]
+pub mod edl;
