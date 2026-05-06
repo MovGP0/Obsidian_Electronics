@@ -1,5 +1,8 @@
 pub mod avrd_support;
 
+#[path = "../ADA-IO/ADA-C.rs"]
+pub mod ada_c;
+
 #[path = "../ADA-IO/ADA-C-HW.rs"]
 pub mod ada_c_hw;
 
