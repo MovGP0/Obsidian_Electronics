@@ -9,6 +9,9 @@ pub mod dcg_hw;
 #[path = "../DDS/DDS-HW.rs"]
 pub mod dds_hw;
 
+#[path = "../DDS/DDS.rs"]
+pub mod dds;
+
 #[path = "../DIV/DIV-HW.rs"]
 pub mod div_hw;
 
