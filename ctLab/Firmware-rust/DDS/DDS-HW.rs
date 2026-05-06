@@ -180,7 +180,8 @@ impl DdsHardwareState {
     pub fn ser_aux<IO: DdsHardwareIo>(&self, io: &mut IO, mybyte: u8) {
         let mut value = mybyte;
 
-        // Original source uses ExtensionPort bit 5 as an auxiliary 19.2 kBd UART.
+        // Auxiliary 19.2 kBd serial output for the MP3 player.
+        // The Pascal code sends a start bit, then shifts bit 0 first.
         io.clear_bit(PortKind::Extension, B_SER_AUX);
         io.delay_units(5);
 
@@ -200,6 +201,8 @@ impl DdsHardwareState {
 
     pub fn shift_out_1257<IO: DdsHardwareIo>(&mut self, io: &mut IO, my_val: i16) {
         let clamped = my_val.clamp(-0x07ff, 0x07ff);
+        // The offset DAC is wired around midscale, so 0 V lives at FS/2.
+        // Negative offsets are therefore corrected by adding 0x800 first.
         let dac_word = (clamped + 0x0800) as u16;
         self.dac_temp = clamped + 0x0800;
 
@@ -226,10 +229,12 @@ impl DdsHardwareState {
     }
 
     pub fn shift_out_level_sr<IO: DdsHardwareIo>(&mut self, io: &mut IO, my_level_sr: i16) {
+        // The 4094 chain carries relay state first and the attenuator level bytes after it.
         self.level_byte_hi = ((my_level_sr as u16 >> 8) & 0x00ff) as u8;
         self.level_byte_lo = (my_level_sr as u16 & 0x00ff) as u8;
 
         if self.board_has_two_shift_registers {
+            // On the 2-SR board the relay bits are merged into the upper level byte.
             self.level_byte_hi |= self.switch_state;
         }
 
@@ -250,6 +255,7 @@ impl DdsHardwareState {
         io.clear_bit(PortKind::ControlBit, B_SDATAOUT);
         io.clear_bit(PortKind::DdsOut, B_FSYNC);
 
+        // AD9833 writes are 16-bit frames with the high byte shifted first.
         for bit in (0..16).rev() {
             if (self.dss_cmd >> bit) & 1 != 0 {
                 io.set_bit(PortKind::ControlBit, B_SDATAOUT);
@@ -279,9 +285,10 @@ impl DdsHardwareState {
         };
 
         // The Pascal SQG variant passes an uninitialized myLevel variable here.
-        // The hardware effect is relay switching, so the port uses a zero level word.
+        // In practice this call is about committing the relay selection, not the level word.
         self.shift_out_level_sr(io, 0);
 
+        // The SQG variant builds the tuning word from decimal digits using floating-point factors.
         self.dds_frequency_word = Self::dds_tuning_word_sqg(self.frequency_tenths_hz);
 
         io.begin_critical_section();
@@ -293,12 +300,14 @@ impl DdsHardwareState {
 
     pub fn set_level_dds<IO: DdsHardwareIo>(&mut self, io: &mut IO, wave: Waveform) {
         self.switch_state = 0;
+        // Zero the level bytes first to suppress switching clicks while the relays move.
         self.level_byte_hi = 0;
         self.level_byte_lo = 0;
 
         let mut my_offset = self.offset_mv;
 
         if my_offset == 0 {
+            // Zero offset opens the DC offset relay path and turns the indicator LED off.
             self.set_offs_sw(true);
             self.set_led_switch(io, true);
         } else {
@@ -306,15 +315,16 @@ impl DdsHardwareState {
         }
 
         let my_level = if self.dac_level < self.attn_switch_point {
+            // Below the threshold the AC path goes back to full-scale and uses the 1/40 attenuator relay.
             let scaled = (self.dac_level * self.attn_fac * self.level_scale_low).round() as i16;
             self.set_attn_sw(true);
 
             if self.level_range {
                 self.dss_cmd = DDS_RESET_CMD;
                 io.begin_critical_section();
-                self.send_dds(io);
+                self.send_dds(io); // Briefly mute the DDS before the range relay flips.
                 io.end_critical_section();
-                self.shift_out_level_sr(io, 0);
+                self.shift_out_level_sr(io, 0); // Commit relay state, then wait for contacts to settle.
                 io.delay_ms(5);
                 self.level_range = false;
             }
@@ -336,6 +346,7 @@ impl DdsHardwareState {
             Waveform::Logic => {
                 self.set_square_sw(true);
                 if self.board_has_two_shift_registers {
+                    // The 2-SR logic variant reuses the offset DAC as a power/output level helper.
                     my_offset = (self.dac_level * self.pwr_gain * 1.414_21).round() as i32;
                     self.set_offs_sw(false);
                 } else {
@@ -344,15 +355,17 @@ impl DdsHardwareState {
                 DDS_SQUARE_CMD
             }
             Waveform::External(_) => {
+                // External/audio modes disable DDS generation and only gate the external path.
                 self.set_ext_on(true);
                 DDS_RESET_CMD
             }
             Waveform::Off => DDS_RESET_CMD,
         };
 
-        self.shift_out_1257(io, (my_offset / 5) as i16);
+        self.shift_out_1257(io, (my_offset / 5) as i16); // FS = 10 V, so one DAC count is 5 mV.
         self.shift_out_level_sr(io, my_level);
 
+        // The original firmware derives the AD9833 tuning word by summing decimal-digit factors.
         self.dds_frequency_word = Self::dds_tuning_word_integer(self.frequency_tenths_hz);
 
         io.begin_critical_section();

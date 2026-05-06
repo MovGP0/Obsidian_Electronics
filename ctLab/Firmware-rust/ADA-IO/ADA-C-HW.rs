@@ -166,6 +166,8 @@ pub fn shift_out1257(hw: &mut impl AdacHardware, state: &AdacState) {
     set_low(hw, Signal::SClk);
     set_high(hw, Signal::StrDac);
 
+    // The LTC1257 expects the high nibble of the 12-bit value first, left-aligned
+    // onto the serial data line exactly like the Pascal bit-banging routine.
     let mut acca: Byte = ((state.dac_temp >> 8) as Byte) << 4; // MSB linksbuendig
 
     for _ in 0..4 {
@@ -180,6 +182,8 @@ pub fn shift_out1257(hw: &mut impl AdacHardware, state: &AdacState) {
         set_low(hw, Signal::SClk);
     }
 
+    // The low byte follows afterwards; the final data bit is clocked together
+    // with the DAC load strobe instead of as a plain shift cycle.
     let mut acca: Byte = state.dac_temp as Byte; // LSB Level zuletzt
 
     for _ in 0..7 {
@@ -214,6 +218,8 @@ pub fn shift_out1655(hw: &mut impl AdacHardware, state: &AdacState) {
     set_low(hw, Signal::SDataOut);
     set_low(hw, Signal::StrDac);
 
+    // Unlike the LTC1257 path, the LTC1655 shifts a full high byte before the
+    // low byte and only latches once all 16 bits have been transferred.
     let mut acca: Byte = (state.dac_temp >> 8) as Byte; // MSB linksbuendig
 
     for _ in 0..8 {
@@ -250,6 +256,8 @@ pub fn shift_out714(hw: &mut impl AdacHardware, state: &AdacState) {
     set_high(hw, Signal::SClk);
     set_high(hw, Signal::StrDac);
 
+    // The DAC714 uses the opposite clock phase: drive data while SCLK is low,
+    // then let the rising edge shift the current bit into the converter.
     let mut acca: Byte = (state.dac_temp >> 8) as Byte; // MSB linksbuendig
 
     for _ in 0..8 {
@@ -289,6 +297,8 @@ pub fn shift_out714(hw: &mut impl AdacHardware, state: &AdacState) {
 
 // Holt ADraw aus LTC1864, Interrupt waehrend dieser Zeit gesperrt.
 pub fn shift_in1864(hw: &mut impl AdacHardware, state: &mut AdacState) {
+    // Assert chip-select and keep the conversion transaction contiguous; the
+    // original routine did this with interrupts blocked around the bit loop.
     set_low(hw, Signal::StrAd16);
     set_low(hw, Signal::SClk);
     hw.wait_cycles(3);
@@ -308,6 +318,8 @@ pub fn shift_out_sr(hw: &mut impl AdacHardware, state: &AdacState) {
     set_low(hw, Signal::SClk);
     set_low(hw, Signal::SDataOut);
 
+    // The four cascaded 4094 registers are filled from SR3 down to SR0 so the
+    // logical port image emerges at the right physical outputs after strobing.
     shift_out_sr_byte(hw, state.port_sr3);
     shift_out_sr_byte(hw, state.port_sr2);
     shift_out_sr_byte(hw, state.port_sr1); // LSB Level zuletzt
@@ -341,7 +353,8 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
         state.ad16_long = 0;
         set_high(hw, Signal::StrAd16);
 
-        // Erste Wandlung verwerfen, nicht auslesen.
+        // The first post-switch conversion is intentionally discarded so the
+        // external ADC sees the full settling interval before we accumulate data.
         hw.wait_cycles(15);
 
         for _ in 0..ADC16_SAMPLES_PER_TICK {
@@ -352,11 +365,13 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
 
     let previous_mux_ch = state.mux_ch;
 
-    // Multiplexer abschalten, Multiplexer-Kanal hochzaehlen.
+    // Finish sampling the previous mux input, then blank the analog path before
+    // advancing the channel selection lines to the next source.
     set_low(hw, Signal::StrDaMux);
     state.mux_ch = (state.mux_ch + 1) % MUX_CHANNEL_COUNT;
 
-    // Multiplexer-Kanal einstellen.
+    // Port C carries the mux address in bits 4..2 while preserving the fixed
+    // control bits from the original firmware mask.
     hw.set_port_c(((state.mux_ch as Byte) << 2) | PORTC_MUX_BASE);
 
     state.dac_temp = state.dac_raw_array[state.mux_ch];
@@ -373,15 +388,20 @@ pub fn on_sys_tick(hw: &mut impl AdacHardware, state: &mut AdacState) {
         shift_out1257(hw, state);
     }
 
-    // Settle Time.
+    // Give the new DAC code time to settle before storing the measurement that
+    // belongs to the previously active channel.
     hw.wait_cycles(4);
 
-    // wg. DAC-Settle-Time erst hier.
+    // Only average and store after the DAC settle delay; the Pascal code makes
+    // the same point because this sample still belongs to `previous_mux_ch`.
     state.ad16_long >>= 2;
     if state.integrate_ad16 {
+        // Integrating mode forms a simple 1:1 running average with the previous
+        // stored sample, which suppresses noise without extra buffer state.
         state.ad16_long += LongInt::from(state.adc_raw_array[previous_mux_ch]);
         state.adc_raw_array[previous_mux_ch] = (state.ad16_long >> 1) as Integer; // integrieren
     } else {
+        // Direct mode keeps the freshly averaged four-sample ADC result.
         state.adc_raw_array[previous_mux_ch] = state.ad16_long as Integer; // direkt
     }
 

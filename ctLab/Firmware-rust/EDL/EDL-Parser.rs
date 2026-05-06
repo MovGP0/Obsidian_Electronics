@@ -247,11 +247,13 @@ impl EdlParser {
                 self.write_param_ser();
             }
             3 => {
+                // mcb extension: expose the computed power value directly in watts.
                 self.param = self.dc_watt;
                 self.nachkomma = 2;
                 self.write_param_ser();
             }
             4 => {
+                // mcb extension: report the configured low-voltage cutoff threshold.
                 self.param = self.dc_volt;
                 self.nachkomma = 2;
                 self.write_param_ser();
@@ -262,10 +264,12 @@ impl EdlParser {
                 self.write_param_ser();
             }
             7 => {
+                // mcb extension: accumulated discharge capacity in Ah.
                 self.param = self.ah;
                 self.write_param_ser();
             }
             8 => {
+                // mcb extension: accumulated discharge energy in Wh.
                 self.param = self.wh;
                 self.write_param_ser();
             }
@@ -368,6 +372,7 @@ impl EdlParser {
                 self.write_param_int_ser();
             }
             99 => {
+                // ALL request: return the four live measurement channels as a burst.
                 self.get_voltage(true);
                 self.sub_ch = 10;
                 self.write_param_ser();
@@ -448,9 +453,11 @@ impl EdlParser {
                 self.write_param_int_ser();
             }
             253 => {
+                // Serial test hook: echo the raw input line back unchanged.
                 self.output_lines.push(self.ser_inp_str.clone());
             }
             254 => {
+                // Version/value request uses the normal channel prefix before the banner string.
                 let prefix = self.write_ch_prefix();
                 self.output_lines.push(format!("{prefix}{}", self.vers1_str));
             }
@@ -465,6 +472,7 @@ impl EdlParser {
 
     pub fn parse_set_param(&mut self) {
         if self.busy_flag {
+            // Writes are rejected while the load is in a protected busy phase.
             self.serprompt(PromptCode::BusyErr);
             return;
         }
@@ -488,9 +496,11 @@ impl EdlParser {
                 self.dc_amp = self.param;
             }
             3 => {
+                // mcb extension: set the constant-power target in watts.
                 self.dc_watt = self.param;
             }
             4 => {
+                // mcb extension: arming a low-voltage threshold also forces the output on.
                 self.low_volt = false;
                 self.output_enable = true;
                 self.dc_volt = self.param;
@@ -499,13 +509,16 @@ impl EdlParser {
                 self.dc_ohm = self.param;
             }
             7 | 8 => {
+                // mcb extension: writing either counter clears both accumulated totals.
                 self.ah = 0.0;
                 self.wh = 0.0;
             }
             9 => {
+                // 4..255 selects autoranging in the original firmware.
                 self.shunt_range = self.param_int as u8;
             }
             19 => {
+                // Changing mode can force an immediate shutdown; enabling happens later in SetDAC.
                 self.mode_select = Mode::from(self.param_byte);
                 if self.mode_select == Mode::OutputOff {
                     self.mpxena = false;
@@ -534,6 +547,7 @@ impl EdlParser {
                 if self.verbose {
                     self.serprompt(PromptCode::NoErr);
                 }
+                // Raw DAC debug writes must not trigger any additional output switching.
                 return;
             }
             71 => {
@@ -543,6 +557,7 @@ impl EdlParser {
                 if self.verbose {
                     self.serprompt(PromptCode::NoErr);
                 }
+                // Raw DAC debug writes must not trigger any additional output switching.
                 return;
             }
             80 => {
@@ -551,6 +566,7 @@ impl EdlParser {
             }
             89 | 100..=115 | 200..=223 => {
                 if !self.ee_unlocked {
+                    // Calibration and EEPROM-backed parameters stay locked until sub-channel 250.
                     self.serprompt(PromptCode::LockedErr);
                     return;
                 }
@@ -586,6 +602,7 @@ impl EdlParser {
                     _ => {}
                 }
 
+                // Mirror the firmware's short settle time after recalculating scales.
                 self.init_scales();
                 self.mdelay(3);
             }
@@ -612,6 +629,7 @@ impl EdlParser {
                     self.serprompt(PromptCode::LockedErr);
                     return;
                 }
+                // Baud-rate EEPROM changes only take effect after the next reset.
                 self.ee_ser_baud_reg = self.param_byte;
             }
             _ => {
@@ -624,9 +642,11 @@ impl EdlParser {
         self.check_limits();
 
         if self.verbose {
+            // The Pascal code reports CheckLimitErr here; callers interpret it like ParamErr on clamp.
             self.serprompt(PromptCode::CheckLimitErr);
         }
 
+        // mcb modes select which control loop has to refresh the DAC target after a write.
         match self.mode_select {
             Mode::RhiVolt | Mode::RloVolt => self.set_level_dac_r(),
             Mode::IhiVolt | Mode::IloVolt => self.set_level_dac_i(),
@@ -636,6 +656,7 @@ impl EdlParser {
     }
 
     pub fn cmd_to_index(&mut self) -> CmdWhich {
+        // Command keywords are matched case-insensitively against the static command table.
         self.param_str.make_ascii_uppercase();
 
         for (index, cmd) in self.cmd_str_arr.iter().enumerate() {
@@ -654,6 +675,7 @@ impl EdlParser {
         let mut ptr = self.ser_inp_ptr.min(bytes.len());
 
         while ptr < bytes.len() && bytes[ptr] == b' ' {
+            // The Pascal parser explicitly skips leading blanks before every token.
             ptr += 1;
         }
 
@@ -667,8 +689,10 @@ impl EdlParser {
         while ptr < bytes.len() {
             let byte = bytes[ptr];
             let keep = if is_param {
+                // Parameters accept digits plus the wildcard/ASCII punctuation span used by the firmware.
                 (b'*'..=b'9').contains(&byte)
             } else {
+                // Commands consume letters until a digit or separator terminates the token.
                 byte >= b'A'
             };
 
@@ -694,11 +718,13 @@ impl EdlParser {
 
         let has_main_ch = self.ser_inp_str.contains(':');
         let is_request = !self.ser_inp_str.contains('=');
+        // '=' means a setter, otherwise the frame is treated as a read/query.
         let first = self.ser_inp_str.as_bytes()[0];
         let is_omni = first == b'*';
         let is_result = first == b'#';
 
         if is_result {
+            // Result frames are forwarded unchanged instead of being parsed again.
             self.write_ser_inp();
             return self.output_lines.clone();
         }
@@ -710,6 +736,7 @@ impl EdlParser {
             self.ser_inp_ptr = self.ser_inp_ptr.saturating_add(1);
 
             if is_omni {
+                // Omni commands are echoed onward before local handling.
                 self.write_ser_inp();
             } else if let Some(channel) = self.parse_i32(&self.param_str) {
                 self.current_ch = channel;
@@ -717,13 +744,16 @@ impl EdlParser {
         }
 
         if !is_omni && self.current_ch != self.slave_ch && has_main_ch {
+            // Addressed traffic for another slave is passed through untouched.
             self.write_ser_inp();
             return self.output_lines.clone();
         }
 
+        // '!' or '?' requests the verbose response style used by the original protocol.
         self.verbose = self.ser_inp_str.contains('!') || self.ser_inp_str.contains('?');
 
         if let Some(check_pos) = self.ser_inp_str.find('$') {
+            // XOR checksum covers everything before '$'; the '$xx' trailer is not included.
             let checksum_text = self.ser_inp_str.get(check_pos + 1..check_pos + 3);
             let Some(checksum_text) = checksum_text else {
                 self.serprompt(PromptCode::CheckSumErr);
@@ -741,6 +771,7 @@ impl EdlParser {
             }
 
             if checksum_calc != checksum_in {
+                // Reject the frame immediately on checksum mismatch.
                 self.serprompt(PromptCode::CheckSumErr);
                 return self.output_lines.clone();
             }
@@ -748,10 +779,13 @@ impl EdlParser {
 
         self.set_systimer(255);
         self.led_activity = false;
+        // Any valid local frame refreshes the activity timer and clears the LED.
 
         let sub_ch_offset = if self.parse_extract() {
+            // Numeric first token means direct sub-channel addressing.
             0_i32
         } else {
+            // Otherwise parse a textual command and translate it through the command table.
             let cmd_which = self.cmd_to_index();
             let CmdWhich::Index(index) = cmd_which else {
                 self.serprompt(PromptCode::SyntaxErr);
@@ -764,6 +798,7 @@ impl EdlParser {
             };
 
             let _is_param = self.parse_extract();
+            // Commands carry a second token that selects the concrete sub-channel.
             i32::from(offset)
         };
 
@@ -773,8 +808,10 @@ impl EdlParser {
         };
 
         self.sub_ch = sub_ch_base + sub_ch_offset;
+        // Command aliases are normalized into the same absolute sub-channel space.
 
         if is_request {
+            // Request path only resolves the current value; no payload parsing follows.
             self.parse_get_param();
             return self.output_lines.clone();
         }
@@ -796,6 +833,7 @@ impl EdlParser {
             return self.output_lines.clone();
         };
 
+        // Setter path keeps the Pascal convention of exposing float, int, and byte views together.
         self.param = value;
         self.param_int = value as i32;
         self.param_byte = self.param_int as u8;

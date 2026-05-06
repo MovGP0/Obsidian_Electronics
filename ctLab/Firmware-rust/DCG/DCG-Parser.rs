@@ -130,6 +130,9 @@ pub const CMD_STR_ARR: [&str; 27] = [
 ];
 
 pub const CMD2_SUB_CH_ARR: [u8; 27] = [
+    // Mnemonic commands address the first sub-channel in a block; the parsed
+    // numeric argument is added later so `VAL 5?` and direct `5?` land on the
+    // same final sub-channel.
     255, 254, 253, 0, 0, 1, 7, 8, 10, 11, 18, 20, 21, 27, 28, 29, 50, 80, 100, 200, 150, 99,
     233, 250, 251, 252, 0,
 ];
@@ -478,6 +481,9 @@ impl DcgParser {
 
     pub fn parse_set_param(&mut self) {
         if self.busy_flag {
+            // The Pascal parser rejects writes while a measurement/update cycle
+            // is active so callers get a deterministic `BusyErr` instead of a
+            // half-applied setting.
             self.serprompt(Error::BusyErr);
             return;
         }
@@ -610,6 +616,8 @@ impl DcgParser {
 
     // General parser branch.
     pub fn cmd_to_index(&mut self) -> CmdWhich {
+        // Translate the clear-text command token into the command-table index
+        // used by `CMD2_SUB_CH_ARR`.
         self.param_str = self.param_str.to_ascii_uppercase();
         for (index, cmd) in CMD_STR_ARR.iter().enumerate() {
             if self.param_str == *cmd {
@@ -625,6 +633,8 @@ impl DcgParser {
         self.param_str.clear();
         let bytes = self.ser_inp_str.as_bytes();
 
+        // Ignore inter-token whitespace before deciding whether the next field
+        // is a command mnemonic or a numeric / wildcard parameter.
         while self.ser_inp_ptr < bytes.len() && bytes[self.ser_inp_ptr] == b' ' {
             self.ser_inp_ptr += 1;
         }
@@ -633,6 +643,8 @@ impl DcgParser {
             return false;
         }
 
+        // Parameter tokens may start with `*` for Omni addressing or with a
+        // digit / sign / decimal marker for normal numeric sub-channels.
         let is_param = matches!(bytes[self.ser_inp_ptr], b'*'..=b'9');
 
         if is_param {
@@ -666,6 +678,9 @@ impl DcgParser {
             return;
         }
 
+        // Accepted forms mirror the Pascal parser: `MainCh:CMD SubCh?`,
+        // `MainCh:SubCh=Value`, and the short form without `VAL` and/or
+        // without `MainCh:`, which then reuses the previously addressed channel.
         let has_main_ch = self.ser_inp_str.contains(':');
         let is_request = !self.ser_inp_str.contains('=');
         let first_char = self.ser_inp_str.as_bytes()[0] as char;
@@ -682,6 +697,8 @@ impl DcgParser {
             let _is_param = self.parse_extract();
             self.ser_inp_ptr = self.ser_inp_ptr.saturating_add(1);
             if is_omni {
+                // Omni commands are forwarded to the bus unchanged instead of
+                // rebinding `current_ch` locally.
                 self.write_ser_inp();
             } else if let Ok(channel) = self.param_str.parse::<u8>() {
                 self.current_ch = channel;
@@ -692,13 +709,18 @@ impl DcgParser {
         }
 
         if !is_omni && has_main_ch && self.current_ch != self.slave_ch {
+            // Frames with an explicit foreign main channel are forwarded and
+            // not interpreted locally.
             self.write_ser_inp();
             return;
         }
 
+        // `?` or `!` requests a verbose reply in the original serial protocol.
         self.verbose = self.ser_inp_str.contains('!') || self.ser_inp_str.contains('?');
 
         if let Some(check_pos) = self.ser_inp_str.find('$') {
+            // The protocol uses a trailing two-digit hex XOR checksum; the `$`
+            // marker itself is not included in the XOR span.
             let checksum_slice = self.ser_inp_str.get(check_pos + 1..check_pos + 3);
             let Some(checksum_text) = checksum_slice else {
                 self.serprompt(Error::ChecksumErr);
@@ -724,6 +746,8 @@ impl DcgParser {
         self.activity_timer = 255;
 
         let sub_ch_offset = if self.parse_extract() {
+            // Direct sub-channel form: the extracted token already is the
+            // absolute sub-channel number.
             0
         } else {
             self.cmd_which = self.cmd_to_index();
@@ -732,6 +756,8 @@ impl DcgParser {
                 return;
             }
 
+            // Mnemonic commands contribute the block base; the next extracted
+            // token adds the per-command sub-channel offset.
             let offset = CMD2_SUB_CH_ARR[self.cmd_which.as_index()];
             let _is_param = self.parse_extract();
             offset
@@ -743,6 +769,8 @@ impl DcgParser {
         if is_request {
             self.parse_get_param();
         } else {
+            // Set commands require an explicit `=` followed by a parseable
+            // numeric payload.
             let Some(equal_pos) = self.ser_inp_str.find('=') else {
                 self.serprompt(Error::ParamErr);
                 return;

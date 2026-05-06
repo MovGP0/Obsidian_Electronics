@@ -146,9 +146,13 @@ impl Default for EepromData {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct RuntimeStatus {
     pub error_low_nibble: u8,
+    // Bit 4 in the Pascal status byte unlocked EEPROM writes for calibration commands.
     pub ee_unlocked: bool,
+    // Bit 5 signaled any latched protection condition back to the serial host.
     pub overload_flag: bool,
+    // Bit 6 reported user activity such as encoder/button actions as SRQ-style events.
     pub user_srq_flag: bool,
+    // Bit 7 marked transient edit states where the front panel was actively changing values.
     pub busy_flag: bool,
 }
 
@@ -175,15 +179,19 @@ pub struct DeviceState<H> {
     pub output_enabled: bool,
     pub current_set: Float,
     pub power_set: Float,
+    // Under-voltage shutdown threshold used by the original LowVolt fault path.
     pub voltage_cutoff: Float,
     pub resistance_set: Float,
+    // Off-phase load level in percent of the on-phase current for ripple mode.
     pub current_off_percent: Float,
     pub ripple_percent: Float,
+    // Ripple timing is modeled as explicit on/off dwell times in milliseconds.
     pub t_on_ms: u16,
     pub t_off_ms: u16,
     pub measured_voltage: Float,
     pub measured_current: Float,
     pub measured_power: Float,
+    // The Pascal firmware accumulated Ah/Wh in a periodic timer when the load stayed fully on.
     pub capacity_mah: Float,
     pub capacity_mwh: Float,
     pub internal_resistance: Float,
@@ -194,6 +202,7 @@ pub struct DeviceState<H> {
 
 impl RuntimeStatus {
     pub fn as_byte(self) -> u8 {
+        // Matches the packed EDL status register layout used by the serial protocol.
         (self.error_low_nibble & 0x0f)
             | ((self.ee_unlocked as u8) << 4)
             | ((self.overload_flag as u8) << 5)
@@ -238,6 +247,9 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn get_lm75_temp(&mut self) {
+        // The Pascal code could prefer an external LM75 on the highest range; this port keeps the
+        // same "refresh temperature lazily through a helper" shape even though device selection
+        // lives in the hardware layer now.
         self.temperature_c = self.get_one_lm75_temp();
     }
 
@@ -262,6 +274,8 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn calc_range_i(&mut self) {
+        // Current mode auto-ranges across four shunts so the sink keeps as much ADC/DAC
+        // resolution as possible instead of always staying on the highest-current path.
         let shunt = if self.current_set < 0.02 {
             0
         } else if self.current_set < 0.2 {
@@ -277,11 +291,15 @@ impl<H: EdlHardware> DeviceState<H> {
     pub fn calc_range_r(&mut self) {}
 
     pub fn get_voltage(&mut self, off_on: bool) {
+        // `off_on` mirrors the Pascal measurement pairings: on-phase and off-phase samples use
+        // separate calibration slots because ripple mode alternates two operating points.
         let raw = self.hw.read_voltage_adc16(off_on) as i32 + self.eeprom.adc_u_offsets[off_on as usize] as i32;
         self.measured_voltage = raw as Float * 0.001 * self.eeprom.adc_u_scales[off_on as usize];
     }
 
     pub fn get_current(&mut self, off_on: bool) {
+        // Current is reconstructed from the same phase-aware measurement scheme, then reused
+        // immediately for power reporting just like the Pascal monitor loop did.
         let raw = self.hw.read_current_adc16(off_on) as i32 + self.eeprom.adc_i_offsets[0] as i32;
         self.measured_current = raw as Float * 0.001 * self.eeprom.adc_i_scales[0];
         self.measured_power = self.measured_voltage * self.measured_current;
@@ -296,6 +314,8 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn get_ri(&mut self) -> bool {
+        // Internal resistance is only meaningful with non-zero load current; the original code
+        // aborted the calculation instead of dividing by a near-open-circuit measurement.
         if self.measured_current.abs() < 0.0001 {
             return false;
         }
@@ -304,11 +324,15 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn set_level_dac_i(&mut self) {
+        // Constant-current mode writes the sink DAC directly from the requested current after
+        // applying per-range calibration.
         let raw = (self.current_set * 1000.0 * self.eeprom.dac_i_scales[0]).clamp(0.0, 65535.0) as u16;
         self.hw.set_dac_raw(raw);
     }
 
     pub fn set_level_dac_r(&mut self) {
+        // Resistance mode derives a current target from the live terminal voltage so the load
+        // approximates U / R instead of holding a fixed current.
         let current = if self.resistance_set <= 0.001 {
             self.current_set
         } else {
@@ -319,6 +343,8 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn set_level_dac_p(&mut self) {
+        // Power mode continuously re-solves the current setpoint from P / U, which is why the
+        // Pascal main loop refreshed this path repeatedly outside the interrupt code.
         let current = if self.measured_voltage <= 0.001 {
             self.current_set
         } else {
@@ -329,6 +355,8 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn ser_prompt(&mut self, err: ErrorCode) {
+        // The firmware answered most commands with short bracketed status tokens so panel and
+        // host software could parse asynchronous user/fault events uniformly.
         let labels = [
             "[OK]",
             "[SRQUSR]",
@@ -370,14 +398,17 @@ impl<H: EdlHardware> DeviceState<H> {
     pub fn set_cursor(&mut self, _full_cursor: bool) {}
 
     pub fn spannung_on_lcd(&mut self) {
+        // Upper row helper for the configured cutoff/setpoint voltage.
         self.hw.lcd_write_line(0, &format!("U {:>6.3}", self.voltage_cutoff));
     }
 
     pub fn ist_spannung_on_lcd(&mut self) {
+        // The production firmware often preferred the measured terminal voltage on the LCD.
         self.hw.lcd_write_line(0, &format!("U {:>6.3}", self.measured_voltage));
     }
 
     pub fn soll_spannung_on_lcd(&mut self) {
+        // Alternate helper when the UI wants to show the requested threshold instead of the live reading.
         self.hw.lcd_write_line(0, &format!("Us{:>6.3}", self.voltage_cutoff));
     }
 
@@ -398,14 +429,17 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn strom_on_lcd(&mut self) {
+        // Lower row helper for the current setpoint in I mode.
         self.hw.lcd_write_line(1, &format!("I {:>6.3}", self.current_set));
     }
 
     pub fn widerstand_on_lcd(&mut self) {
+        // Lower row helper for the programmed effective resistance in R mode.
         self.hw.lcd_write_line(1, &format!("R {:>6.2}", self.resistance_set));
     }
 
     pub fn ist_strom_on_lcd(&mut self) {
+        // Mirrors the Pascal "Ist" display paths that emphasized measured current over the target.
         self.hw.lcd_write_line(1, &format!("I {:>6.3}", self.measured_current));
     }
 
@@ -414,6 +448,7 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn ist_leistung_on_lcd(&mut self) {
+        // Power mode presents dissipated power as the primary lower-row measurement.
         self.hw.lcd_write_line(1, &format!("P {:>6.2}", self.measured_power));
     }
 
@@ -422,15 +457,19 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn cap_on_lcd(&mut self) {
+        // Capacity pages showed the timer-integrated consumption counters rather than an instant reading.
         self.hw.lcd_write_line(1, &format!("Ah {:>5.2}", self.capacity_mah));
     }
 
     pub fn ri_on_lcd(&mut self) {
+        // Dedicated display path for the calculated internal resistance readout.
         self.hw
             .lcd_write_line(1, &format!("Ri {:>5.2}", self.internal_resistance));
     }
 
     pub fn werte_on_lcd(&mut self) {
+        // The front panel reuses the same two LCD rows but swaps the lower semantic by mode:
+        // current for I mode, resistance for R mode, and power for P mode.
         match self.mode {
             Mode::OutputOff | Mode::IHiVolt | Mode::ILoVolt => {
                 self.ist_spannung_on_lcd();
@@ -456,6 +495,9 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn check_limits(&mut self) -> ErrorCode {
+        // The original routine clamped many operator inputs and also collapsed illegal ripple
+        // combinations into always-on behavior. This reduced port currently keeps only the
+        // thermal overload gate.
         if self.temperature_c.unwrap_or(0.0) > 70.0 {
             self.status.overload_flag = true;
             return ErrorCode::OvlErr;
@@ -464,11 +506,16 @@ impl<H: EdlHardware> DeviceState<H> {
     }
 
     pub fn fault_check(&mut self) {
+        // Pascal tracked separate OverTemp/OverVolt/OverPower/LowVolt latches and then folded
+        // them into the overload/status outputs. This port keeps the same intent in a simplified
+        // form: either the sink exceeds its safe operating envelope or it hit the low-voltage cutout.
         self.status.overload_flag =
             self.measured_power > self.eeprom.option_array[4] || self.measured_voltage < self.voltage_cutoff;
     }
 
     pub fn chores(&mut self) {
+        // `Chores` was the non-interrupt housekeeping pass: refresh sensors, recompute derived
+        // quantities, run protection logic, and update the operator display.
         self.get_lm75_temp();
         self.get_voltage(true);
         self.get_current(true);
@@ -477,13 +524,21 @@ impl<H: EdlHardware> DeviceState<H> {
         self.werte_on_lcd();
     }
 
-    pub fn check_ser(&mut self) {}
+    pub fn check_ser(&mut self) {
+        // In Pascal this loop consumed serial input with a 20 ms timeout and called `Chores`
+        // between characters so UI, protection, and telemetry stayed responsive while waiting
+        // for the next command byte.
+    }
 
     pub fn check_delay(&mut self, _delay_ms: u8) {
+        // Delays were intentionally "porous": background service still ran during waits so the
+        // electronic load would not stop measuring or reacting to faults.
         self.chores();
     }
 
     pub fn init_all(&mut self) {
+        // Startup auto-selects an initial shunt, applies the current output-enable state, and
+        // emits the firmware banner just like the original board did after reset.
         self.calc_range_i();
         self.hw.set_output_enabled(self.output_enabled);
         self.hw.serial_write(VERS1_STR);

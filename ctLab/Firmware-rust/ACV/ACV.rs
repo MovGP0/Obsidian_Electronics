@@ -416,6 +416,8 @@ impl AcvState {
     }
 
     fn get_levels(&mut self) {
+        // Read both TRMS channels and derive the raw bargraph bytes plus the
+        // gain-dependent millivolt values used by the LCD and remote commands.
         self.right_overload = false;
         self.left_overload = false;
         self.right_level = self.hw.get_adc(4);
@@ -447,6 +449,7 @@ impl AcvState {
     }
 
     fn patch_copy_from_ee(&mut self) {
+        // Load the persisted startup settings into the live state.
         self.inc_rast = self.eeprom.init_inc_rast;
         self.gain = self.eeprom.init_gain;
         self.spdif_rate = self.eeprom.init_rate;
@@ -474,6 +477,8 @@ impl AcvState {
     }
 
     fn ser_prompt(&mut self, my_err: Error, my_status: u8) {
+        // Serial replies carry live status bits in the upper part and the current
+        // error code in the low bits, matching the original ACV wire protocol.
         if self.verbose || my_err != Error::NoErr {
             self.sub_ch = ERR_SUB_CH;
             self.write_ch_prefix();
@@ -490,6 +495,7 @@ impl AcvState {
     }
 
     fn i2c_out_adr10(&mut self, register: u8, data: u8) {
+        // The Pascal code uses TWI address 0x10 to reach the CS8406 control path.
         self.hw.twi_out_10(register, data);
     }
 
@@ -498,6 +504,7 @@ impl AcvState {
     }
 
     fn init_spdif(&mut self) {
+        // Program the SPDIF transmitter for the selected 48/96/192 kHz clock mode.
         self.i2c_out_adr10(0x04, 0b0000_0000);
         self.i2c_out_adr10(0x01, 0b0000_0001);
         self.i2c_out_adr10(0x12, 0b0000_0000);
@@ -515,6 +522,7 @@ impl AcvState {
         }
 
         self.i2c_out_adr10(0x05, 0b0000_0101);
+        // Channel-status bytes follow the consumer-mode layout from the CS8406 notes.
         self.i2c_out_adr10(0x20, 0b0010_0000);
         self.i2c_out_adr10(0x21, 0b0100_0001);
         self.i2c_out_adr10(0x22, 0b0000_0000);
@@ -528,6 +536,7 @@ impl AcvState {
     }
 
     fn switch_gain(&mut self) {
+        // Map the logical gain to the relay/multiplexer pattern on Port B.
         if self.gain == self.old_gain {
             return;
         }
@@ -586,6 +595,7 @@ impl AcvState {
                 if self.incr_enter {
                     self.eeprom.init_gain = self.gain;
                 }
+                // Display the scaled TRMS reading in mV, or the overload marker.
                 self.get_levels();
                 let left = if self.left_level_byte > 253 {
                     format!("{}{}", self.upper_channel, OVERLOAD_STR)
@@ -608,6 +618,7 @@ impl AcvState {
                 if self.incr_enter {
                     self.eeprom.init_gain = self.gain;
                 }
+                // Same measurement path as the mV view, but rendered as a bargraph.
                 self.get_levels();
                 self.hw.lcd_write_line(0, self.upper_channel.to_string());
                 self.hw.lcd_write_line(1, self.lower_channel.to_string());
@@ -650,6 +661,7 @@ impl AcvState {
     }
 
     fn check_limits(&mut self) -> bool {
+        // Report whether a caller tried to step beyond the legal gain/rate range.
         let mut out_of_range = false;
 
         if self.gain > 127 {
@@ -669,6 +681,8 @@ impl AcvState {
     }
 
     fn parse_get_param(&mut self) {
+        // Subchannels expose sample-rate, gain, live levels, calibration tables,
+        // status, and identity values from the original command set.
         let my_index = self.sub_ch % 10;
         self.digits = 2;
         self.nachkomma = 1;
@@ -721,6 +735,7 @@ impl AcvState {
                 self.write_param_byte_ser();
             }
             99 => {
+                // "ALL" returns both RMS channels as two consecutive replies.
                 self.get_levels();
                 self.param_int = self.left_level_scaled;
                 if self.left_level_byte > 253 {
@@ -765,14 +780,17 @@ impl AcvState {
                 self.write_param_byte_ser();
             }
             251 => {
+                // Error count since reset.
                 self.param_int = self.err_count;
                 self.write_param_ser();
             }
             252 => {
+                // Stored UART divisor; it only takes effect after the next reset.
                 self.param_byte = self.eeprom.ee_ser_baud_reg;
                 self.write_param_byte_ser();
             }
             253 => {
+                // Serial test: echo the input line unchanged.
                 let line = self.ser_inp_str.clone();
                 self.ser_out(&line);
                 self.ser_crlf();
@@ -812,6 +830,7 @@ impl AcvState {
             }
             20 => {}
             80 => {
+                // Select which front-panel display mode the LCD should show.
                 if self.param_byte > Modify::LevelBarDispl as u8 {
                     self.ser_prompt(Error::ParamErr, 0);
                     return;
@@ -819,6 +838,7 @@ impl AcvState {
                 self.modify = Self::modify_from_byte(self.param_byte);
             }
             89 => {
+                // Number of encoder pulses that make one detent step.
                 if self.ee_unlocked() {
                     self.inc_rast = self.param_int;
                     self.eeprom.init_inc_rast = self.inc_rast;
@@ -849,6 +869,7 @@ impl AcvState {
             }
             251 => self.err_count = self.param_int,
             252 => {
+                // Baud-rate changes are stored now but only applied after reboot.
                 if self.ee_unlocked() {
                     self.eeprom.ee_ser_baud_reg = self.param_byte;
                 } else {
@@ -864,6 +885,7 @@ impl AcvState {
         }
 
         self.set_ee_unlocked(false);
+        // Subchannel 250 temporarily unlocks EEPROM-backed settings.
         if self.sub_ch == 250 {
             self.set_ee_unlocked(true);
         }
@@ -877,6 +899,7 @@ impl AcvState {
     }
 
     fn cmd_to_index(&mut self) -> CmdWhich {
+        // Translate the textual command token into a command-table entry.
         self.param_str = self.param_str.to_uppercase();
         for (idx, cmd) in CMD_STR_ARR.iter().enumerate() {
             if self.param_str == *cmd {
@@ -902,10 +925,12 @@ impl AcvState {
     }
 
     fn parse_extract(&mut self) -> bool {
+        // Integer-only token extraction: digits form parameters, letters form commands.
         self.param_str.clear();
         let bytes = self.ser_inp_str.as_bytes();
         let mut is_param = false;
 
+        // Skip leading spaces before the next token.
         while self.ser_inp_ptr < bytes.len() && bytes[self.ser_inp_ptr] == b' ' {
             self.ser_inp_ptr += 1;
         }
@@ -942,6 +967,8 @@ impl AcvState {
     }
 
     fn parse_sub_ch(&mut self) {
+        // Pre-parse the incoming line, reject traffic for other channels, and then
+        // dispatch either a direct subchannel access or a named command.
         if self.ser_inp_str.is_empty() {
             self.ser_prompt(Error::NoErr, 0);
             return;
@@ -976,6 +1003,7 @@ impl AcvState {
 
         self.verbose = self.ser_inp_str.contains('!') || self.ser_inp_str.contains('?');
         if let Some(checksum_pos) = self.ser_inp_str.find('$') {
+            // XOR checksum covers everything before '$'; the '$xx' suffix is excluded.
             let checksum_hex = self
                 .ser_inp_str
                 .get(checksum_pos + 1..checksum_pos + 3)
@@ -1043,6 +1071,7 @@ impl AcvState {
     fn chores(&mut self) {}
 
     pub fn push_serial_char(&mut self, my_char: char) {
+        // Keep only printable 7-bit ASCII and treat carriage return as end-of-command.
         if (' '..='\u{7f}').contains(&my_char) {
             self.ser_inp_str.push(my_char);
         }
@@ -1056,6 +1085,7 @@ impl AcvState {
     }
 
     fn check_delay(&mut self, my_delay: u8) {
+        // The Pascal firmware used this delay to keep polling work alive between UI samples.
         for _ in 0..my_delay {
             self.chores();
         }
@@ -1074,11 +1104,13 @@ impl AcvState {
         self.slave_ch = (!self.hw.pin_d) >> 5;
         self.hw.led_activity = false;
         self.hw.lcd_present = true;
+        // The original boot code uploads custom LCD glyphs before showing version/address.
         self.hw.lcd_write_line(0, VERS3_STR.to_string());
         self.hw
             .lcd_write_line(1, format!("{ADR_STR}{}", char::from(b'0' + self.slave_ch)));
 
         if self.eeprom.ee_initialized != EE_INITIALIZED_MAGIC {
+            // Empty EEPROM falls back to the built-in defaults from the Pascal image.
             self.eeprom = EepromImage::default();
             self.patch_copy_from_ee();
         }
@@ -1135,12 +1167,15 @@ impl AcvState {
                 self.old_incr_value = self.incr_value;
                 self.incr_timer.set(20);
 
+                // The hardware encoder resolves in two-count steps, so changes are
+                // only applied once enough pulses have accumulated for one detent.
                 if self.incr_diff.abs() >= self.inc_rast {
                     self.changed_flag = true;
                     self.set_busy_flag(true);
                     self.incr_diff /= self.inc_rast;
                     self.incr_diff_byte = self.incr_diff as u8;
 
+                    // Fast turns accelerate by doubling the effective step size.
                     if self.incr_diff.abs() > 1 {
                         self.incr_diff *= 2;
                     }
@@ -1160,6 +1195,7 @@ impl AcvState {
                             self.aux_cmd = self.aux_cmd.wrapping_add(self.incr_diff as u8);
                             self.sub_ch = 9;
                             self.parse_get_param();
+                            // Forward the helper command to the attached ULD/aux device.
                             self.ser_aux(self.aux_cmd);
                         }
                         Modify::RateSel => {
@@ -1192,6 +1228,7 @@ impl AcvState {
             if let Some(button_temp) = button_temp {
                 self.hw.button_temp = button_temp;
                 if button_temp != 0xff {
+                    // Front-panel buttons are wired active-low.
                     self.changed_flag = true;
                     self.set_busy_flag(true);
 

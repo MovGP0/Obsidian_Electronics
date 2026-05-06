@@ -136,25 +136,36 @@ pub struct EepromData {
 impl Default for EepromData {
     fn default() -> Self {
         Self {
+            // Sub-channel layout from the original firmware:
+            // 0..7 = internal ATmega ADC10, 8..9 = legacy ADC24, 10..17 = AD16-8, 20..27 = DACs.
+            // The AD16 defaults keep a small negative trim; the DAC offsets are in raw-code units.
             offset_array: [
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -40, -40, -40, -40, -40, -40, -40, -40, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0,
             ],
+            // Entries 9, 19, 28, and 29 are the firmware's base scales:
+            // internal ADC10, external ADC16, DAC12, and DAC16 respectively.
             scale_array: [
                 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 100.0, 1.0, 1.0, 1.0, 1.0, 1.0,
                 1.0, 1.0, 1.0, 0.0, 3185.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 200.0,
                 3200.0,
             ],
+            // Startup direction defaults for the eight digital I/O ports.
             dir_init_array: [0; 8],
+            // Trigger masks cover internal AD10, external AD16, a currently unused DAC group,
+            // and the eight digital ports.
             trig_mask_array: [0; 4],
             trig_level: 0,
             trig_timer_value: 0,
             init_integrate_ad16: false,
             ext_ref: 1,
             inc_rast_def: 4,
+            // Stored as the raw UBRR value with U2X enabled, matching the Pascal firmware.
             ee_ser_baud_reg: 51,
             param_text_array: [""; 38],
+            // EEPROM marker used to decide whether defaults were ever programmed.
             ee_initialised: 0xAA55,
+            // Startup output values for the eight digital ports.
             port_init_array: [0; 8],
         }
     }
@@ -162,6 +173,7 @@ impl Default for EepromData {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct RuntimeStatus {
+    // Bits 0..3 are the code reported to the host; bits 4..7 carry device state flags.
     pub error_low_nibble: u8,
     pub ee_unlocked: bool,
     pub overload_flag: bool,
@@ -171,6 +183,7 @@ pub struct RuntimeStatus {
 
 impl RuntimeStatus {
     pub fn as_byte(self) -> u8 {
+        // Preserve the original serial status-byte layout.
         (self.error_low_nibble & 0x0f)
             | ((self.ee_unlocked as u8) << 4)
             | ((self.overload_flag as u8) << 5)
@@ -297,6 +310,7 @@ impl<H: AdaHardware> DeviceState<H> {
     }
 
     pub fn set_base_scales(&mut self) {
+        // These lookup slots were treated as the firmware-wide conversion bases.
         self.base_scale_ad10 = self.eeprom.scale_array[9];
         self.base_scale_ad16 = self.eeprom.scale_array[19];
         self.base_scale_da12 = self.eeprom.scale_array[28];
@@ -314,18 +328,21 @@ impl<H: AdaHardware> DeviceState<H> {
         let my_val = self.dac_value_array[index];
 
         if self.dac714_present {
+            // DAC714/PCM56 keeps a signed bipolar raw range centered around 0 V.
             let mut raw = (self.base_scale_da16 * (my_val * my_scale)) as i32 + my_offset;
             raw = raw.clamp(-32767, 32767);
             self.dac_raw_array[index] = raw as i16 as u16;
         }
 
         if self.dac16_present {
+            // LTC1655 uses an inverted unsigned code: 0xffff..0 maps to -FS..+FS.
             let mut raw = (self.base_scale_da16 * (my_val * my_scale)) as i32 + my_offset;
             raw = raw.clamp(-32767, 32767);
             self.dac_raw_array[index] = (0x8000_i32 - raw) as u16;
         }
 
         if self.dac12_present {
+            // LTC1257 follows the older 12-bit variant of the same bipolar coding.
             let mut raw = (self.base_scale_da12 * (my_val * my_scale)) as i32 + my_offset;
             raw = raw.clamp(-2047, 2047);
             self.dac_raw_array[index] = (0x0800_i32 - raw) as u16;
@@ -345,6 +362,8 @@ impl<H: AdaHardware> DeviceState<H> {
 
     pub fn set_port(&mut self, my_port: u8, my_val: u8) {
         let index = my_port as usize;
+        // Keep a shadow copy because the original firmware drove either a PCA9554A port expander
+        // or a 4094 shift register from the same logical port state.
         self.port_array[index] = my_val;
         if self.io_present {
             self.i2c_slave_adr = my_port + 0x38;
@@ -356,6 +375,7 @@ impl<H: AdaHardware> DeviceState<H> {
     }
 
     pub fn set_dir(&mut self, my_port: u8, my_val: u8) {
+        // Direction lives in EEPROM so the port layout survives reset.
         self.eeprom.dir_init_array[my_port as usize] = my_val;
         if self.io_present {
             self.hw.write_io_dir(my_port, my_val);
@@ -368,6 +388,7 @@ impl<H: AdaHardware> DeviceState<H> {
 
         match my_sub_ch {
             0..=7 => {
+                // Internal ATmega ADC channels are converted through offset and user scale.
                 self.param_int = self.hw.get_adc(my_sub_ch + 1);
                 self.param = ((self.param_int as i32 + self.eeprom.offset_array[my_sub_ch as usize] as i32)
                     as Float
@@ -376,6 +397,7 @@ impl<H: AdaHardware> DeviceState<H> {
                 false
             }
             10..=17 => {
+                // AD16-8 values arrive as raw SAR codes and use the external ADC base scale.
                 self.param_int = self.adc_raw_array[(my_sub_ch - 10) as usize];
                 self.param = ((self.param_int as i32 + self.eeprom.offset_array[my_sub_ch as usize] as i32)
                     as Float
@@ -384,14 +406,17 @@ impl<H: AdaHardware> DeviceState<H> {
                 false
             }
             20..=27 => {
+                // DAC channels report the stored engineering-unit setpoint rather than raw code.
                 self.param = self.dac_value_array[(my_sub_ch - 20) as usize];
                 false
             }
             30..=37 => {
+                // Digital ports are presented as integer reads.
                 self.param_int = self.get_port(my_sub_ch - 30) as i16;
                 true
             }
             40..=47 => {
+                // Direction registers are also exposed as integer parameters.
                 self.param_int = self.eeprom.dir_init_array[(my_sub_ch - 40) as usize] as i16;
                 true
             }
@@ -416,6 +441,7 @@ impl<H: AdaHardware> DeviceState<H> {
     pub fn ser_prompt(&mut self, err: ErrorCode, my_status: u8) -> Option<String> {
         let should_write = self.verbose || err != ErrorCode::NoErr;
         let line = if should_write {
+            // The original protocol reports errors on sub-channel 255.
             self.sub_ch = ERR_SUB_CH;
             Some(format!(
                 "{}{} {}{}",
@@ -457,6 +483,7 @@ impl<H: AdaHardware> DeviceState<H> {
 
     pub fn write_param(&mut self) -> String {
         self.digits = 1;
+        // The Pascal code used more fractional digits for module values and scale parameters.
         self.nachkomma = if (8..=27).contains(&self.sub_ch) || (200..=227).contains(&self.sub_ch) {
             6
         } else {
@@ -505,11 +532,13 @@ impl<H: AdaHardware> DeviceState<H> {
 
             if self.io_present {
                 self.i2c_slave_adr = 0x38 + i;
+                // The PCA9554A inversion register is forced to 0 on startup.
                 let _ = self.hw.twi_out(self.i2c_slave_adr, 0x0200);
             }
         }
 
         if !(9..=239).contains(&self.eeprom.ee_ser_baud_reg) {
+            // Invalid EEPROM baud settings fall back to the original 38400/U2X default.
             self.eeprom.ee_ser_baud_reg = 51;
         }
 
@@ -520,16 +549,19 @@ impl<H: AdaHardware> DeviceState<H> {
         self.sub_ch = 0;
         self.status = RuntimeStatus::default();
 
+        // Card detection reuses the shared SENSE pin with different strobe combinations.
         self.dac12_present = !self.hw.detect_sense();
         self.dac714_present = false;
         self.dac16_present = false;
         self.adc16_present = false;
 
+        // TrigLevel selects the INT2 edge: 0 = negative, non-zero = positive.
         self.hw
             .set_external_trigger_edge(self.eeprom.trig_level != 0);
         self.hw.enable_interrupts();
 
         for sub_ch in 20..=27_u8 {
+            // Power-up starts every DAC channel at 0.0 V before normal command handling begins.
             self.dac_value_array[(sub_ch - 20) as usize] = 0.0;
             self.set_dac(sub_ch);
         }
@@ -550,6 +582,7 @@ impl<H: AdaHardware> DeviceState<H> {
             VERS1_STR
         );
         if self.eeprom.ee_initialised != 0xAA55 {
+            // Missing marker means the host should treat calibration defaults as uninitialized.
             banner.push_str(EE_NOT_PROGRAMMED_STR);
         }
         banner.push_str(&self.write_features());
@@ -563,6 +596,7 @@ impl<H: AdaHardware> DeviceState<H> {
 
         let mut mask = self.eeprom.trig_mask_array[0];
         if mask != 0 {
+            // Preserve the original high-bit-first scan order for the eight internal ADC channels.
             for i in (0..=7_u8).rev() {
                 if mask > 127 {
                     self.sub_ch = i;
@@ -575,6 +609,7 @@ impl<H: AdaHardware> DeviceState<H> {
 
         let mut mask = self.eeprom.trig_mask_array[1];
         if mask != 0 {
+            // External AD16 channels use the same shifting scheme, offset by sub-channel 10.
             for i in (0..=7_u8).rev() {
                 if mask > 127 {
                     self.sub_ch = i + 10;
@@ -587,6 +622,7 @@ impl<H: AdaHardware> DeviceState<H> {
 
         let mut mask = self.eeprom.trig_mask_array[3];
         if mask != 0 {
+            // Mask slot 3 is reserved for the eight digital ports; slot 2 stayed unused here.
             for i in (0..=7_u8).rev() {
                 if mask > 127 {
                     self.sub_ch = i + 30;
@@ -610,12 +646,15 @@ impl<H: AdaHardware> DeviceState<H> {
     }
 
     pub fn check_ser(&mut self) {
+        // The Pascal loop polled serial input in 20 ms slices, accepted printable 7-bit ASCII,
+        // handled backspace locally, and dispatched on carriage return.
         todo!("Port serial input loop and backspace handling");
     }
 
     pub fn run_forever(&mut self) -> ! {
         self.init_all();
         loop {
+            // Keep the same high-level ordering: service serial traffic first, then emit trigger scans.
             self.check_ser();
             if self.trigger {
                 let _ = self.trigger_scan_outputs();

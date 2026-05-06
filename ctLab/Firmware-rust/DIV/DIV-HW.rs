@@ -82,6 +82,8 @@ pub fn shift_in_2400<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
     let mut top = 0u8;
     for bit_index in 0..4 {
         hw.set_sclk(true);
+        // The LTC2400 presents its status bits before the 24 data bits:
+        // bit 2 indicates the signed/clipping state and bit 3 the overrange flag.
         if bit_index == 2 {
             state.negative_flag = !hw.read_sdata_in1();
         }
@@ -96,6 +98,7 @@ pub fn shift_in_2400<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
     let b1 = hw.spi_transfer(0);
     let b0 = hw.spi_transfer(0);
 
+    // Clock out the remaining four trailing dither bits after the 24-bit payload.
     for _ in 0..4 {
         hw.spin_delay_cycles(1);
         hw.set_sclk(true);
@@ -103,10 +106,12 @@ pub fn shift_in_2400<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
         hw.set_sclk(false);
     }
 
+    // Negative readings are sign-extended to preserve the LTC2400 two's-complement format.
     let msb = if state.negative_flag { 0xFF } else { top };
     state.ad24_temp =
         ((msb as u32) << 24) | ((b2 as u32) << 16) | ((b1 as u32) << 8) | (b0 as u32);
 
+    // Overrange is treated as hard clipping and forced to the full-scale positive code.
     if state.over_voltage_flag {
         state.ad24_temp = 16_777_215;
     }
@@ -115,6 +120,7 @@ pub fn shift_in_2400<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
 }
 
 pub fn int2_trigger(state: &mut DivHardwareState) {
+    // External trigger input IRQ on the falling edge.
     state.trigger = true;
 }
 
@@ -123,6 +129,7 @@ pub fn on_sys_tick<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
     hw.set_str_ad24(false);
 
     if state.abort_flag {
+        // Abort clears a pending conversion by issuing a short manual SCLK pulse.
         hw.set_str_ad24(false);
         hw.spin_delay_cycles(1);
         hw.set_sclk(true);
@@ -130,12 +137,15 @@ pub fn on_sys_tick<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
         hw.set_sclk(false);
         state.abort_flag = false;
     } else if !hw.read_sdata_in1() {
+        // SDATA low is the LTC2400 end-of-conversion signal; only then is a read valid.
         hw.set_str_ad24(true);
         shift_in_2400(state, hw);
 
+        // Fast integration is a simple 2-sample moving average for light smoothing.
         state.ad24_temp_fast_integrated = (state.ad24_temp + state.ad24_integrate0) / 2;
         state.ad24_integrate0 = state.ad24_temp_fast_integrated;
 
+        // Slow integration averages the current sample with the previous three filter states.
         state.ad24_temp_slow_integrated = (
             state.ad24_temp
                 + state.ad24_integrate1
@@ -146,9 +156,11 @@ pub fn on_sys_tick<H: DivHardware>(state: &mut DivHardwareState, hw: &mut H) {
         state.ad24_integrate2 = state.ad24_integrate1;
         state.ad24_integrate1 = state.ad24_temp_slow_integrated;
 
+        // Marks that the 24-bit conversion path has fresh data for the foreground loop.
         state.ad24_ready = true;
     }
 
     hw.set_str_ad24(true);
+    // The original firmware also used the systick as the update point for the 10-bit path.
     state.ad10_ready = true;
 }

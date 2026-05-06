@@ -27,16 +27,19 @@ pub fn ser_aux<H: Mp3ControlHardware>(hw: &mut H, value: u8) {
     let mut current = value;
     let mut bits_remaining = 8u8;
 
+    // Software-UART start bit for the MP3 player control input.
     hw.set_ser_aux(false);
     hw.micro_delay(5);
 
     while bits_remaining > 0 {
+        // Shift out the command byte LSB first at the original 19200 Bd timing.
         hw.set_ser_aux((current & 0x01) != 0);
         hw.micro_delay(5);
         current >>= 1;
         bits_remaining -= 1;
     }
 
+    // Return the line to idle high for the stop bit.
     hw.set_ser_aux(true);
     hw.micro_delay(10);
 }
@@ -47,23 +50,29 @@ pub fn mp3_set_volume<H: Mp3ControlHardware>(state: &Mp3ControlState, hw: &mut H
 }
 
 pub fn mp3_goto_track<H: Mp3ControlHardware>(state: &mut Mp3ControlState, hw: &mut H) {
+    // Track numbers are sent directly as single-byte player commands.
     ser_aux(hw, state.track);
     state.current_track = state.track;
+    // Re-apply the calibrated level after changing tracks.
     mp3_set_volume(state, hw);
 }
 
 pub fn mp3_on<H: Mp3ControlHardware>(state: &mut Mp3ControlState, hw: &mut H) {
+    // Disable the player's internal repeat mode; the firmware handles repeats itself.
     ser_aux(hw, YI3_NO_LOOP);
     ser_aux(hw, YI3_MID_VOLUME.wrapping_add(state.db_correction));
+    // Stop first so playback always starts from a known state.
     ser_aux(hw, YI3_STOP);
     hw.milli_delay(100);
     state.current_track = 0;
     state.is_on = true;
+    // Propagate the power-state change to the shared shift register outputs.
     hw.send_shift_register();
 }
 
 pub fn mp3_off<H: Mp3ControlHardware>(state: &mut Mp3ControlState, hw: &mut H) {
     ser_aux(hw, YI3_NO_LOOP);
+    // Mute before stopping so power-down is silent.
     ser_aux(hw, YI3_MUTE);
     ser_aux(hw, YI3_STOP);
     state.is_on = false;

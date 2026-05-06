@@ -179,10 +179,13 @@ where
 
         match self.state.sub_ch {
             0..=2 => {
+                // Direct AD24 voltage readback for the selected input channel.
                 self.hooks.get_ad24(self.state.sub_ch, &mut self.state);
                 self.hooks.param_scale24(&mut self.state);
             }
             3 => {
+                // Blocking AD24 request: wait for a fresh conversion, then read
+                // channel 0 without the slower integration path.
                 self.hooks.wait_ad24(&mut self.state);
                 self.hooks.get_ad24(0, &mut self.state);
                 self.hooks.param_scale24(&mut self.state);
@@ -210,11 +213,13 @@ where
                 self.hooks.param_scale10(&mut self.state);
             }
             50 => {
+                // Raw AD24 result is centered around mid-scale in the firmware.
                 self.state.param_long_int = self.state.ad24temp - 0x800000;
                 is_integer = true;
             }
             60..=62 => {
                 self.state.param_long_int = self.hooks.get_adc(self.state.sub_ch - 57);
+                // Sub-channel 62 reports the DC midpoint, so subtract the ADC mid-scale.
                 if self.state.sub_ch == 62 {
                     self.state.param_long_int -= 512;
                 }
@@ -233,6 +238,7 @@ where
                 is_integer = true;
             }
             99 => {
+                // ALL collapses to the canonical voltage slot after reading channel 0.
                 self.hooks.get_ad24(0, &mut self.state);
                 self.hooks.param_scale24(&mut self.state);
                 self.state.sub_ch = 0;
@@ -269,6 +275,7 @@ where
                 self.state.param_long_int = self.state.errcount;
             }
             253 => {
+                // Serial self-test echoes the full input frame unchanged.
                 self.hooks.write_str(&self.state.ser_inp_str);
                 self.hooks.ser_crlf();
                 return;
@@ -298,6 +305,7 @@ where
     }
 
     pub fn parse_set_param(&mut self) {
+        // The Pascal firmware resets the range/limit status before every write command.
         self.state.check_limit_err = ParserError::NoErr;
 
         match self.state.sub_ch {
@@ -393,6 +401,7 @@ where
         }
 
         self.state.ee_unlocked = false;
+        // WEN only arms the next EEPROM-affecting command; the latch clears afterwards.
         if self.state.sub_ch == 250 {
             self.state.ee_unlocked = true;
         }
@@ -405,6 +414,7 @@ where
         let upper = self.state.param_str.to_ascii_uppercase();
         self.state.param_str = upper;
 
+        // Translate the human-readable command token into the compact command table index.
         for (index, cmd_str) in CMD_STR_ARR.iter().enumerate() {
             if self.state.param_str == *cmd_str {
                 return COMMANDS[index];
@@ -418,6 +428,7 @@ where
         self.state.param_str.clear();
         let bytes = self.state.ser_inp_str.as_bytes();
 
+        // Ignore leading blanks before deciding whether the next token is text or numeric.
         while matches!(bytes.get(self.state.ser_inp_ptr), Some(b' ')) {
             self.state.ser_inp_ptr += 1;
         }
@@ -437,6 +448,7 @@ where
             if keep {
                 self.state.param_str.push(byte as char);
             } else {
+                // Stop at the first delimiter and leave the cursor on it for the caller.
                 self.state.ser_inp_ptr = idx;
                 return is_param;
             }
@@ -448,6 +460,7 @@ where
 
     pub fn parse_sub_ch(&mut self) {
         if self.state.ser_inp_str.is_empty() {
+            // Empty input is treated as a no-op status poll.
             self.hooks.serprompt(ParserError::NoErr);
             return;
         }
@@ -459,10 +472,14 @@ where
         let is_result = first == b'#';
 
         if is_result {
+            // Result frames are just forwarded; they are not parsed as local commands.
             self.hooks.write_ser_inp(&self.state.ser_inp_str);
             return;
         }
 
+        // The original Pascal parser notes "if busy => BusyErr" at this stage.
+        // This standalone Rust port leaves that arbitration to the caller/hooks
+        // before `parse_sub_ch()` is entered.
         self.state.ser_inp_ptr = 0;
 
         if has_main_ch {
@@ -470,6 +487,7 @@ where
             self.state.ser_inp_ptr = self.state.ser_inp_ptr.saturating_add(1);
 
             if is_omni {
+                // Omni commands are forwarded down the chain before local handling.
                 self.hooks.write_ser_inp(&self.state.ser_inp_str);
             } else {
                 self.state.current_ch = parse_u8_default(&self.state.param_str, 0);
@@ -477,10 +495,12 @@ where
         }
 
         if !is_omni && self.state.current_ch != self.state.slave_ch && has_main_ch {
+            // Addressed command for another slave: pass it through untouched.
             self.hooks.write_ser_inp(&self.state.ser_inp_str);
             return;
         }
 
+        // `!` and `?` both request the verbose response form.
         self.state.verbose = self.state.ser_inp_str.contains('!') || self.state.ser_inp_str.contains('?');
 
         if let Some(check_pos) = self.state.ser_inp_str.find('$') {
@@ -497,16 +517,19 @@ where
                 checksum ^= byte;
             }
 
+            // The Pascal code excludes the `$xx` suffix itself from the XOR checksum.
             if checksum != checksum_in {
                 self.hooks.serprompt(ParserError::ChecksumErr);
                 return;
             }
         }
 
+        // Accepted traffic refreshes the activity indicator and timeout window.
         self.hooks.set_activity_timer(125);
         self.hooks.set_activity_led_low();
 
         let sub_ch_offset = if self.parse_extract() {
+            // Bare numeric input is the short form for `VAL <sub_ch>`.
             self.state.cmd_which = CmdWhich::Val;
             0
         } else {
@@ -517,10 +540,12 @@ where
             }
 
             let offset = CMD_TO_SUBCH_ARR[self.state.cmd_which as usize];
+            // Text commands map to a base sub-channel, then read an optional numeric suffix.
             let _is_param = self.parse_extract();
             offset
         };
 
+        // After command extraction, the final sub-channel is the parsed suffix plus the command base.
         self.state.sub_ch = parse_u8_default(&self.state.param_str, 0).wrapping_add(sub_ch_offset);
 
         if is_request {
@@ -535,6 +560,7 @@ where
 
         self.state.ser_inp_ptr = eq_pos + 1;
         if self.parse_extract() {
+            // Set commands accept both integer-like and floating-point payload text.
             self.state.param = parse_f32_default(&self.state.param_str, 0.0);
             self.state.param_long_int = self.state.param as i32;
         } else if self.state.cmd_which >= CmdWhich::Val {

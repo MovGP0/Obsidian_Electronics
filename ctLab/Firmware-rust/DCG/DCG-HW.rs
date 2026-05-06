@@ -132,6 +132,9 @@ pub fn shift_out_1257<H: DcgHardware>(hw: &mut H, dac_temp: u16) {
     hw.set_sclk(false);
     hw.set_str_dac(true);
 
+    // The LTC1257 consumes a 12-bit value: four high bits first, then the low
+    // byte. The Pascal code left-aligns the high nibble so bit 11 is shifted
+    // out on the first clock edge.
     let mut high = ((dac_temp >> 8) as u8) << 4;
     for _ in 0..4 {
         hw.set_sdata_out((high & 0x80) != 0);
@@ -152,6 +155,8 @@ pub fn shift_out_1257<H: DcgHardware>(hw: &mut H, dac_temp: u16) {
         hw.set_sclk(false);
     }
 
+    // The last bit is transferred together with the DAC load strobe, matching
+    // the original "LSB mit Load-Impuls" sequence in the AVR assembly.
     hw.set_sdata_out((low & 0x80) != 0);
     hw.set_sclk(true);
     hw.set_str_dac(false);
@@ -166,6 +171,8 @@ pub fn shift_out_1655<H: DcgHardware>(hw: &mut H, dac_temp: u16) {
     hw.set_sdata_out(false);
     hw.set_str_dac(false);
 
+    // The LTC1655 uses a full 16-bit transfer and latches only after all bits
+    // have been clocked out, so its framing differs from the 1257 path above.
     for byte in dac_temp.to_be_bytes() {
         let mut current = byte;
         for _ in 0..8 {
@@ -181,6 +188,9 @@ pub fn shift_out_1655<H: DcgHardware>(hw: &mut H, dac_temp: u16) {
 }
 
 pub fn shift_in_1864<H: DcgHardware>(hw: &mut H) -> u16 {
+    // Pulling STRAD16 low starts the LTC1864 read cycle. The original code
+    // masks interrupts around this routine so all 16 bits are sampled with
+    // deterministic timing.
     hw.set_str_ad16(false);
     hw.set_sclk(false);
 
@@ -199,6 +209,8 @@ pub fn shift_in_1864<H: DcgHardware>(hw: &mut H) -> u16 {
 }
 
 pub fn on_sys_tick<H: DcgHardware>(state: &mut DcgHardwareState, hw: &mut H, dac_kind: DacKind) {
+    // The 1 ms SysTick ISR begins by disabling both analog output paths before
+    // reading/updating shared converter state.
     hw.set_mpx_i(true);
     hw.set_mpx_u(false);
 
@@ -235,13 +247,19 @@ pub fn on_sys_tick<H: DcgHardware>(state: &mut DcgHardwareState, hw: &mut H, dac
         DacKind::Ltc1655 => shift_out_1655(hw, state.dac_temp),
     }
 
+    // The Pascal ISR burns roughly 10 us here so the external DAC and analog
+    // switches can settle before the multiplexers are flipped again.
     hw.spin_delay_cycles(40);
 
     if state.ui_toggle {
+        // On alternating ticks the firmware services the voltage path, folds
+        // in the freshly sampled ADC value, then points both muxes at U.
         state.adc_raw_u = ((state.adc_raw_u as u32 + state.adc_temp as u32) / 2) as u16;
         hw.set_mpx_1864(true);
         hw.set_mpx_u(true);
     } else {
+        // The other half-cycle does the same for current, so U and I share one
+        // converter by time-multiplexing the front end every millisecond.
         state.adc_raw_i = ((state.adc_raw_i as u32 + state.adc_temp as u32) / 2) as u16;
         hw.set_mpx_1864(false);
         hw.set_mpx_i(false);
@@ -251,8 +269,12 @@ pub fn on_sys_tick<H: DcgHardware>(state: &mut DcgHardwareState, hw: &mut H, dac
 }
 
 pub fn get_adc10<H: DcgHardware>(_hw: &mut H, _channel: u8) -> u16 {
-    // The Pascal version drives the AVR ADC registers directly and waits for
-    // conversion completion in a tight loop. That must be implemented against
-    // a concrete ATmega32 register model in a later pass.
+    // This helper was a hand-written replacement for the Pascal runtime's
+    // `getadc()` routine: select ADMUX, wait a few cycles for the channel to
+    // settle, start conversion with prescaler 128, then busy-wait for ADCSRA
+    // bit 6 to clear before reading ADCL/ADCH.
+    //
+    // The Rust port still needs that direct ATmega32 register sequence wired
+    // up against the concrete AVR backend.
     0
 }

@@ -78,15 +78,21 @@ pub enum ErrorCode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Waveform {
     Off,
+    // RMS reference waveform for the level conversions.
     Sine,
+    // Triangle/saw mode uses a different RMS-to-peak ratio than sine.
     Triangle,
+    // Square mode also covers the logic-level output path.
     Square,
+    // Logic output reuses the square-wave path with a dedicated default level.
     Logic,
+    // External waveforms are selected by forwarding an AUX config index.
     External,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputRange {
+    // True-RMS input front-end ranges: 100 mV, 1 V, 10 V, 100 V.
     Ac100mV,
     Ac1V,
     Ac10V,
@@ -105,6 +111,9 @@ pub struct RuntimeStatus {
 
 impl RuntimeStatus {
     pub fn as_byte(self) -> u8 {
+        // Pascal status layout:
+        // bit 7 = busy, bit 6 = user SRQ, bit 5 = overload, bit 4 = EEPROM unlock,
+        // bits 3..0 = low-nibble error/status code.
         (self.error_low_nibble & 0x0f)
             | ((self.ee_unlocked as u8) << 4)
             | ((self.overload_flag as u8) << 5)
@@ -192,10 +201,14 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn dac_level_to_rms(&self, level: Float) -> Float {
+        // The Pascal firmware treats the DAC domain as the internal amplitude scale and
+        // converts it to the user-visible RMS value depending on the active calibration.
         level.max(0.0) * self.eeprom.scale_array[0]
     }
 
     pub fn rms_to_dac_level(&self, level: Float) -> Float {
+        // In the original code this is the inverse of the RMS display value back into
+        // the DAC domain that ultimately drives the AD7541 level path.
         (level / self.eeprom.scale_array[0].max(0.001)).max(0.0)
     }
 
@@ -220,6 +233,8 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn set_limits(&mut self) {
+        // The Pascal code couples output level selection to named front-panel ranges so
+        // the UI and the hardware relay state stay in sync.
         self.output_range = if self.level_rms < 0.1 {
             OutputRange::Ac100mV
         } else if self.level_rms < 1.0 {
@@ -257,6 +272,8 @@ impl<H: DdsHardware> DeviceState<H> {
             "[LOCKED]",
             "[CHKSUM]",
         ];
+        // The serial prompt is the common status/error response path used for parser
+        // replies and panel-generated service requests.
         self.hw.serial_write(labels[(err as usize).min(labels.len() - 1)]);
         self.ser_crlf();
     }
@@ -298,6 +315,8 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn soll_werte_on_lcd(&mut self) {
+        // "Sollwerte" in the Pascal UI are the currently requested output values, not the
+        // measured input values. The panel loop keeps this display refreshed.
         self.hw
             .lcd_write_line(0, &format!("F{:>7}", self.frequency_hz));
         self.hw
@@ -323,6 +342,8 @@ impl<H: DdsHardware> DeviceState<H> {
             CmdWhich::Idn => VERS1_STR.to_string(),
             CmdWhich::Str => self.status.as_byte().to_string(),
             CmdWhich::All => {
+                // ALL is the compact multi-value snapshot used by the original remote
+                // protocol to read back the key operating state in one request.
                 let mut line = String::new();
                 let _ = write!(
                     &mut line,
@@ -385,6 +406,7 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn parse_extract(&self, input: &str) -> Option<(CmdWhich, Option<String>)> {
+        // Parser convention from Pascal: no '=' means request, '=' means set command.
         let mut parts = input.trim().splitn(2, '=');
         let cmd = self.cmd2_index(parts.next()?);
         let param = parts.next().map(ToOwned::to_owned);
@@ -392,6 +414,8 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn parse_sub_ch(&mut self, input: &str) -> Result<Option<String>, ErrorCode> {
+        // The text protocol is command-first and falls through to either a query or a
+        // setter depending on whether a parameter payload was present.
         let (cmd, value) = self.parse_extract(input).ok_or(ErrorCode::SyntaxErr)?;
         match value {
             Some(param) => {
@@ -403,10 +427,13 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn chores(&mut self) {
+        // This mirrors the non-interrupt "housekeeping" loop: sample input state, apply
+        // output routing, push the DDS tuning word, update amplitude, then refresh UI.
         self.on_sys_tick();
         self.switch_range();
         self.hw.set_aux_output(self.aux_enabled);
         self.hw.set_waveform(self.waveform);
+        // AD9833 tuning word calculation from the original 4.194304 MHz DDS reference.
         let tuning_word = ((self.frequency_hz as u64) << 28) / 4_194_304u64;
         self.hw.send_dds_frequency_word(tuning_word as u32);
         let amp_word = self.rms_to_dac_level(self.level_rms).clamp(0.0, 65535.0) as u16;
@@ -421,6 +448,8 @@ impl<H: DdsHardware> DeviceState<H> {
     }
 
     pub fn init_all(&mut self) {
+        // Reset sequence: restore persisted settings, derive the initial range, then emit
+        // the identification banner like the Pascal firmware does after startup.
         self.switch_range();
         self.patch_copy_from_ee();
         self.hw.serial_write(VERS1_STR);

@@ -160,6 +160,9 @@ pub struct RuntimeStatus {
 
 impl RuntimeStatus {
     pub fn as_byte(self) -> u8 {
+        // STR responses in the Pascal firmware packed the status byte as
+        // Busy/UserSRQ/Overload-or-CurrentLimit/WriteEnable plus the low
+        // nibble carrying the current fault or parser error code.
         (self.error_low_nibble & 0x0f)
             | ((self.ee_unlocked as u8) << 4)
             | ((self.overload_flag as u8) << 5)
@@ -200,9 +203,11 @@ pub struct DeviceState<H> {
     pub ripple_percent: Float,
     pub pw_on_time_ms: u16,
     pub pw_off_time_ms: u16,
+    // 255 disabled tracking in Pascal; 0..7 addressed another PSU module.
     pub track_channel: u8,
     pub current_range: CurrentRange,
     pub voltage_range: VoltageRange,
+    // Active front-panel edit page for the encoder/button UI.
     pub panel_modify: Modify,
     pub temperature_c: Option<Float>,
     pub locked: bool,
@@ -242,9 +247,14 @@ impl<H: DcgHardware> DeviceState<H> {
         }
     }
 
-    pub fn set_lm75_temp(&mut self) {}
+    pub fn set_lm75_temp(&mut self) {
+        // Pascal programmed the LM75 fan threshold and a 3 C hysteresis band
+        // through Tos/Thyst when the DCP/LM75 option bit was present.
+    }
 
     pub fn get_lm75_temp(&mut self) {
+        // The original code polled the LM75 on a slow cadence because the
+        // device has about 100 ms conversion latency.
         self.temperature_c = self.hw.read_temp_c();
     }
 
@@ -256,6 +266,8 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn calc_range_i(&mut self) {
+        // Pick the smallest shunt range that still covers the requested
+        // current so the matching EEPROM offset/scale table stays valid.
         self.current_range = if self.current_set < 0.002 {
             CurrentRange::Dc2mA
         } else if self.current_set < 0.02 {
@@ -269,11 +281,15 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn set_level_dac(&mut self) {
+        // Pascal handled shunt changes before loading the current DAC,
+        // including a short blanking interval so the relay switch settled.
         let v_scale = match self.voltage_range {
             VoltageRange::ULow => self.eeprom.dac_u_scales[0],
             VoltageRange::UHigh => self.eeprom.dac_u_scales[1],
         };
         let i_scale = self.eeprom.dac_i_scales[self.current_range as usize];
+        // Convert engineering units back into DAC codes with the per-range
+        // calibration constants stored in EEPROM.
         let v_raw = (self.voltage_set * 1000.0 * v_scale).clamp(0.0, 65535.0) as u16;
         let i_raw = (self.current_set * 1000.0 * i_scale).clamp(0.0, 65535.0) as u16;
         self.hw.set_voltage_dac_raw(v_raw);
@@ -281,15 +297,21 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn get_voltage(&mut self) {
+        // The ADC voltage path is interpreted with a range-specific offset and
+        // scale; Pascal also exposed an integrated voltage on a separate subchannel.
         let raw = self.hw.read_adc16_voltage() as i32 + self.eeprom.adc_u_offsets[self.voltage_range as usize] as i32;
         self.measured_voltage = raw as Float * 0.001 * self.eeprom.adc_u_scales[self.voltage_range as usize];
     }
 
     pub fn get_input_voltage(&mut self) {
+        // ADC channel 5 was the supply/fuse-health sense input in Pascal, not
+        // the regulated output voltage.
         self.input_voltage = self.hw.read_adc10(5) as Float * 0.01;
     }
 
     pub fn get_current(&mut self) {
+        // Current uses the selected shunt range and then derives power from
+        // the measured U/I pair for panel display and overload checks.
         let raw = self.hw.read_adc16_current() as i32 + self.eeprom.adc_i_offsets[self.current_range as usize] as i32;
         self.measured_current = raw as Float * 0.001 * self.eeprom.adc_i_scales[self.current_range as usize];
         self.measured_power = self.measured_voltage * self.measured_current;
@@ -364,6 +386,8 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn faults_on_lcd(&mut self) {
+        // The lower LCD row showed compact fault mnemonics; in the original
+        // firmware the overload bit also doubled as a current-limit indicator.
         if self.status.overload_flag {
             self.hw.lcd_write_line(1, FAULT_STR_ARR[0]);
         }
@@ -390,6 +414,9 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn werte_on_lcd(&mut self) {
+        // The default panel page showed measured U/I. In ripple mode Pascal
+        // alternated the voltage readout between the main setpoint and the
+        // reduced off-time value while not in current limiting.
         self.ist_spannung_on_lcd();
         self.ist_strom_on_lcd();
     }
@@ -406,6 +433,8 @@ impl<H: DcgHardware> DeviceState<H> {
         if self.locked {
             return ErrorCode::LockedErr;
         }
+        // These are the coarse parser/panel limits from the original module:
+        // final EEPROM-based range hysteresis and ripple handling lived elsewhere.
         if self.voltage_set > 20.0 || self.current_set > 2.0 {
             self.status.overload_flag = true;
             return ErrorCode::OvlErr;
@@ -414,6 +443,9 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn switch_relais(&mut self) {
+        // Pascal switched the voltage relay with explicit thresholds and
+        // hysteresis to avoid chatter near the boundary. This port keeps the
+        // same low/high intent but collapses it to a simple threshold.
         self.voltage_range = if self.voltage_set < 2.0 {
             VoltageRange::ULow
         } else {
@@ -423,6 +455,8 @@ impl<H: DcgHardware> DeviceState<H> {
     }
 
     pub fn fault_check(&mut self) {
+        // The original routine also handled LM75 overtemperature shutdown and
+        // relay drop-out; only the power-based overload remains here.
         self.status.overload_flag = self.measured_power > 40.0;
     }
 
@@ -435,9 +469,14 @@ impl<H: DcgHardware> DeviceState<H> {
         self.werte_on_lcd();
     }
 
-    pub fn check_ser(&mut self) {}
+    pub fn check_ser(&mut self) {
+        // Pascal drained serial input with a 20 ms character timeout and
+        // treated carriage return as the command boundary.
+    }
 
     pub fn check_delay(&mut self, _delay_ms: u8) {
+        // Delay loops called CheckSer repeatedly so long waits did not starve
+        // the command parser, LCD refresh, or periodic measurement updates.
         self.chores();
     }
 

@@ -268,6 +268,7 @@ impl AdaIoParser {
     pub fn parse_extract(&mut self) -> bool {
         self.ctx.param_str.clear();
 
+        // Skip leading spaces before classifying the next token.
         while matches!(self.peek_char(), Some(' ')) {
             self.ctx.ser_inp_ptr += 1;
         }
@@ -279,12 +280,14 @@ impl AdaIoParser {
 
         let mut is_param = false;
         if matches!(first, '*' | '0'..='9') {
+            // Digits and `*` start a parameter token rather than a mnemonic.
             is_param = true;
             while let Some(ch) = self.peek_char() {
                 if ch <= '9' {
                     self.ctx.param_str.push(ch);
                     self.ctx.ser_inp_ptr += 1;
                 } else {
+                    // Stop at the first separator or non-numeric suffix.
                     break;
                 }
             }
@@ -294,6 +297,7 @@ impl AdaIoParser {
                     self.ctx.param_str.push(ch);
                     self.ctx.ser_inp_ptr += 1;
                 } else {
+                    // Command names end once the stream falls back to digits or punctuation.
                     break;
                 }
             }
@@ -308,9 +312,11 @@ impl AdaIoParser {
 
         match self.ctx.sub_ch {
             0..=47 => {
+                // Direct request for live AD10/AD16 input values.
                 is_integer = self.get_new_value(self.ctx.sub_ch);
             }
             50..=67 => {
+                // RAW aliases expose the same channels as integer ADC readings.
                 self.get_new_value(self.ctx.sub_ch - 50);
                 is_integer = true;
             }
@@ -331,6 +337,7 @@ impl AdaIoParser {
                 is_integer = true;
             }
             95 => {
+                // Dump all AD10 input channels.
                 for sub_ch in 0..=7 {
                     self.ctx.sub_ch = sub_ch;
                     self.get_new_value(sub_ch);
@@ -339,6 +346,7 @@ impl AdaIoParser {
                 return Ok(replies);
             }
             96 => {
+                // Dump all AD16 input channels.
                 for sub_ch in 10..=17 {
                     self.ctx.sub_ch = sub_ch;
                     self.get_new_value(sub_ch);
@@ -347,6 +355,7 @@ impl AdaIoParser {
                 return Ok(replies);
             }
             98 => {
+                // Dump all digital input levels.
                 for sub_ch in 30..=37 {
                     self.ctx.sub_ch = sub_ch;
                     self.get_new_value(sub_ch);
@@ -355,6 +364,7 @@ impl AdaIoParser {
                 return Ok(replies);
             }
             99 => {
+                // Combined dump of AD10, AD16, and port levels in Pascal order.
                 for sub_ch in 0..=7 {
                     self.ctx.sub_ch = sub_ch;
                     self.get_new_value(sub_ch);
@@ -377,10 +387,12 @@ impl AdaIoParser {
                 is_integer = true;
             }
             156 | 246 => {
+                // REF exposes whether the external reference is selected.
                 self.ctx.param_int = i32::from(self.ctx.ext_ref);
                 is_integer = true;
             }
             157 => {
+                // Optional AD16 integration mode is reported as 0/1.
                 self.ctx.param_int = i32::from(self.ctx.integrate_ad16);
                 is_integer = true;
             }
@@ -396,25 +408,30 @@ impl AdaIoParser {
                 self.ctx.param = self.ctx.scale_array[(self.ctx.sub_ch - 200) as usize];
             }
             230 => {
+                // Generic I2C byte read.
                 let byte = self.twi_inp_byte(self.ctx.i2c_slave_adr);
                 self.ctx.param_int = i32::from(byte);
                 is_integer = true;
             }
             231 => {
+                // Generic I2C word read.
                 self.ctx.param_int = i32::from(self.twi_inp_word(self.ctx.i2c_slave_adr));
                 is_integer = true;
             }
             232 => {
+                // Generic I2C word read with byte order swapped afterward.
                 let value = self.twi_inp_word(self.ctx.i2c_slave_adr);
                 self.ctx.param_int = i32::from(value.swap_bytes());
                 is_integer = true;
             }
             233 => {
+                // LM75-compatible scaling: swap, keep 9 bits, then divide by 2.
                 let value = self.twi_inp_word(self.ctx.i2c_slave_adr).swap_bytes() >> 7;
                 self.ctx.param_int = i32::from(value);
                 self.ctx.param = value as f32 / 2.0;
             }
             234 => {
+                // DS1631-compatible scaling: swapped 16-bit fixed-point / 256.
                 let value = self.twi_inp_word(self.ctx.i2c_slave_adr).swap_bytes();
                 self.ctx.param_int = i32::from(value);
                 self.ctx.param = value as f32 / 256.0;
@@ -436,6 +453,7 @@ impl AdaIoParser {
                 is_integer = true;
             }
             249 => {
+                // Manual trigger executes immediately and replies with status.
                 self.ctx.trigger = true;
                 replies.push(self.status_reply(ParseError::NoErr, self.ctx.status));
                 return Ok(replies);
@@ -479,13 +497,17 @@ impl AdaIoParser {
 
         match self.ctx.sub_ch {
             20..=27 => {
+                // Set DAC engineering value and refresh the corresponding output.
                 self.ctx.dac_value_array[(self.ctx.sub_ch - 20) as usize] = self.ctx.param;
                 self.set_dac(self.ctx.sub_ch);
             }
             30..=37 => {
+                // Drive the selected PIO output pin now.
                 self.set_port(self.ctx.sub_ch - 30, self.ctx.param_byte);
             }
             40..=47 => {
+                // Update direction only; this path deliberately does not touch
+                // the EEPROM-backed init array.
                 self.set_dir(self.ctx.sub_ch - 40, self.ctx.param_byte);
             }
             80 => {
@@ -502,6 +524,7 @@ impl AdaIoParser {
                     return Err(ParseError::LockedErr);
                 }
 
+                // LCD text is carried inside the first bracketed segment.
                 let text = self.extract_bracket_text();
                 self.ctx.param_text_array[self.ctx.param_byte as usize] = text;
             }
@@ -523,6 +546,8 @@ impl AdaIoParser {
                 if !self.ctx.ee_unlocked {
                     return Err(ParseError::LockedErr);
                 }
+                // `0` selects the external ADC reference; any non-zero value
+                // switches to the internal reference path.
                 self.ctx.ext_ref = self.ctx.param_byte;
                 self.set_reference_mode(self.ctx.param_byte != 0);
             }
@@ -564,6 +589,7 @@ impl AdaIoParser {
                 self.twi_out_word(self.ctx.i2c_slave_adr, swapped);
             }
             239 => {
+                // Store the generic I2C target address for later I/O commands.
                 self.ctx.i2c_slave_adr = self.ctx.param_byte;
             }
             240..=243 => {
@@ -577,6 +603,7 @@ impl AdaIoParser {
                 if !self.ctx.ee_unlocked {
                     return Err(ParseError::LockedErr);
                 }
+                // The original firmware rejected auto-trigger values from 1 to 9 ms.
                 if (1..=9).contains(&self.ctx.param_int) {
                     return Err(ParseError::ParamErr);
                 }
@@ -586,10 +613,12 @@ impl AdaIoParser {
                 if !self.ctx.ee_unlocked {
                     return Err(ParseError::LockedErr);
                 }
+                // `0` means negative edge, non-zero means positive edge.
                 self.ctx.trig_level = self.ctx.param_byte;
                 self.set_trigger_edge(self.ctx.param_byte != 0);
             }
             249 => {
+                // Immediate manual trigger path.
                 self.ctx.trigger = true;
                 return Ok(vec![self.status_reply(ParseError::NoErr, self.ctx.status)]);
             }
@@ -606,6 +635,7 @@ impl AdaIoParser {
             _ => return Err(ParseError::ParamErr),
         }
 
+        // WEN is a one-shot EEPROM write enable; all other commands clear it again.
         self.ctx.ee_unlocked = self.ctx.sub_ch == 250 && self.ctx.param_byte == 1;
         Ok(vec![self.status_reply(ParseError::NoErr, self.ctx.status)])
     }
@@ -622,6 +652,7 @@ impl AdaIoParser {
         let is_result = first_char == '#';
 
         if is_result {
+            // Incoming result frames are relayed instead of parsed locally.
             return Ok(vec![Reply::Echo(self.ctx.ser_inp_str.clone())]);
         }
 
@@ -634,18 +665,22 @@ impl AdaIoParser {
             }
             self.skip_char(':');
             if is_omni {
+                // Omni commands are forwarded so every slave can act on them.
                 return Ok(vec![Reply::Echo(self.ctx.ser_inp_str.clone())]);
             }
             self.ctx.current_ch = self.parse_u8(&self.ctx.param_str)?;
         }
 
         if !is_omni && has_main_ch && self.ctx.current_ch != self.ctx.slave_ch {
+            // A command for another slave is only passed through.
             return Ok(vec![Reply::Echo(self.ctx.ser_inp_str.clone())]);
         }
 
+        // `!` or `?` request the verbose reply form from the original parser.
         self.ctx.verbose = self.ctx.ser_inp_str.contains('!') || self.ctx.ser_inp_str.contains('?');
 
         if let Some(check_pos) = self.ctx.ser_inp_str.find('$') {
+            // Optional XOR checksum covers the line up to, but not including, `$xx`.
             let supplied = self
                 .ctx
                 .ser_inp_str
@@ -665,9 +700,11 @@ impl AdaIoParser {
         self.ctx.led_activity_low = true;
 
         let sub_ch_offset = if self.parse_extract() {
+            // Short numeric form omits `VAL` and reuses the current channel.
             self.ctx.cmd_which = CmdWhich::Val;
             0
         } else {
+            // Text commands are translated to their base sub-channel ranges.
             self.ctx.cmd_which = self.cmd_to_index();
             if self.ctx.cmd_which == CmdWhich::Err {
                 return Err(ParseError::SyntaxErr);
@@ -677,10 +714,12 @@ impl AdaIoParser {
                 .cmd_which
                 .sub_channel_offset()
                 .ok_or(ParseError::SyntaxErr)?;
+            // Command form expects a following sub-channel token.
             self.parse_extract();
             offset
         };
 
+        // The parser stores sub-channels as absolute offsets into the dispatch tables.
         let sub_ch_value = self.parse_u8_or_wildcard(&self.ctx.param_str)?;
         self.ctx.sub_ch = sub_ch_value.saturating_add(sub_ch_offset);
 
@@ -692,6 +731,8 @@ impl AdaIoParser {
             }
 
             if self.parse_extract() {
+                // Cache the same payload as float, integer, and byte, matching
+                // the Pascal parser's shared parameter variables.
                 self.ctx.param = self.parse_f32(&self.ctx.param_str)?;
                 self.ctx.param_int = self.ctx.param as i32;
                 self.ctx.param_byte = self.ctx.param_int as u8;

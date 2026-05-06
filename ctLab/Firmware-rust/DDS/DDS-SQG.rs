@@ -39,7 +39,8 @@ represented here via a hardware abstraction trait and explicit stubs.
 
 const SYS_TICK_MS: u8 = 10;
 
-// Wave = Sinus, Dreieck/Saegezahn, Rechteck, Audio 1..99
+// Wave selector values from the original firmware: off, sine, triangle/saw,
+// square, logic-level square, or external source routing.
 const C_OFF: u8 = 0;
 const C_SINW: u8 = 1;
 const C_TRIW: u8 = 2;
@@ -65,7 +66,8 @@ const RMS_INPUT_STR: &str = "Input ";
 const WAVE_STR: &str = "Function";
 const BURST_STR: &str = "Burst ms";
 
-// AD9833-DDS constants for frequencies, dependent on the reference clock.
+// Frequency decade weights for the AD9833 tuning-word calculation at a 20 MHz
+// reference clock. The Pascal code builds the DDS word digit by digit.
 const FHZ: [f64; 9] = [
     134_217_728.0,
     13_421_772.8,
@@ -216,6 +218,7 @@ impl Default for EepromDefaults {
             init_frequenz: 10_000,
             init_level: 5_000.0,
             init_burst: 0,
+            // SQG powers up in square-wave mode unless EEPROM overrides it.
             init_wave: C_SQUW,
             init_inc_rast: 4,
             ee_ser_baud_reg: 51,
@@ -233,6 +236,8 @@ struct StatusFlags {
 
 impl StatusFlags {
     fn to_status_byte(self) -> u8 {
+        // Original wire format: bit 7 = Busy, 6 = User SRQ, 5 = Overload,
+        // 4 = EEPROM unlocked. The low nibble is the current error code.
         ((self.busy as u8) << 7)
             | ((self.user_srq as u8) << 6)
             | ((self.overload as u8) << 5)
@@ -343,7 +348,8 @@ trait HardwareInterface {
 }
 
 impl FirmwareState {
-    // Frequenz und Settings aus EEPROM holen
+    // Restore the editable setpoints that the Pascal firmware copied from
+    // EEPROM during reset and after EEPROM writes.
     fn patch_copy_from_ee(&mut self) {
         self.wave = self.defaults.init_wave;
         self.frequenz = self.defaults.init_frequenz;
@@ -370,8 +376,8 @@ impl FirmwareState {
         self.ser_crlf(hw);
     }
 
-    // Error-Meldung und Status-Request-Antwort,
-    // Status Bit 7=Busy, 6=UserSRQ, 5=OverLoad, 4=EEUnlocked, 3..0=Fehler-Nummer
+    // Error/status response. The original parser used sub-channel 255 for
+    // these prompts and encoded status bits plus the error number together.
     fn ser_prompt<H: HardwareInterface>(&mut self, hw: &mut H, err: ErrorCode, status: u8) {
         if self.verbose || err != ErrorCode::NoErr {
             self.sub_ch = ERR_SUB_CH;
@@ -440,10 +446,13 @@ impl FirmwareState {
         self.write_param_str_ser(hw);
     }
 
-    // liefert TRUE wenn "Out of Range"
+    // Clamp user-facing values to the same legal ranges as the Pascal code.
+    // A true return means the input had to be corrected.
     fn check_limits(&mut self) -> bool {
         let mut out_of_range = false;
 
+        // The panel toggles between the 1 V and 5 V amplitude ranges rather
+        // than allowing arbitrary DAC full-scale values here.
         self.dac_level = if self.dac_level > 1000.0 { 5000.0 } else { 1000.0 };
 
         if self.frequenz < 0 {
@@ -530,6 +539,7 @@ impl FirmwareState {
                 self.ser_crlf(hw);
             }
             250 | 255 => {
+                // Both status aliases end up in the same status prompt path.
                 self.ser_prompt(hw, ErrorCode::NoErr, self.status.to_status_byte());
             }
             _ => self.ser_prompt(hw, ErrorCode::ParamErr, 0),
@@ -550,6 +560,7 @@ impl FirmwareState {
             4 => self.wave = self.param_byte,
             5 => self.burst_mode = self.param_byte,
             80 => {
+                // DSP selects which value the front-panel encoder edits.
                 self.modify = match self.param_byte {
                     0 => Modify::WaveSel,
                     1 => Modify::FreqSel,
@@ -586,6 +597,7 @@ impl FirmwareState {
             }
         }
 
+        // WEN acts as the write-enable latch for EEPROM-backed parameters.
         self.status.ee_unlocked = self.sub_ch == 250;
 
         if self.check_limits() {
@@ -609,8 +621,8 @@ impl FirmwareState {
         }
     }
 
-    // extrahiert ParamStr oder CmdStr aus SerInpStr,
-    // liefert true, wenn Parameter, sonst false, wenn Command
+    // Extract either a command token or a numeric parameter token from the
+    // serial line. This mirrors the split parser in the Pascal firmware.
     fn parse_extract(&self, input: &str, start: usize) -> (String, usize, bool) {
         let bytes = input.as_bytes();
         let mut idx = start;
@@ -654,6 +666,8 @@ impl FirmwareState {
             return;
         }
 
+        // Requests have no '='. '#'-prefixed lines are already results and are
+        // forwarded unchanged so chained devices preserve upstream replies.
         let has_main_ch = self.ser_inp_str.contains(':');
         let is_request = !self.ser_inp_str.contains('=');
         let first_char = self.ser_inp_str.chars().next().unwrap_or_default();
@@ -699,9 +713,12 @@ impl FirmwareState {
             }
         }
 
+        // '!' or '?' request the verbose response form.
         self.verbose = self.ser_inp_str.contains('?') || self.ser_inp_str.contains('!');
 
         if let Some(check_pos) = self.ser_inp_str.find('$') {
+            // Optional XOR checksum over the command, excluding the '$' prefix
+            // and the checksum bytes themselves.
             let checksum_in = u8::from_str_radix(
                 self.ser_inp_str
                     .get(check_pos + 1..check_pos + 3)
@@ -741,7 +758,8 @@ impl FirmwareState {
         }
     }
 
-    // Burst-Generierung per Interrupt
+    // Burst generation runs from the 10 ms system tick. Count 1 starts the
+    // programmed waveform, count 0 forces DDS reset, then the period reloads.
     fn on_systick<H: HardwareInterface>(&mut self, hw: &mut H) {
         if self.burst_mode == 0 {
             return;
@@ -759,16 +777,18 @@ impl FirmwareState {
         self.burst_count = self.burst_count.saturating_sub(1);
     }
 
-    // Pegelsteller und Relais setzen, Frequenz einstellen; Float-Berechnung fuer SQG
+    // Apply the relay state, then emit the AD9833 frequency words followed by
+    // the waveform command. SQG kept the original float-based digit-summing
+    // path instead of replacing it with new integer math.
     fn set_level_dds<H: HardwareInterface>(&mut self, hw: &mut H) {
         self.switch_state = 0;
 
-        // Abschwaecher fuer AC setzen
+        // Enable the passive AC attenuator below the calibrated switch point.
         if self.dac_level < self.attn_switch_point {
             self.switch_state |= 1 << 5;
         }
 
-        // Relais setzen
+        // Logic mode reuses the DDS square-wave output stage.
         self.wave_cmd = match self.wave {
             C_SINW => C_DDS_SINE_CMD,
             C_TRIW => C_DDS_TRIANGLE_CMD,
@@ -778,7 +798,8 @@ impl FirmwareState {
 
         hw.shift_out_level_sr(0, self.switch_state);
 
-        // DDS-Frequenz einstellen
+        // Frequency is stored in 0.1 Hz and rendered as a fixed 9-digit
+        // decimal string before weighting each decade.
         let freq_str = format!("{:09}", self.frequenz);
         let mut add_f = 0.0f64;
         for (idx, ch) in freq_str.chars().enumerate().take(FHZ.len()) {
@@ -787,6 +808,7 @@ impl FirmwareState {
         }
         self.dds_frequ = add_f as i32;
 
+        // AD9833 frequency programming is split into two 14-bit register words.
         self.dss_cmd = ((self.dds_frequ as u16) & 0x3fff) | DDS_FREQ_REG_CMD;
         hw.send_dds_word(self.dss_cmd);
 
@@ -803,6 +825,8 @@ impl FirmwareState {
 
     fn check_ser<H: HardwareInterface>(&mut self, hw: &mut H) {
         while let Some(ch) = hw.serial_timeout_char(2) {
+            // The original loop accepted printable 7-bit ASCII only, handled
+            // backspace locally, and parsed on carriage return.
             if (' '..='~').contains(&ch) {
                 self.ser_inp_str.push(ch);
             }
@@ -822,9 +846,10 @@ impl FirmwareState {
         }
     }
 
-    // nach Reset aufgerufen
+    // Startup sequence after reset, before the main serial/panel loop begins.
     fn init_all<H: HardwareInterface>(&mut self, hw: &mut H) {
         self.patch_copy_from_ee();
+        // This matches the Pascal power-up state before the first user action.
         self.burst_count = 1;
         self.modify = Modify::FreqSel;
         self.first_turn = true;
@@ -845,6 +870,8 @@ impl FirmwareState {
     }
 
     // One best-effort outer loop step from the original `loop ... endloop`.
+    // The Pascal loop serviced serial traffic first, then let the optional
+    // LCD/encoder panel own the device while the UART was idle.
     fn run_main_loop_iteration<H: HardwareInterface>(&mut self, hw: &mut H) {
         self.check_ser(hw);
         if !hw.serial_pending() && self.lcd_present {
