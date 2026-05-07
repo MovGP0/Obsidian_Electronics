@@ -4,45 +4,45 @@ The UMN spin-transfer torque model is a physics-based SPICE model for STT-MRAM r
 
 ## Included device variants
 
-| Variant | Downloaded folder | Default dimensions | Material | Ms0 | P0 | lpha | RA0 | Anisotropy |
+| Variant | Downloaded folder | Default dimensions | Material | `Ms0` | `P0` | `alpha` | `RA0` | Anisotropy |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| In-plane MTJ | .temp/STT_model/IMTJ | 32 nm x 96 nm x 2.44 nm | CoFeB | 1210 | 0.69 | 0.0062 | 5 | MA='0' |
-| Crystalline perpendicular MTJ | .temp/STT_model/cPMTJ | 45 nm x 45 nm x 0.45 nm | FePt | 1210 | 0.62 | 0.03 | 5 | MA='1' |
-| Interface perpendicular MTJ | .temp/STT_model/iPMTJ | 65 nm x 65 nm x 1.48 nm | CoFeB | 1210 | 0.69 | 0.006 | 5 | MA='1' |
+| In-plane MTJ | `.temp/STT_model/IMTJ` | 32 nm x 96 nm x 2.44 nm | CoFeB | 1210 | 0.69 | 0.0062 | 5 | `MA='0'` |
+| Crystalline perpendicular MTJ | `.temp/STT_model/cPMTJ` | 45 nm x 45 nm x 0.45 nm | FePt | 1210 | 0.62 | 0.03 | 5 | `MA='1'` |
+| Interface perpendicular MTJ | `.temp/STT_model/iPMTJ` | 65 nm x 65 nm x 1.48 nm | CoFeB | 1210 | 0.69 | 0.006 | 5 | `MA='1'` |
 
 ## Model structure
 
 Each variant has the same basic decomposition:
 
-- MTJ_write.sp is the transient switching example and top-level simulation deck.
-- MTJ_model.inc instantiates the MTJ resistance, LLG solver, and heat-diffusion blocks.
-- LLG_solver.inc solves magnetization motion using Mx, My, and Mz as state nodes.
-- Resistor.inc maps magnetization angle, polarization, and temperature into MTJ resistance.
-- HeatDF.inc estimates self-heating from MTJ current and feeds temperature back into LLG and resistance.
+- `MTJ_write.sp` is the transient switching example and top-level simulation deck.
+- `MTJ_model.inc` instantiates the MTJ resistance, LLG solver, and heat-diffusion blocks.
+- `LLG_solver.inc` solves magnetization motion using `Mx`, `My`, and `Mz` as state nodes.
+- `Resistor.inc` maps magnetization angle, polarization, and temperature into MTJ resistance.
+- `HeatDF.inc` estimates self-heating from MTJ current and feeds temperature back into LLG and resistance.
 
-The free-layer state is selected with ini. For the STT examples, antiparallel-to-parallel switching uses ini='1' with positive MTJ voltage, while parallel-to-antiparallel switching uses ini='0' with negative MTJ voltage.
+The free-layer state is selected with `ini`. For the STT examples, antiparallel-to-parallel switching uses `ini='1'` with positive MTJ voltage, while parallel-to-antiparallel switching uses `ini='0'` with negative MTJ voltage.
 
 ## Important formulas
 
 The STT switching examples rely on the LLG equation with Slonczewski spin torque:
 
-
+$$
 \frac{d\mathbf{m}}{dt}
 =
 -\gamma \mathbf{m}\times\mathbf{H}_{\mathrm{eff}}
 -\alpha\gamma \mathbf{m}\times(\mathbf{m}\times\mathbf{H}_{\mathrm{eff}})
 +\gamma H_{\mathrm{STT}}\mathbf{m}\times(\mathbf{m}\times\mathbf{p})
+$$
 
-
-where $\mathbf{p}$ is the pinned-layer direction. The pinned direction is selected from MA: in-plane uses [0,1,0]; perpendicular uses [0,0,1].
+where $\mathbf{p}$ is the pinned-layer direction. The pinned direction is selected from `MA`: in-plane uses `[0,1,0]`; perpendicular uses `[0,0,1]`.
 
 The MTJ resistance follows:
 
-
+$$
 R_{\mathrm{MTJ}}(\theta)
 =
 \frac{1+\cos\theta}{2}(R_P - R_{AP}) + R_{AP}
-
+$$
 
 ## UMN documentation included
 
@@ -61,7 +61,7 @@ Publication listed by UMN: J. Kim, A. Chen, B. Behin-Aein, S. Kumar, J.P. Wang, 
 
 ### .temp\STT_model\cPMTJ\HeatDF.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  HeatDF.inc
@@ -162,7 +162,7 @@ Cr6 r6 0 'Cf'
 
 ### .temp\STT_model\cPMTJ\LLG_solver.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  LLG_solver.inc
@@ -265,7 +265,7 @@ E_Mz1 Mz1 0 vol='v(Mz)' max='cos(v(thi))' min='-cos(v(thi))'
 
 ### .temp\STT_model\cPMTJ\MTJ_model.inc
 
-```spice
+```cir
 ********************************************************************************************************
 ********************************************************************************************************
 ** Title:  MTJ_model.inc
@@ -311,7 +311,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 
 ### .temp\STT_model\cPMTJ\MTJ_write.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  MTJ_write.sp
@@ -363,7 +363,7 @@ XMTJ1 1 0 MTJ lx='45n' ly='45n' lz='0.45n' Ms0='1210' P0='0.62' alpha='0.03' Tmp
 
 ### .temp\STT_model\cPMTJ\Resistor.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  Resistance.inc
@@ -413,7 +413,7 @@ E_rmtj rmtj 0 vol='(1+cos(v(th)))*(Rp-v(Rap))/2+v(Rap)'
 
 ### .temp\STT_model\IMTJ\HeatDF.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  HeatDF.inc
@@ -514,7 +514,7 @@ Cr6 r6 0 'Cf'
 
 ### .temp\STT_model\IMTJ\LLG_solver.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  LLG_solver.inc
@@ -618,7 +618,7 @@ G_dMz_torq 0 Mz cur='v(Is)*(v(Mx)*(v(Mz)*Mpx-Mpz*v(Mx))-(v(My)*Mpz-Mpy*v(Mz))*v(
 
 ### .temp\STT_model\IMTJ\MTJ_model.inc
 
-```spice
+```cir
 ********************************************************************************************************
 ********************************************************************************************************
 ** Title:  MTJ_model.inc
@@ -663,7 +663,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 
 ### .temp\STT_model\IMTJ\MTJ_write.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  MTJ_write.sp
@@ -714,7 +714,7 @@ XMTJ1 1 0 MTJ lx='32n' ly='96n' lz='2.44n' Ms0='1210' P0='0.69' alpha='0.0062' T
 
 ### .temp\STT_model\IMTJ\Resistor.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  Resistance.inc
@@ -758,7 +758,7 @@ E_rmtj rmtj 0 vol='(1+cos(v(th)))*(Rp-v(Rap))/2+v(Rap)'
 
 ### .temp\STT_model\iPMTJ\HeatDF.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  HeatDF.inc
@@ -859,7 +859,7 @@ Cr6 r6 0 'Cf'
 
 ### .temp\STT_model\iPMTJ\LLG_solver.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  LLG_solver.inc
@@ -961,7 +961,7 @@ E_Mz1 Mz1 0 vol='v(Mz)' max='cos(v(thi))' min='-cos(v(thi))'
 
 ### .temp\STT_model\iPMTJ\MTJ_model.inc
 
-```spice
+```cir
 ********************************************************************************************************
 ********************************************************************************************************
 ** Title:  MTJ_model.inc
@@ -1007,7 +1007,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 
 ### .temp\STT_model\iPMTJ\MTJ_write.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  MTJ_write.sp
@@ -1060,7 +1060,7 @@ XMTJ1 1 0 MTJ lx='65n' ly='65n' lz='1.48n' Ms0='1210' P0='0.69' alpha='0.006' Tm
 
 ### .temp\STT_model\iPMTJ\Resistor.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  Resistance.inc

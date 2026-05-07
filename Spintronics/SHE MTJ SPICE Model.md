@@ -11,50 +11,50 @@ The UMN documentation lists four operating modes:
 - SHE-assisted STT.
 - SHE-assisted STT with external magnetic field.
 
-The downloaded examples include MTJ_write.sp for SHE-assisted STT and MTJ_write_SHE_ONLY.sp for SHE-only switching.
+The downloaded examples include `MTJ_write.sp` for SHE-assisted STT and `MTJ_write_SHE_ONLY.sp` for SHE-only switching.
 
 ## Default device parameters
 
-| Device | Default dimensions | Material | Ms0 | P0 | lpha | RA0 | SHA |
+| Device | Default dimensions | Material | `Ms0` | `P0` | `alpha` | `RA0` | `SHA` |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | Crystalline perpendicular MTJ | 45 nm x 45 nm x 0.7 nm | FePdX | 1145 | 0.73 | 0.02 | 5 | - |
 | Spin Hall metal | 60 nm x 45 nm x 5 nm | beta-W | - | - | - | - | 0.4 |
 
 ## Model structure
 
-- MTJ_write.sp applies both STT current and SHM current.
-- MTJ_write_SHE_ONLY.sp drives switching through the SHM path only.
-- MTJ_model.inc has electrical terminals for the MTJ and SHM path and feeds both MTJ and SHM current into LLG_solver.inc.
-- LLG_solver.inc adds SHE torque terms, thermal fluctuation controls, user-defined initial angle controls, and external field input.
-- NoiseGen_MATLAB.m generates thermal fluctuation PWL files for alternate noise parameters.
-- pwlFile_92.in is the downloaded thermal fluctuation input used by the model.
+- `MTJ_write.sp` applies both STT current and SHM current.
+- `MTJ_write_SHE_ONLY.sp` drives switching through the SHM path only.
+- `MTJ_model.inc` has electrical terminals for the MTJ and SHM path and feeds both MTJ and SHM current into `LLG_solver.inc`.
+- `LLG_solver.inc` adds SHE torque terms, thermal fluctuation controls, user-defined initial angle controls, and external field input.
+- `NoiseGen_MATLAB.m` generates thermal fluctuation PWL files for alternate noise parameters.
+- `pwlFile_92.in` is the downloaded thermal fluctuation input used by the model.
 
 ## Important formulas
 
 The SHE model adds a torque term driven by spin Hall conversion:
 
-
+$$
 \mathbf{\tau}_{\mathrm{SHE}}
 =
 \gamma H_{\mathrm{SHE}}\mathbf{m}\times(\mathbf{m}\times\boldsymbol{\sigma})
 +x_{\mathrm{ad}}\gamma H_{\mathrm{SHE}}\mathbf{m}\times\boldsymbol{\sigma}
+$$
 
-
-where x_ad is the field-like torque fraction relative to the damping-like term.
+where `x_ad` is the field-like torque fraction relative to the damping-like term.
 
 A compact relationship for the effective SHE field is:
 
-
+$$
 H_{\mathrm{SHE}}
 \propto
 \frac{\hbar\theta_{\mathrm{SH}} I_{\mathrm{SHM}}}{2eM_s V_F}
+$$
 
-
-where $\theta_{\mathrm{SH}}$ is SHA, {\mathrm{SHM}}$ is SHM current, and  = l_xl_yl_z$ is the free-layer volume.
+where $\theta_{\mathrm{SH}}$ is `SHA`, $I_{\mathrm{SHM}}$ is SHM current, and $V_F = l_xl_yl_z$ is the free-layer volume.
 
 ## UMN documentation included
 
-The UMN SHE page states that the model is self-contained and physics-based for both the MTJ and spin Hall metal. It exposes MTJ/SHM dimensions and magnetic parameters, and includes user-defined initial angle and thermal fluctuation. The page describes the four modes listed above and notes that field-like torque can be added by changing x_ad.
+The UMN SHE page states that the model is self-contained and physics-based for both the MTJ and spin Hall metal. It exposes MTJ/SHM dimensions and magnetic parameters, and includes user-defined initial angle and thermal fluctuation. The page describes the four modes listed above and notes that field-like torque can be added by changing `x_ad`.
 
 Publication listed by UMN: I. Ahmed, Z. Zhao, M. Mankalale, S. Sapatnekar, J.P. Wang, and C.H. Kim, "A Comparative Study between Spin-Transfer-Torque (STT) and Spin-Hall-Effect (SHE) Switching Mechanisms using SPICE", IEEE JxCDC, October 2017.
 
@@ -70,7 +70,7 @@ Publication listed by UMN: I. Ahmed, Z. Zhao, M. Mankalale, S. Sapatnekar, J.P. 
 
 ### .temp\SHE_model\SHE_model\HeatDF.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  HeatDF.inc
@@ -171,7 +171,7 @@ Cr6 r6 0 'Cf'
 
 ### .temp\SHE_model\SHE_model\LLG_solver.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  LLG_solver.inc
@@ -328,7 +328,7 @@ G_dMz_antidamp1 0 Mz cur='v(Istt)*x_ad*(v(Mx)*Mpy-Mpx*v(My))'
 
 ### .temp\SHE_model\SHE_model\MTJ_model.inc
 
-```spice
+```cir
 ********************************************************************************************************
 ********************************************************************************************************
 ** Title:  MTJ_model.inc
@@ -384,7 +384,7 @@ G_Imtj2 0 Ihd cur='-I(Ve2)*1'
 
 ### .temp\SHE_model\SHE_model\MTJ_write_SHE_ONLY.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  MTJ_write.sp
@@ -450,7 +450,7 @@ XMTJ1 1 2 3 MTJ lx='45n' ly='45n' lz='0.7n' tox='1n' Ms0='1185'  P0='0.73' alpha
 
 ### .temp\SHE_model\SHE_model\MTJ_write.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  MTJ_write.sp
@@ -597,7 +597,7 @@ Vth_z Hthz 0 PWL (0.000000n, -16.51717 0.100000n, 22.48177 0.200000n, 152.67225 
 
 ### .temp\SHE_model\SHE_model\Resistor.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  Resistance.inc

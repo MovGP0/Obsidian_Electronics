@@ -1,59 +1,60 @@
-﻿# VCMA MTJ SPICE Model
-
+---
+  title: Voltage Controlled Mmagnetic Anisotropy (VCMA) Magnetic Tunnel Junction (MJT)
+---
 The UMN voltage-controlled magnetic anisotropy model builds on the STT model and adds voltage-dependent anisotropy control. It includes experiment-based VCMA device parameters and lets the user adjust MTJ geometry, the VCMA coefficient, thermal stability, pulse shape, and external magnetic field.
 
 ## Default device parameters
 
-| Device | Default dimensions | Material | Ms0 | P0 | lpha | RA0 |
+| Device | Default dimensions | Material | `Ms0` | `P0` | `alpha` | `RA0` |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | Interface perpendicular MTJ | 70 nm x 70 nm x 1.49 nm | CoFeB | 950 | 0.54 | 0.025 | 130 |
 
 The top-level example sets:
 
-- cma_coeff='33e-15'
-- VE='2.45'
-- VSTTP='1.8'
-- VSTTN='-1.8'
-- PW_VE='0.48n'
-- PW_VSTT='2.00n'
+- `vcma_coeff='33e-15'`
+- `VE='2.45'`
+- `VSTTP='1.8'`
+- `VSTTN='-1.8'`
+- `PW_VE='0.48n'`
+- `PW_VSTT='2.00n'`
 
 ## Model structure
 
-- MTJ_write.sp contains the VCMA-assisted STT switching deck and pulse timing definitions.
-- MTJ_model.inc passes the VCMA control terminal into the LLG solver.
-- LLG_solver.inc modifies the interfacial anisotropy using cma_coeff, VCMA voltage, and oxide thickness.
-- NoiseGen_MATLAB.m and 	herm_dev_45.in support thermal fluctuation input.
-- Resistor.inc and HeatDF.inc use the same resistance and self-heating concepts as the STT model.
+- `MTJ_write.sp` contains the VCMA-assisted STT switching deck and pulse timing definitions.
+- `MTJ_model.inc` passes the VCMA control terminal into the LLG solver.
+- `LLG_solver.inc` modifies the interfacial anisotropy using `vcma_coeff`, VCMA voltage, and oxide thickness.
+- `NoiseGen_MATLAB.m` and `therm_dev_45.in` support thermal fluctuation input.
+- `Resistor.inc` and `HeatDF.inc` use the same resistance and self-heating concepts as the STT model.
 
 ## Important formulas
 
 The model changes perpendicular interfacial anisotropy with electric field:
 
-
+$$
 K_i(V_E)
 =
 2\pi M_s^2 t_c
 -
 \xi \frac{V_E}{t_{\mathrm{ox}}}
-
+$$
 
 The corresponding voltage-dependent thermal stability term is implemented as:
 
-
+$$
 \Delta_{\mathrm{VCMA}}
 =
 \frac{2\pi\left(t_c/l_z - N_z/(4\pi)\right)M_s^2l_xl_yl_z\cdot 10^6}{k_BT}
 -
 \frac{\xi l_xl_yV_E\cdot 10^4}{t_{\mathrm{ox}}k_BT}
-
+$$
 
 The switching deck measures pulse energy from average current, average voltage, and switching time:
 
-
+$$
 E_{\mathrm{wr}}
 \approx
 \overline{I}\,\overline{V}\,\Delta t
-
+$$
 
 ## UMN documentation included
 
@@ -73,7 +74,7 @@ Publication listed by UMN: J. Song, I. Ahmed, Z. Zhao, S. Sapatnekar, J.P. Wang,
 
 ### .temp\VCMA_model\HeatDF.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  HeatDF.inc
@@ -174,7 +175,7 @@ Cr6 r6 0 'Cf'
 
 ### .temp\VCMA_model\LLG_solver.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  LLG_solver.inc
@@ -278,7 +279,7 @@ E_dMz_sum_prec_damp_torq Mz_sum_prec_damp_torq 0 vol='v(Mz_prec)+v(Mz_damp)+v(Mz
 
 ### .temp\VCMA_model\MTJ_model.inc
 
-```spice
+```cir
 ********************************************************************************************************
 ********************************************************************************************************
 ** Title:  MTJ_model.inc
@@ -322,7 +323,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 
 ### .temp\VCMA_model\MTJ_write.sp
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title: VCMA-assisted STT switching
@@ -502,7 +503,7 @@ end
 
 ### .temp\VCMA_model\Resistor.inc
 
-```spice
+```cir
 ************************************************************************************
 ************************************************************************************
 ** Title:  Resistance.inc
