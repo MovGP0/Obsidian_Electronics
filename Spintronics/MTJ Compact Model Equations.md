@@ -1,6 +1,7 @@
-﻿# MTJ Compact Model Equations
-
-These equations summarize the physical structure implemented in the UMN MTJ SPICE model family. The downloaded files encode these relationships as behavioral voltage/current sources and subcircuits.
+---
+title: Magnetic Tunnel Junction (MTJ) Equations
+---
+These equations summarize the physical structure implemented in the UMN MTJ SPICE model family. The equations encode these relationships as behavioral voltage/current sources and subcircuits.
 
 ## Magnetization dynamics
 
@@ -17,7 +18,7 @@ m_z
 \lVert \mathbf{m} \rVert \approx 1
 $$
 
-The model solves a Landau-Lifshitz-Gilbert style equation with spin torque:
+The model solves a [Landau-Lifshitz-Gilbert equation](https://en.wikipedia.org/wiki/Landau%E2%80%93Lifshitz%E2%80%93Gilbert_equation) with spin torque:
 
 $$
 \frac{d\mathbf{m}}{dt}
@@ -32,7 +33,7 @@ where $\gamma$ is the gyromagnetic ratio, $\alpha$ is the Gilbert damping factor
 
 ## Temperature-dependent material parameters
 
-The downloaded LLG solver scales saturation magnetization and spin polarization with temperature:
+The LLG solver scales saturation magnetization and spin polarization with temperature:
 
 $$
 M_s(T) = M_{s0}\left(1 - \frac{T}{T_\mathrm{curie}}\right)^\beta

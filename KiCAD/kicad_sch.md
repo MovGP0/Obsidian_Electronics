@@ -48,6 +48,16 @@
 - Connector pin endpoints must also be computed from the placed symbol transform. For example, the repository's mirrored left-side one-pin connector places its external net endpoint to the right of the connector origin.
 - Before saving a generated or manually edited schematic, verify that every placed symbol origin and every schematic-body `(xy ...)` or `(at ...)` coordinate used for wires, junctions, labels, connectors, power symbols, and transistor instances is on the intended grid. Embedded `lib_symbols` geometry can use smaller drawing coordinates and should not be treated as schematic placement.
 
+## Save-Crash Troubleshooting
+
+- If KiCad reports `Expecting "(" in line 1 offset 1`, first check whether the file was truncated to 0 bytes. A save crash can leave an empty `.kicad_sch`, which produces the same first-token parse error as an encoding problem.
+- `.kicad_sch` files should be UTF-8 without BOM. The first bytes of a valid schematic should start directly with `28 6B 69...`, which is `(ki...`; a BOM would appear before the opening parenthesis.
+- A schematic can be readable/exportable but still crash KiCad's writer if generated symbol instances contain malformed `instances` blocks. In one ctLab case, generated blocks used a placeholder project name/path such as `(project "project" (path "/" ...))`; KiCad CLI could export SVG, but `sch upgrade --force` and the GUI save path truncated the schematic.
+- Let KiCad regenerate valid placed-symbol `instances` blocks instead of hand-generating placeholder ones. Valid regenerated blocks use the actual project name and sheet UUID path, for example `(project "ctLab" (path "/<root-sheet-uuid>" ...))`.
+- A useful isolation test is to copy the schematic, run `kicad-cli sch upgrade --force <copy>`, and then check that the file is still non-empty. If the command fails and the copy becomes 0 bytes, the problem is in syntax accepted by the reader but rejected by the writer.
+- Generated `lib_symbols` should not include schematic-level fields such as `(embedded_fonts no)` inside individual symbol definitions. Keep `embedded_fonts` as a schematic-level setting.
+- When recovering from a truncation, restore the schematic from version control before opening it again in KiCad, then remove malformed generated `instances` data and verify with both `kicad-cli sch export svg` and `kicad-cli sch upgrade --force` on a copy.
+
 ## Local Observations
 
 - `Electronics/Appendix/4700/ALU/cmos_inv.kicad_sch` embeds `Connector:Conn_01x01_Socket`, `Simulation_SPICE:PMOS`, `Simulation_SPICE:NMOS`, `power:VDD`, and `power:GND` in `lib_symbols`.

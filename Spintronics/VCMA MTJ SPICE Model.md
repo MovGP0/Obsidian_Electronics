@@ -60,10 +60,9 @@ $$
 
 The UMN VCMA page describes the model as an STT-derived compact model with experiment-based VCMA parameters. It supports adjustment of MTJ dimensions, the VCMA coefficient, thermal stability factor, voltage pulse, and external magnetic field. It also includes initial-angle and thermal-fluctuation effects for physics-based switching probability studies.
 
-Publication listed by UMN: J. Song, I. Ahmed, Z. Zhao, S. Sapatnekar, J.P. Wang, and C.H. Kim, "Evaluation of Operating Margin and Switching Probability of Voltage-Controlled Magnetic Anisotropy Magnetic Tunnel Junctions", IEEE JxCDC, April 2018.
-
 ## Sources
 
+- J. Song, I. Ahmed, Z. Zhao, S. Sapatnekar, J.P. Wang, and C.H. Kim, "Evaluation of Operating Margin and Switching Probability of Voltage-Controlled Magnetic Anisotropy Magnetic Tunnel Junctions", IEEE JxCDC, April 2018.
 - [UMN VCMA SPICE model documentation](http://mtj.umn.edu/VCMA.html)
 - [UMN downloads page](http://mtj.umn.edu/Downloads.html)
 - [VCMA_model.zip](http://mtj.umn.edu/VCMA_model.zip)
@@ -72,7 +71,7 @@ Publication listed by UMN: J. Song, I. Ahmed, Z. Zhao, S. Sapatnekar, J.P. Wang,
 
 ## Inline SPICE code and helper files
 
-### .temp\VCMA_model\HeatDF.inc
+### VCMA_model\HeatDF.inc
 
 ```cir
 ************************************************************************************
@@ -173,7 +172,7 @@ Cr6 r6 0 'Cf'
 .ends
 ```
 
-### .temp\VCMA_model\LLG_solver.inc
+### VCMA_model\LLG_solver.inc
 
 ```cir
 ************************************************************************************
@@ -277,7 +276,7 @@ E_dMz_sum_prec_damp_torq Mz_sum_prec_damp_torq 0 vol='v(Mz_prec)+v(Mz_damp)+v(Mz
 .ends
 ```
 
-### .temp\VCMA_model\MTJ_model.inc
+### VCMA_model\MTJ_model.inc
 
 ```cir
 ********************************************************************************************************
@@ -321,7 +320,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 .ends
 ```
 
-### .temp\VCMA_model\MTJ_write.sp
+### VCMA_model\MTJ_write.sp
 
 ```cir
 ************************************************************************************
@@ -429,7 +428,7 @@ Vpwl 1 0 pwl (0 0 't0' 0 't0+t1' 'VE' 't0+t1+PW_VE' 'VE' 't0+t1+PW_VE+t2' 'VSTTN
 .end
 ```
 
-### .temp\VCMA_model\NoiseGen_MATLAB.m
+### VCMA_model\NoiseGen_MATLAB.m
 
 ```matlab
 % SimulationStartTime = time when noise is injected in the ckt
@@ -501,7 +500,7 @@ fclose(fidx);
 end
 ```
 
-### .temp\VCMA_model\Resistor.inc
+### VCMA_model\Resistor.inc
 
 ```cir
 ************************************************************************************
@@ -549,7 +548,7 @@ E_rmtj rmtj 0 vol='(1+cos(v(th)))*(Rp-v(Rap))/2+v(Rap)'
 .ends
 ```
 
-### .temp\VCMA_model\therm_dev_45.in
+### VCMA_model\therm_dev_45.in
 
 ```text
 Vth_x Hthx 0 PWL(0.000000n, -46.31232 0.100000n, 6.25546 0.200000n, 128.62604 0.300000n, 43.28045 0.400000n, 56.01983 0.500000n, 27.31731 0.600000n, -52.10230 0.700000n, -85.45084 0.800000n, -3.60859 0.900000n, -45.70974 1.000000n, -65.00410 1.100000n, -6.23831 1.200000n, 19.44093 1.300000n, 101.38471 1.400000n, -20.68113 1.500000n, 4.07192 1.600000n, 117.36607 1.700000n, -46.67262 1.800000n, 11.38969 1.900000n, -11.99695 2.000000n, 59.28677 2.100000n, 5.02657 2.200000n, 57.21465 2.300000n, 18.53007 2.400000n, 34.10624 2.500000n, -75.25508 2.600000n, -33.00685 2.700000n, -59.54465 2.800000n, -68.02041 2.900000n, 41.01476 3.000000n, 46.97443 3.100000n, -6.16675 3.200000n, -44.56779 3.300000n, 46.99814 3.400000n, 82.10965 3.500000n, 31.65356 3.600000n, -36.99685 3.700000n, -20.21909 3.800000n, 31.64444 3.900000n, 2.80026 4.000000n, 46.18965 4.100000n, -44.18616 4.200000n, 69.12747 4.300000n, -12.95462 4.400000n, -32.00849 4.500000n, -52.87300 4.600000n, 38.50977 4.700000n, -15.12793 4.800000n, -12.33848 4.900000n, -16.97828 5.000000n, -46.78796 5.100000n, -31.87791 5.200000n, -5.36349 5.300000n, 97.62407 5.400000n, -16.94838 5.500000n, 35.94087 5.600000n, -42.39125 5.700000n, 39.29009 5.800000n, 40.31992 5.900000n, 32.19847 6.000000n, 16.72210 6.100000n, -82.13404 6.200000n, -6.37184 6.300000n, 27.06255 6.400000n, -81.41803 6.500000n, -18.85107 6.600000n, 53.88961 6.700000n, 1.51935 6.800000n, 61.03393 6.900000n, -15.22478 7.000000n, 55.74035 7.100000n, 7.19107 7.200000n, 30.52156 7.300000n, -64.87798 7.400000n, -66.57880 7.500000n, 21.97580 7.600000n, -16.14192 7.700000n, -82.13314 7.800000n, -20.38797 7.900000n, -15.99976 8.000000n, -38.46464 8.100000n, -56.10701 8.200000n, 9.97944 8.300000n, 15.10345 8.400000n, -36.11206 8.500000n, 59.56850 8.600000n, -21.93339 8.700000n, -89.13140 8.800000n, 1.03064 8.900000n, 36.61283 9.000000n, -85.38863 9.100000n, 84.48812 9.200000n, -13.08007 9.300000n, -37.02967 9.400000n, 12.76673 9.500000n, -24.27737 9.600000n, 42.73816 9.700000n, 59.75567 9.800000n, 19.68232 9.900000n, -0.24796 10.000000n, -76.64980 )

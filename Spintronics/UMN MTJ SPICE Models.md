@@ -1,5 +1,6 @@
-﻿# UMN MTJ SPICE Models
-
+---
+title: Magnetic Tunnel Junction (MJT) SPICE Models from University of Minnesota
+---
 The University of Minnesota MTJ compact models are self-contained, physics-based SPICE models for magnetic tunnel junctions used in spin-transfer-torque MRAM and related spintronic switching mechanisms.
 
 The model family covers:

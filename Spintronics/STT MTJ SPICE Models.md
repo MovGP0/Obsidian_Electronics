@@ -1,5 +1,6 @@
-﻿# STT MTJ SPICE Models
-
+---
+title: Spin transfer torque (STT) Magnetic Tunel Junction (MTJ) Models
+---
 The UMN spin-transfer torque model is a physics-based SPICE model for STT-MRAM read/write timing and scalability studies. It accepts user-defined free-layer geometry and material parameters and is intended for both in-plane and perpendicular MTJs.
 
 ## Included device variants
@@ -24,7 +25,7 @@ The free-layer state is selected with `ini`. For the STT examples, antiparallel-
 
 ## Important formulas
 
-The STT switching examples rely on the LLG equation with Slonczewski spin torque:
+The STT switching examples rely on the LLG equation with [Slonczewski spin torque](https://en.wikipedia.org/wiki/Spin-transfer_torque):
 
 $$
 \frac{d\mathbf{m}}{dt}
@@ -48,10 +49,9 @@ $$
 
 The UMN STT page describes the model as self-contained and physics-based, intended for circuit designers simulating STT-MRAM read/write delay. It emphasizes user-defined length, width, thickness, and technology-node scalability for both in-plane and perpendicular MTJs.
 
-Publication listed by UMN: J. Kim, A. Chen, B. Behin-Aein, S. Kumar, J.P. Wang, and C.H. Kim, "A Technology-Agnostic MTJ SPICE Model with User-Defined Dimensions for STT-MRAM Scalability Studies", CICC, September 2015.
-
 ## Sources
 
+- J. Kim, A. Chen, B. Behin-Aein, S. Kumar, J.P. Wang, and C.H. Kim, "A Technology-Agnostic MTJ SPICE Model with User-Defined Dimensions for STT-MRAM Scalability Studies", CICC, September 2015.
 - [UMN STT SPICE model documentation](http://mtj.umn.edu/STT.html)
 - [UMN downloads page](http://mtj.umn.edu/Downloads.html)
 - [STT_model.zip](http://mtj.umn.edu/STT_model.zip)
@@ -59,7 +59,7 @@ Publication listed by UMN: J. Kim, A. Chen, B. Behin-Aein, S. Kumar, J.P. Wang, 
 
 ## Inline SPICE code
 
-### .temp\STT_model\cPMTJ\HeatDF.inc
+### STT_model\cPMTJ\HeatDF.inc
 
 ```cir
 ************************************************************************************
@@ -160,7 +160,7 @@ Cr6 r6 0 'Cf'
 .ends
 ```
 
-### .temp\STT_model\cPMTJ\LLG_solver.inc
+### STT_model\cPMTJ\LLG_solver.inc
 
 ```cir
 ************************************************************************************
@@ -263,7 +263,7 @@ E_Mz1 Mz1 0 vol='v(Mz)' max='cos(v(thi))' min='-cos(v(thi))'
 .ends
 ```
 
-### .temp\STT_model\cPMTJ\MTJ_model.inc
+### STT_model\cPMTJ\MTJ_model.inc
 
 ```cir
 ********************************************************************************************************
@@ -309,7 +309,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 .ends
 ```
 
-### .temp\STT_model\cPMTJ\MTJ_write.sp
+### STT_model\cPMTJ\MTJ_write.sp
 
 ```cir
 ************************************************************************************
@@ -361,7 +361,7 @@ XMTJ1 1 0 MTJ lx='45n' ly='45n' lz='0.45n' Ms0='1210' P0='0.62' alpha='0.03' Tmp
 .end
 ```
 
-### .temp\STT_model\cPMTJ\Resistor.inc
+### STT_model\cPMTJ\Resistor.inc
 
 ```cir
 ************************************************************************************
@@ -411,7 +411,7 @@ E_rmtj rmtj 0 vol='(1+cos(v(th)))*(Rp-v(Rap))/2+v(Rap)'
 .ends
 ```
 
-### .temp\STT_model\IMTJ\HeatDF.inc
+### STT_model\IMTJ\HeatDF.inc
 
 ```cir
 ************************************************************************************
@@ -512,7 +512,7 @@ Cr6 r6 0 'Cf'
 .ends
 ```
 
-### .temp\STT_model\IMTJ\LLG_solver.inc
+### STT_model\IMTJ\LLG_solver.inc
 
 ```cir
 ************************************************************************************
@@ -616,7 +616,7 @@ G_dMz_torq 0 Mz cur='v(Is)*(v(Mx)*(v(Mz)*Mpx-Mpz*v(Mx))-(v(My)*Mpz-Mpy*v(Mz))*v(
 .ends
 ```
 
-### .temp\STT_model\IMTJ\MTJ_model.inc
+### STT_model\IMTJ\MTJ_model.inc
 
 ```cir
 ********************************************************************************************************
@@ -661,7 +661,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 .ends
 ```
 
-### .temp\STT_model\IMTJ\MTJ_write.sp
+### STT_model\IMTJ\MTJ_write.sp
 
 ```cir
 ************************************************************************************
@@ -712,7 +712,7 @@ XMTJ1 1 0 MTJ lx='32n' ly='96n' lz='2.44n' Ms0='1210' P0='0.69' alpha='0.0062' T
 .end
 ```
 
-### .temp\STT_model\IMTJ\Resistor.inc
+### STT_model\IMTJ\Resistor.inc
 
 ```cir
 ************************************************************************************
@@ -756,7 +756,7 @@ E_rmtj rmtj 0 vol='(1+cos(v(th)))*(Rp-v(Rap))/2+v(Rap)'
 .ends
 ```
 
-### .temp\STT_model\iPMTJ\HeatDF.inc
+### STT_model\iPMTJ\HeatDF.inc
 
 ```cir
 ************************************************************************************
@@ -857,7 +857,7 @@ Cr6 r6 0 'Cf'
 .ends
 ```
 
-### .temp\STT_model\iPMTJ\LLG_solver.inc
+### STT_model\iPMTJ\LLG_solver.inc
 
 ```cir
 ************************************************************************************
@@ -959,7 +959,7 @@ E_Mz1 Mz1 0 vol='v(Mz)' max='cos(v(thi))' min='-cos(v(thi))'
 .ends
 ```
 
-### .temp\STT_model\iPMTJ\MTJ_model.inc
+### STT_model\iPMTJ\MTJ_model.inc
 
 ```cir
 ********************************************************************************************************
@@ -1005,7 +1005,7 @@ G_Imtj2 0 Ihd cur='-I(Ve1)'
 .ends
 ```
 
-### .temp\STT_model\iPMTJ\MTJ_write.sp
+### STT_model\iPMTJ\MTJ_write.sp
 
 ```cir
 ************************************************************************************
@@ -1058,7 +1058,7 @@ XMTJ1 1 0 MTJ lx='65n' ly='65n' lz='1.48n' Ms0='1210' P0='0.69' alpha='0.006' Tm
 .end
 ```
 
-### .temp\STT_model\iPMTJ\Resistor.inc
+### STT_model\iPMTJ\Resistor.inc
 
 ```cir
 ************************************************************************************
