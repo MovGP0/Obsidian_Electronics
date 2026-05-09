@@ -53,9 +53,34 @@ title: Sheets
 | `"Sheetname"` | Visible logical name of the sheet instance         |
 | `"Sheetfile"` | Child `.kicad_sch` file referenced by this sheet   |
 
+## Reusing a child schematic
+
+A hierarchical design can reuse the same child schematic file multiple times. Each reuse is represented by a separate `sheet` element in the parent schematic.
+
+The child file is selected by `"Sheetfile"`:
+
+```lisp
+(property "Sheetfile" "channel.kicad_sch")
+```
+
+The individual instance is named by `"Sheetname"`:
+
+```lisp
+(property "Sheetname" "Channel_A")
+```
+
+A second sheet can point to the same child file while using a different instance name:
+
+```lisp
+(property "Sheetname" "Channel_B")
+(property "Sheetfile" "channel.kicad_sch")
+```
+
+This creates two independent instances of `channel.kicad_sch`. The schematic file is shared, but each parent `sheet` instance has its own sheet pins, net context, and generated sheet path.
+
 ## Sheet pins
 
-Sheet pins connect parent schematic wires to matching [[label|`hierarchical_label`]] elements inside the child schematic.
+Sheet pins connect parent schematic wires to matching `hierarchical_label` elements inside the child schematic.
 
 | Field     | Type   | Description                                               |
 | --------- | ------ | --------------------------------------------------------- |
@@ -69,10 +94,14 @@ Sheet pins connect parent schematic wires to matching [[label|`hierarchical_labe
 
 The parent connects to sheet pins. The child schematic exposes matching `hierarchical_label` elements. The names are the contract between parent and child.
 
+The `hierarchical_label` does not globally select an instance. The parent `sheet` element selects the child schematic instance, and the sheet `pin` connects to the child `hierarchical_label` with the same name inside that selected instance.
+
+For example, both `Channel_A` and `Channel_B` can expose a sheet pin named `IN`. If both sheets reference `channel.kicad_sch`, each `IN` pin connects to the `hierarchical_label` named `IN` in its own sheet instance.
+
 ## Related
 
-- [[label|Labels]]
-- [[sheet_instances|Sheet Instances]]
-- [[property|Properties]]
-- [[wire|Wires]]
-- [[at|At]]
+- [[label]]
+- [[sheet_instances]]
+- [[property]]
+- [[wire]]
+- [[at]]

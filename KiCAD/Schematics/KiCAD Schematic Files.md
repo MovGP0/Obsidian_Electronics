@@ -14,16 +14,16 @@
 
 Detailed element notes are split into dedicated articles:
 
-| Area | Articles |
-| ---- | -------- |
-| Schematic root | [[kicad_sch]], [[title_block]], [[sheet_instances]] |
-| Shared syntax | [[at]], [[pts]] |
-| Symbols and properties | [[symbol]], [[pin]], [[property]], [[Power Symbols]] |
-| Electrical routing | [[wire]], [[junction]], [[bus]], [[bus_entry]] |
-| Net naming and open pins | [[label]], [[no_connect]] |
-| Graphics and annotations | [[polyline]], [[text]], [[image]] |
-| Hierarchy | [[sheet]], [[label]], [[sheet_instances]] |
-| Organization | [[group]] |
+| Area                     | Articles                                             |
+| ------------------------ | ---------------------------------------------------- |
+| Schematic root           | [[kicad_sch]], [[title_block]], [[sheet_instances]]  |
+| Shared syntax            | [[at]], [[pts]]                                      |
+| Symbols and properties   | [[symbol]], [[pin]], [[property]], [[Power Symbols]] |
+| Electrical routing       | [[wire]], [[junction]], [[bus]], [[bus_entry]]       |
+| Net naming and open pins | [[label]], [[no_connect]]                            |
+| Graphics and annotations | [[polyline]], [[text]], [[image]]                    |
+| Hierarchy                | [[sheet]], [[label]], [[sheet_instances]]            |
+| Organization             | [[group]]                                            |
 
 ## Grid Alignment
 
