@@ -1,0 +1,32 @@
+---
+title: KiCad RF_GSM Symbols
+---
+
+# KiCad RF_GSM Symbols
+
+Source: `RF_GSM.kicad_sym`
+
+| Symbol | Preview | Reference | Value | Footprint | Datasheet | Description | Keywords |
+| ------ | ------- | --------- | ----- | --------- | --------- | ----------- | -------- |
+| `BC66` | ![[kicad-symbol-ec947512368096c5.svg]] | U | BC66 | RF_GSM:Quectel_BC66 | https://www.quectel.com/UploadImage/Downlad/Quectel_BC66_Hardware_Design_V1.1.pdf | Quectel NB-IoT Global, AT Command Set | NB-IoT Data SMS |
+| `BC95` | ![[kicad-symbol-418d02f7f809a416.svg]] | U | BC95 | RF_GSM:Quectel_BC95 | https://www.quectel.com/UploadImage/Downlad/Quectel_BC95_Hardware_Design_V1.3.pdf | NB-IoT, GSM Quad-Band Communication Module, GPRS, Audio Engine, AT Command Set | NB-IoT GSM GPRS Quad-Band SMS |
+| `BG95-M1` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M1 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Communication Module, AT Command Set | NB-IoT Cat M1 GNSS |
+| `BG95-M2` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M2 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Cat NB2 Communication Module, AT Command Set | NB-IoT Cat M1 NB2 GNSS |
+| `BG95-M3` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M3 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Cat NB2 EGPRS Communication Module, AT Command Set | NB-IoT Cat M1 NB2 EGPRS GNSS |
+| `BG95-M4` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M4 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1  Cat NB2 Communication Module, AT Command Set | NB-IoT Cat M1 NB2 GNSS |
+| `BG95-M5` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M5 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 NB2 EGPRS Communication Module, AT Command Set | NB-IoT Cat M1 NB2 EGPRS GNSS |
+| `BG95-M6` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M6 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Cat NB2 Communication Module, AT Command Set | NB-IoT Cat M1 NB2 GNSS |
+| `BG95-M8` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-M8 | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Cat NB2 EGPRS Communication Module, AT Command Set | NB-IoT Cat M1 NB2 EGPRS GNSS |
+| `BG95-MF` | ![[kicad-symbol-8f8f4fbd69732d0e.svg]] | U | BG95-MF | RF_GSM:Quectel_BG95 | https://images.quectel.com/python/sites/2/2023/05/Quectel_BG95_Series_QuecOpen_Hardware_Design_V1.3.pdf | NB-IoT, Cat M1 Cat NB2 Wifi Communication Module, AT Command Set | NB-IoT Cat M1 NB2 Wifi GNSS |
+| `LENA-R8001` | ![[kicad-symbol-c2b7675a98ec106c.svg]] | U | LENA-R8001 | RF_GSM:ublox_LENA-R8_LGA-100 | https://content.u-blox.com/sites/default/files/documents/LENA-R8_SysIntegrManual_UBX-22015376.pdf | Ublox HSPA GSM Quad-Band Communication Module, AT Command Set, AT Command Set, Worldwide , LGA-100 | GSM LTE 2G 4G |
+| `M95` | ![[kicad-symbol-2254a1e1ccbaa7c2.svg]] | U | M95 | RF_GSM:Quectel_M95 | https://www.quectel.com/UploadImage/Downlad/M95_Hardware_Design_V1.3.pdf | Quectel quad-band GSM/GPRS module in LCC package | GSM GPRS AT SMS voice TCP/IP |
+| `SARA-U201` | ![[kicad-symbol-ec947512368096c5.svg]] | U | SARA-U201 | RF_GSM:ublox_SARA_LGA-96 | https://www.u-blox.com/sites/default/files/SARA-U2_DataSheet_(UBX-13005287).pdf | Ublox HSPA GSM Quad-Band Communication Module, AT Command Set, AT Command Set, Worldwide , LGA-96 | GSM HSPA 2G 3G |
+| `SARA-U260` | ![[kicad-symbol-ec947512368096c5.svg]] | U | SARA-U260 | RF_GSM:ublox_SARA_LGA-96 | https://www.u-blox.com/sites/default/files/SARA-U2_DataSheet_(UBX-13005287).pdf | Ublox HSPA GSM Quad-Band Communication Module, AT Command Set, Designed for America, LGA-96 | GSM HSPA 2G 3G |
+| `SARA-U270` | ![[kicad-symbol-ec947512368096c5.svg]] | U | SARA-U270 | RF_GSM:ublox_SARA_LGA-96 | https://www.u-blox.com/sites/default/files/SARA-U2_DataSheet_(UBX-13005287).pdf | Ublox HSPA GSM Quad-Band Communication Module, AT Command Set, Designed for Europe, Asia and Others, LGA-96 | GSM HSPA 2G 3G |
+| `SARA-U280` | ![[kicad-symbol-ec947512368096c5.svg]] | U | SARA-U280 | RF_GSM:ublox_SARA_LGA-96 | https://www.u-blox.com/sites/default/files/SARA-U2_DataSheet_(UBX-13005287).pdf | Ublox HSPA GSM Quad-Band Communication Module, AT Command Set, Designed for America, LGA-96 | GSM HSPA 2G 3G |
+| `SE150A4` | ![[kicad-symbol-b07f67b738f89d04.svg]] | U | SE150A4 | RF_GSM:Telit_SE150A4 | https://atoma.spb.ru/sites/default/files/documents/telit_se150a4_smart_module_hardware_user_guide_r1.pdf | GSM, WCDMA,LTE, multi-mode and multi-band wireless smart module, 3.4V to 4.4V power supply, 40.5 x 40.5 x 2.8mm | GPRS LTE WCDMA |
+| `SIM7020C` | ![[kicad-symbol-22717ce7fb8119ed.svg]] | U | SIM7020C | RF_GSM:SIMCom_SIM800C | https://simcom.ee/documents/SIM7020/SIM7020%20Hardware%20Design_V1.02.pdf | NB-IoT B1/B3/B5/B8, AT Command Set | NB-IoT Data SMS |
+| `SIM7020E` | ![[kicad-symbol-22717ce7fb8119ed.svg]] | U | SIM7020E | RF_GSM:SIMCom_SIM800C | https://simcom.ee/documents/SIM7020/SIM7020%20Hardware%20Design_V1.02.pdf | NB-IoT B1/B3/B5/B8/B20/B28, AT Command Set | NB-IoT Data SMS |
+| `SIM800C` | ![[kicad-symbol-22717ce7fb8119ed.svg]] | U | SIM800C | RF_GSM:SIMCom_SIM800C | http://simcom.ee/documents/SIM800C/SIM800C_Hardware_Design_V1.05.pdf | GSM Quad-Band Communication Module, GPRS, Audio Engine, AT Command Set, Bluetooth is Optional | GSM GPRS Quad-Band SMS |
+| `SIM900` | ![[kicad-symbol-bbd5ad38ad910ab3.svg]] | U | SIM900 | RF_GSM:SIMCom_SIM900 | http://simcom.ee/documents/SIM900/SIM900_Hardware%20Design_V2.05.pdf | GSM Quad-Band Communication Module, GPRS, Audio Engine, AT Command Set | GSM GPRS Quad-Band SMS FAX |
+| `UL865` | ![[kicad-symbol-d6dd5c5227a71d4d.svg]] | U | UL865 | RF_GSM:Telit_xL865 | http://www.telit.com/fileadmin/user_upload/products/Downloads/3G/Telit_UL865_Hardware_User_Guide_r8.pdf | Telit 3G Module (GSM/GPRS/UMTS/HSPA), 3.8V, Digital voice and SMS, I2S, USB 2.0, UART, SPI. Manufacturer package | gsm 3g gprs umts hspa |

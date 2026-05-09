@@ -1,0 +1,34 @@
+---
+title: KiCad FPGA_Lattice Symbols
+---
+
+# KiCad FPGA_Lattice Symbols
+
+Source: `FPGA_Lattice.kicad_sym`
+
+| Symbol | Preview | Reference | Value | Footprint | Datasheet | Description | Keywords |
+| ------ | ------- | --------- | ----- | --------- | --------- | ----------- | -------- |
+| `ICE40HX1K-TQ144` | ![[kicad-symbol-fb27c0db77038395.svg]] | U | ICE40HX1K-TQ144 | Package_QFP:TQFP-144_20x20mm_P0.5mm | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40 | iCE40 HX FPGA, 1280 LUTs, 1.2V, TQFP-144 | FPGA programmable logic |
+| `ICE40HX4K-BG121` | ![[kicad-symbol-66588bd80cef64ba.svg]] | U | ICE40HX4K-BG121 | Package_BGA:BGA-121_9.0x9.0mm_Layout11x11_P0.8mm_Ball0.4mm_Pad0.35mm_NSMD | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40 | iCE40 HX FPGA, 3520 LUTs, 1.2V, BGA-121 | FPGA programmable logic |
+| `ICE40HX4K-TQ144` | ![[kicad-symbol-e7de8c1a175d91e0.svg]] | U | ICE40HX4K-TQ144 | Package_QFP:TQFP-144_20x20mm_P0.5mm | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40 | iCE40 HX FPGA, 3520 LUTs, 1.2V, TQFP-144 | FPGA programmable logic |
+| `ICE40HX8K-BG121` | ![[kicad-symbol-66588bd80cef64ba.svg]] | U | ICE40HX8K-BG121 | Package_BGA:BGA-121_9.0x9.0mm_Layout11x11_P0.8mm_Ball0.4mm_Pad0.35mm_NSMD | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40 | iCE40 HX FPGA, 7680 LUTs, 1.2V, BGA-121 | FPGA programmable logic |
+| `ICE40UL1K-SWG16` | ![[kicad-symbol-44908a90cfbb1e09.svg]] | U | ICE40UL1K-SWG16 | Package_CSP:WLCSP-16_1.409x1.409mm_Layout4x4_P0.35mm | https://www.latticesemi.com/view_document?document_id=50945 | iCE40 UltraPlus FPGA, 1.2V, WLCSP-16 | FPGA programmable logic |
+| `ICE40UP5K-SG48ITR` | ![[kicad-symbol-336224228c6d4f87.svg]] | U | ICE40UP5K-SG48ITR | Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40Ultra | iCE40 UltraPlus FPGA, 5280 LUTs, 1.2V, 48-pin QFN | FPGA programmable logic |
+| `ICE5LP1K-SG48` | ![[kicad-symbol-336224228c6d4f87.svg]] | U | ICE5LP1K-SG48 | Package_DFN_QFN:QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm | http://www.latticesemi.com/Products/FPGAandCPLD/iCE40Ultra | iCE40 Ultra FPGA, 1100 LUTs, 1.2V, 48-pin QFN | FPGA programmable logic |
+| `LFE5U-85F-6BG381x` | ![[kicad-symbol-7ea205014032ccda.svg]] | U | LFE5U-85F-6BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-381 | FPGA programmable logic |
+| `LFE5U-85F-6BG756x` | ![[kicad-symbol-7d9420f2246fcb20.svg]] | U | LFE5U-85F-6BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-756 | FPGA programmable logic |
+| `LFE5U-85F-7BG381x` | ![[kicad-symbol-7ea205014032ccda.svg]] | U | LFE5U-85F-7BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-381 | FPGA programmable logic |
+| `LFE5U-85F-7BG756x` | ![[kicad-symbol-7d9420f2246fcb20.svg]] | U | LFE5U-85F-7BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-756 | FPGA programmable logic |
+| `LFE5U-85F-8BG381x` | ![[kicad-symbol-7ea205014032ccda.svg]] | U | LFE5U-85F-8BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-381 | FPGA programmable logic |
+| `LFE5U-85F-8BG756x` | ![[kicad-symbol-7d9420f2246fcb20.svg]] | U | LFE5U-85F-8BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, BGA-756 | FPGA programmable logic |
+| `LFE5UM-85F-6BG381x` | ![[kicad-symbol-6c2eab642bf5eb76.svg]] | U | LFE5UM-85F-6BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-381 | FPGA programmable logic |
+| `LFE5UM-85F-6BG756x` | ![[kicad-symbol-d800088c06016d28.svg]] | U | LFE5UM-85F-6BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-756 | FPGA programmable logic |
+| `LFE5UM-85F-7BG381x` | ![[kicad-symbol-6c2eab642bf5eb76.svg]] | U | LFE5UM-85F-7BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-381 | FPGA programmable logic |
+| `LFE5UM-85F-7BG756x` | ![[kicad-symbol-d800088c06016d28.svg]] | U | LFE5UM-85F-7BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-756 | FPGA programmable logic |
+| `LFE5UM-85F-8BG381x` | ![[kicad-symbol-6c2eab642bf5eb76.svg]] | U | LFE5UM-85F-8BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-381 | FPGA programmable logic |
+| `LFE5UM-85F-8BG756x` | ![[kicad-symbol-d800088c06016d28.svg]] | U | LFE5UM-85F-8BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5 FPGA, 84K LUTs, 1.2V, 3.2Gbps SERDES, BGA-756 | FPGA programmable logic |
+| `LFE5UM5G-85F-8BG381x` | ![[kicad-symbol-6c2eab642bf5eb76.svg]] | U | LFE5UM5G-85F-8BG381x | Package_BGA:Lattice_caBGA-381_17x17mm_Layout20x20_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5-5G FPGA, 84K LUTs, 1.2V, 5Gbps SERDES, BGA-381 | FPGA programmable logic |
+| `LFE5UM5G-85F-8BG756x` | ![[kicad-symbol-d800088c06016d28.svg]] | U | LFE5UM5G-85F-8BG756x | Package_BGA:Lattice_caBGA-756_27x27mm_Layout32x32_P0.8mm | https://www.latticesemi.com/view_document?document_id=50461 | ECP5-5G FPGA, 84K LUTs, 1.2V, 5Gbps SERDES, BGA-756 | FPGA programmable logic |
+| `LFXP2-5E-5TN144` | ![[kicad-symbol-c6019b8704d293e7.svg]] | U | LFXP2-5E-5TN144 | Package_QFP:TQFP-144_20x20mm_P0.5mm | http://www.latticesemi.com/view_document?document_id=24635 | FPGA, 5000 LUTs, 1.2V, TQFP-144 | FPGA Lattice XP2 |
+| `LFXP2-5E-6TN144` | ![[kicad-symbol-c6019b8704d293e7.svg]] | U | LFXP2-5E-6TN144 | Package_QFP:TQFP-144_20x20mm_P0.5mm | http://www.latticesemi.com/view_document?document_id=24635 | FPGA, 5000 LUTs, 1.2V, TQFP-144 | FPGA Lattice XP2 |
+| `LFXP2-5E-7TN144` | ![[kicad-symbol-c6019b8704d293e7.svg]] | U | LFXP2-5E-7TN144 | Package_QFP:TQFP-144_20x20mm_P0.5mm | http://www.latticesemi.com/view_document?document_id=24635 | FPGA, 5000 LUTs, 1.2V, TQFP-144 | FPGA Lattice XP2 |

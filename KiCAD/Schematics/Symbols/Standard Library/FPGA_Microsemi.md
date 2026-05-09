@@ -1,0 +1,28 @@
+---
+title: KiCad FPGA_Microsemi Symbols
+---
+
+# KiCad FPGA_Microsemi Symbols
+
+Source: `FPGA_Microsemi.kicad_sym`
+
+| Symbol | Preview | Reference | Value | Footprint | Datasheet | Description | Keywords |
+| ------ | ------- | --------- | ----- | --------- | --------- | ----------- | -------- |
+| `A3P030-xVQx100` | ![[kicad-symbol-9cc5fc30d2c18ef6.svg]] | U | A3P030-xVQx100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | https://www.mouser.com/datasheet/2/268/ProASIC_c2_ae3_Flash_Family_FPGAs_with_Optimal_Sof-3082432.pdf | ProASIC3 Flash Family FPGAs, 256 MCLB / macrocells, TQFP-100 (VQ100) | ProASIC3 ACTEL FLASH A3P030-VQ100 A3P030-VQG100 A3P030-2VQG100 |
+| `A3P060-xVQx100` | ![[kicad-symbol-9cc5fc30d2c18ef6.svg]] | U | A3P060-xVQx100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | https://www.mouser.com/datasheet/2/268/ProASIC_c2_ae3_Flash_Family_FPGAs_with_Optimal_Sof-3082432.pdf | ProASIC3 Flash Family FPGAs, 512 MCLB / macrocells, TQFP-100 (VQ100) | ProASIC3 ACTEL FLASH A3P060-VQ100 A3P060-VQG100 A3P060-2VQG100 |
+| `A3P1000-PQG208` | ![[kicad-symbol-c82ca4f7c9bbae7b.svg]] | U | A3P1000-PQG208 | Package_QFP:PQFP-208_28x28mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130704-proasic3-flash-family-fpgas-datasheet | Actel ProASIC3 Flash Family FPGAs, 1000k Gates, 208pin QFP | ProASIC3 ACTEL FLASH |
+| `A3P125-PQG208` | ![[kicad-symbol-2e1383789ad0f3bd.svg]] | U | A3P125-PQG208 | Package_QFP:PQFP-208_28x28mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130704-proasic3-flash-family-fpgas-datasheet | Actel ProASIC3 Flash Family FPGAs, 1024MCB, 208pin QFP | ProASIC3 ACTEL FLASH |
+| `A3P125-xVQx100` | ![[kicad-symbol-9cc5fc30d2c18ef6.svg]] | U | A3P125-xVQx100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | https://www.mouser.com/datasheet/2/268/ProASIC_c2_ae3_Flash_Family_FPGAs_with_Optimal_Sof-3082432.pdf | ProASIC3 Flash Family FPGAs, 1024 MCLB / macrocells, TQFP-100 (VQ100) | ProASIC3 ACTEL FLASH A3P125-VQ100 A3P125-VQG100 A3P125-2VQG100 |
+| `A3P250-PQG208` | ![[kicad-symbol-c88ffba2ef82366f.svg]] | U | A3P250-PQG208 | Package_QFP:PQFP-208_28x28mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130704-proasic3-flash-family-fpgas-datasheet | Actel ProASIC3 Flash Family FPGAs, 2048MCB, 208pin QFP | ProASIC3 ACTEL FLASH |
+| `A3P250-xVQx100` | ![[kicad-symbol-9cc5fc30d2c18ef6.svg]] | U | A3P250-xVQx100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | https://www.mouser.com/datasheet/2/268/ProASIC_c2_ae3_Flash_Family_FPGAs_with_Optimal_Sof-3082432.pdf | ProASIC3 Flash Family FPGAs, 2048 MCLB / macrocells, TQFP-100 (VQ100) | ProASIC3 ACTEL FLASH A3P250-VQ100 A3P250-VQG100 A3P250-2VQG100 |
+| `A3P400-PQG208` | ![[kicad-symbol-3f4d9de0f3262d0b.svg]] | U | A3P400-PQG208 | Package_QFP:PQFP-208_28x28mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130704-proasic3-flash-family-fpgas-datasheet | Actel ProASIC3 Flash Family FPGAs, 400k Gates, 208pin QFP | ProASIC3 ACTEL FLASH |
+| `A3P600-PQG208` | ![[kicad-symbol-c82ca4f7c9bbae7b.svg]] | U | A3P600-PQG208 | Package_QFP:PQFP-208_28x28mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130704-proasic3-flash-family-fpgas-datasheet | Actel ProASIC3 Flash Family FPGAs, 600k Gates, 208pin QFP | ProASIC3 ACTEL FLASH |
+| `ACT1020PL44` | ![[kicad-symbol-84a93a25988f3ab2.svg]] | U | ACT1020PL44 | Package_LCC:PLCC-44_16.6x16.6mm_P1.27mm | https://www.microsemi.com/document-portal/doc_download/130666-act-1-series-fpgas-datasheet | ACT1020-PL44, Actel ACT1 FPGA, PLCC-44 | Actel FPGA |
+| `ACT1020PL68` | ![[kicad-symbol-2254a1e1ccbaa7c2.svg]] | U | ACT1020PL68 | Package_LCC:PLCC-68_24.2x24.2mm_P1.27mm | https://www.microsemi.com/document-portal/doc_download/130666-act-1-series-fpgas-datasheet | ACT1020-PL68, Actel ACT1 FPGA, PLCC-68 | Actel FPGA |
+| `ACT1225PL84` | ![[kicad-symbol-4a0873a8a2647098.svg]] | U | ACT1225PL84 | Package_LCC:PLCC-84_29.3x29.3mm_P1.27mm | https://www.microsemi.com/document-portal/doc_download/130666-act-1-series-fpgas-datasheet | ACT1225-PL84, Actel ACT1 FPGA, PLCC-84 | Actel FPGA |
+| `EX128-TQ100` | ![[kicad-symbol-f9d394c65ecc092e.svg]] | U | EX128-TQ100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130687-ex-datasheet | Actel eX FPGA Family, 100pin QFP | Actel FPGA eX eX128 |
+| `EX128-TQ64` | ![[kicad-symbol-818bd3da1de7b5d7.svg]] | U | EX128-TQ64 | Package_QFP:TQFP-64_10x10mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130687-ex-datasheet | Actel eX Family FPGA, 64pin QFP | Actel FPGA eX eX128 |
+| `EX256-TQ100` | ![[kicad-symbol-200003b8adf3bd86.svg]] | U | EX256-TQ100 | Package_QFP:TQFP-100_14x14mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130687-ex-datasheet | Actel eX FPGA Family, 100pin QFP | Actel FPGA eX eX256 |
+| `EX64-TQ64` | ![[kicad-symbol-656c18ee6d28199c.svg]] | U | EX64-TQ64 | Package_QFP:TQFP-64_10x10mm_P0.5mm | http://www.microsemi.com/document-portal/doc_download/130687-ex-datasheet | Actel eX Family FPGA, 64pin QFP | Actel FPGA eX eX64 |
+| `EX64-xTQx100` | ![[kicad-symbol-df96e06d0f1014b5.svg]] | U | EX64-xTQx100 | Package_QFP:LQFP-100_14x14mm_P0.5mm | https://www.mouser.com/datasheet/2/268/eX_DS-1593985.pdf | eX Family FPGA, LQFP-100 (TQ100) | Actel Microsemi FPGA eX eX64 EX64-TQ100 EX64-TQG100 EX64-PTQG100 |
+| `M2GL090T-FG484` | ![[kicad-symbol-4e97d2893db74b46.svg]] | U | M2GL090T-FG484 | Package_BGA:BGA-484_23.0x23.0mm_Layout22x22_P1.0mm | https://www.microsemi.com/document-portal/doc_download/132042-ds0128-igloo2-and-smartfusion2-datasheet | IGLOO2 FPGA and SmartFusion2 SoC FPGA | FPGA Igloo2 BGA |
