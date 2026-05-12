@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "8bit-computer") (type "KiCad") (uri "${KIPRJMOD}/8bit-computer.kicad_sym") (options "") (descr "Migrated local symbols"))
+  (lib (name "8bit-computer-cache") (type "Legacy") (uri "${KIPRJMOD}/8bit-computer-cache.lib") (options "") (descr "Legacy project cache library"))
+)
