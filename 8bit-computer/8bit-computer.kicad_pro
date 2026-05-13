@@ -2169,7 +2169,7 @@
         "uuid": "ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
       }
     ],
-    "used_designators": "#PWR1",
+    "used_designators": "U1-9,D1-11,D83-85,#PWR1-33,C1-8,J1-2,R1-6,R8-16,R24-25,R101-103,RV1-2,SW1-3",
     "variants": []
   },
   "sheets": [
@@ -2179,19 +2179,19 @@
     ],
     [
       "c18bdd13-fdf6-4fe0-88d1-0cad6b36a89b",
-      "Control logic"
+      "CU (Control Unit)"
     ],
     [
       "5a21f0f6-f084-4f01-b8d9-eb7fd65ad4f2",
-      "MAR"
+      "MAR (Memory Address Register)"
     ],
     [
       "4e234376-3eb5-49f3-828d-c57f4b3c3d9c",
-      "RAM"
+      "RAM (Random Access Memory)"
     ],
     [
       "b5092216-18c8-48d7-bca4-a359d1057ed2",
-      "Instruction register"
+      "IR (Instruction Register)"
     ],
     [
       "b8734f24-ba3c-4355-b025-456dd8e1a2f2",
@@ -2199,7 +2199,7 @@
     ],
     [
       "9a15bb72-c079-4b33-a6d8-5fdda2f144e4",
-      "Program counter"
+      "PC (Program Counter)"
     ],
     [
       "fc6bf991-0c88-4045-aa87-1cec4c93866e",
@@ -2215,7 +2215,7 @@
     ],
     [
       "ce89df26-0d61-48bd-b2db-944a70bcd0f2",
-      "ALU"
+      "ALU (Arithmetic Logic Unit)"
     ]
   ],
   "text_variables": {},
