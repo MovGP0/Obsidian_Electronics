@@ -1,0 +1,3 @@
+[submodule "cern-kicad-libs"]
+	path = cern-kicad-libs
+	url = https://gitlab.com/ohwr/cern-kicad-libs.git
