@@ -7615,10 +7615,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad533335")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa11")
 		)
 		(instances
 			(project "8bit-computer"
@@ -7851,10 +7851,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad533336")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa12")
 		)
 		(instances
 			(project "8bit-computer"
@@ -8105,10 +8105,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad533337")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa13")
 		)
 		(instances
 			(project "8bit-computer"
@@ -8702,10 +8702,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad533338")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa14")
 		)
 		(instances
 			(project "8bit-computer"
@@ -8783,10 +8783,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad533339")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa15")
 		)
 		(instances
 			(project "8bit-computer"
@@ -8956,10 +8956,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad53333a")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa16")
 		)
 		(instances
 			(project "8bit-computer"
@@ -9119,10 +9119,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "e288cec5-f296-496d-8080-c14dad533334")
+			(uuid "e288cec5-f296-496d-8080-c14dad53333b")
 		)
 		(pin "2"
-			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa10")
+			(uuid "fb85440b-b379-468c-b2e2-74424eb5fa17")
 		)
 		(instances
 			(project "8bit-computer"
@@ -9491,7 +9491,7 @@
 			(color 0 0 0 0)
 		)
 		(uuid "33ca1232-fc3e-4e6d-8609-4497c26317de")
-		(property "Sheetname" "B register"
+		(property "Sheetname" "Register B"
 			(at 135.128 113.03 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9501,7 +9501,7 @@
 				)
 			)
 		)
-		(property "Sheetfile" "b-register.kicad_sch"
+		(property "Sheetfile" "register.kicad_sch"
 			(at 136.398 115.824 0)
 			(hide yes)
 			(show_name no)
@@ -9592,7 +9592,7 @@
 				(justify left)
 			)
 		)
-		(pin "B_0" output
+		(pin "X_0" output
 			(at 149.86 115.57 0)
 			(uuid "935b9145-06ac-4aca-b335-30fedaabf149")
 			(effects
@@ -9602,7 +9602,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_1" output
+		(pin "X_1" output
 			(at 149.86 118.11 0)
 			(uuid "1ac8ee65-7d08-4bf6-91f4-ebfdba956615")
 			(effects
@@ -9612,7 +9612,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_2" output
+		(pin "X_2" output
 			(at 149.86 120.65 0)
 			(uuid "a3cefa42-fce1-4b9e-86d0-e02038f1a60d")
 			(effects
@@ -9622,7 +9622,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_3" output
+		(pin "X_3" output
 			(at 149.86 123.19 0)
 			(uuid "86f12eff-955e-401a-8153-93444d6d2379")
 			(effects
@@ -9632,7 +9632,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_4" output
+		(pin "X_4" output
 			(at 149.86 125.73 0)
 			(uuid "2b0df900-902c-40c2-8c0d-7c3d72e73c49")
 			(effects
@@ -9642,7 +9642,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_5" output
+		(pin "X_5" output
 			(at 149.86 128.27 0)
 			(uuid "3d3d0ac0-8aac-4876-8f29-8412ca9f84bd")
 			(effects
@@ -9652,7 +9652,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_6" output
+		(pin "X_6" output
 			(at 149.86 130.81 0)
 			(uuid "8c81229a-224f-48de-94c4-8cbd5bfc8725")
 			(effects
@@ -9662,7 +9662,7 @@
 				(justify right)
 			)
 		)
-		(pin "B_7" output
+		(pin "X_7" output
 			(at 149.86 133.35 0)
 			(uuid "89906a82-18ea-46f2-ad8b-0abbea28f619")
 			(effects
@@ -9682,7 +9682,7 @@
 				(justify left)
 			)
 		)
-		(pin "~BO" input
+		(pin "~{XO}" input
 			(at 149.86 140.97 0)
 			(uuid "9d3b6235-71d9-4c15-9703-8f42d809d9ee")
 			(effects
@@ -9692,7 +9692,7 @@
 				(justify right)
 			)
 		)
-		(pin "~BI" input
+		(pin "~{XI}" input
 			(at 149.86 138.43 0)
 			(uuid "3dd3afd6-f470-4224-b817-a3ea38b55d7f")
 			(effects
@@ -9715,7 +9715,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -9919,7 +9919,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -10083,7 +10083,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -10217,7 +10217,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -10247,7 +10247,7 @@
 				)
 			)
 		)
-		(property "Sheetfile" "inst-register.kicad_sch"
+		(property "Sheetfile" "register.kicad_sch"
 			(at 76.962 119.38 0)
 			(hide yes)
 			(show_name no)
@@ -10338,7 +10338,7 @@
 				(justify right)
 			)
 		)
-		(pin "IR_4" output
+		(pin "X_4" output
 			(at 64.77 123.19 180)
 			(uuid "fc20d13c-5bc1-4712-ad40-06506163e78b")
 			(effects
@@ -10348,7 +10348,7 @@
 				(justify left)
 			)
 		)
-		(pin "IR_5" output
+		(pin "X_5" output
 			(at 64.77 125.73 180)
 			(uuid "d02185c6-136b-44d4-9a8a-bdc87f6938ad")
 			(effects
@@ -10358,7 +10358,7 @@
 				(justify left)
 			)
 		)
-		(pin "IR_6" output
+		(pin "X_6" output
 			(at 64.77 128.27 180)
 			(uuid "88978ea9-7214-487e-acbc-2886815a4197")
 			(effects
@@ -10368,7 +10368,7 @@
 				(justify left)
 			)
 		)
-		(pin "IR_7" output
+		(pin "X_7" output
 			(at 64.77 130.81 180)
 			(uuid "fa99d536-c20a-4eec-9114-9e4f577fd615")
 			(effects
@@ -10388,7 +10388,7 @@
 				(justify right)
 			)
 		)
-		(pin "~IO" input
+		(pin "~{XO}" input
 			(at 64.77 110.49 180)
 			(uuid "ffc947e2-a109-4e73-970c-c12a5555d888")
 			(effects
@@ -10398,7 +10398,7 @@
 				(justify left)
 			)
 		)
-		(pin "~II" input
+		(pin "~{XI}" input
 			(at 64.77 113.03 180)
 			(uuid "325edd22-2030-4dc4-9a67-48ff46f5087f")
 			(effects
@@ -10421,7 +10421,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -10495,7 +10495,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -10789,7 +10789,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -11080,7 +11080,7 @@
 				(justify right)
 			)
 		)
-		(pin "~EO" input
+		(pin "~{EO}" input
 			(at 228.6 85.09 0)
 			(uuid "822d74e0-6a71-4c3a-a979-2e1e94f21797")
 			(effects
@@ -11110,7 +11110,7 @@
 				(justify left)
 			)
 		)
-		(pin "~FI" input
+		(pin "~{FI}" input
 			(at 228.6 90.17 0)
 			(uuid "0c203a2c-3c2b-45d3-bf24-891105f1dc5e")
 			(effects
@@ -11143,7 +11143,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -11297,7 +11297,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)
@@ -11317,7 +11317,7 @@
 			(color 0 0 0 0)
 		)
 		(uuid "fc6bf991-0c88-4045-aa87-1cec4c93866e")
-		(property "Sheetname" "A register"
+		(property "Sheetname" "Register A"
 			(at 135.89 51.562 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11327,7 +11327,7 @@
 				)
 			)
 		)
-		(property "Sheetfile" "a-register.kicad_sch"
+		(property "Sheetfile" "register.kicad_sch"
 			(at 136.652 54.102 0)
 			(hide yes)
 			(show_name no)
@@ -11428,7 +11428,7 @@
 				(justify left)
 			)
 		)
-		(pin "A_7" output
+		(pin "X_7" output
 			(at 149.86 80.01 0)
 			(uuid "08e41c4e-b4f0-49b7-beac-f2e38aa3cfdc")
 			(effects
@@ -11438,7 +11438,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_6" output
+		(pin "X_6" output
 			(at 149.86 77.47 0)
 			(uuid "0bb4cede-b7f7-441d-9074-2a4a9112878e")
 			(effects
@@ -11448,7 +11448,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_5" output
+		(pin "X_5" output
 			(at 149.86 74.93 0)
 			(uuid "52fce8ed-40ab-4dc3-9a33-66928c9d97b8")
 			(effects
@@ -11458,7 +11458,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_4" output
+		(pin "X_4" output
 			(at 149.86 72.39 0)
 			(uuid "4dd87b7b-db3c-4e05-bb39-0fbc2a5ff20e")
 			(effects
@@ -11468,7 +11468,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_3" output
+		(pin "X_3" output
 			(at 149.86 69.85 0)
 			(uuid "b8d2b457-256f-4fd7-8927-5dfd13451afc")
 			(effects
@@ -11478,7 +11478,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_2" output
+		(pin "X_2" output
 			(at 149.86 67.31 0)
 			(uuid "65c4de95-07ec-4445-976f-d251ab0c78b6")
 			(effects
@@ -11488,7 +11488,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_1" output
+		(pin "X_1" output
 			(at 149.86 64.77 0)
 			(uuid "efa62be3-eec7-421b-b8dc-6e9c6f7c3130")
 			(effects
@@ -11498,7 +11498,7 @@
 				(justify right)
 			)
 		)
-		(pin "A_0" output
+		(pin "X_0" output
 			(at 149.86 62.23 0)
 			(uuid "a7511b88-a3fc-439d-963e-a4a3d46df0e6")
 			(effects
@@ -11518,7 +11518,7 @@
 				(justify left)
 			)
 		)
-		(pin "~AI" input
+		(pin "~{XI}" input
 			(at 149.86 52.07 0)
 			(uuid "1b74102c-8cec-4159-93e7-742c941b35f2")
 			(effects
@@ -11528,7 +11528,7 @@
 				(justify right)
 			)
 		)
-		(pin "~AO" input
+		(pin "~{XO}" input
 			(at 149.86 54.61 0)
 			(uuid "c6e2c161-f5a4-488e-b3c6-a76203f487a5")
 			(effects
@@ -11541,7 +11541,7 @@
 		(instances
 			(project "8bit-computer"
 				(path "/ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
-					(page "")
+					(page "#")
 				)
 			)
 		)

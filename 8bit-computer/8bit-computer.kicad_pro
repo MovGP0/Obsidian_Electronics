@@ -2169,7 +2169,7 @@
         "uuid": "ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
       }
     ],
-    "used_designators": "U1-9,D1-11,D83-85,#PWR1-33,C1-8,J1-2,R1-6,R8-16,R24-25,R101-103,RV1-2,SW1-3",
+    "used_designators": "",
     "variants": []
   },
   "sheets": [
@@ -2203,11 +2203,11 @@
     ],
     [
       "fc6bf991-0c88-4045-aa87-1cec4c93866e",
-      "A register"
+      "Register A"
     ],
     [
       "33ca1232-fc3e-4e6d-8609-4497c26317de",
-      "B register"
+      "Register B"
     ],
     [
       "d345547e-8a10-400e-9b7b-31cc16952e11",
