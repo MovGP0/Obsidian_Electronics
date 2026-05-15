@@ -523,7 +523,7 @@
 		(in_pos_files yes)
 		(duplicate_pin_numbers_are_jumpers no)
 		(property "Reference" "U"
-			(at 0 0 0)
+			(at 3.302 35.306 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -532,8 +532,8 @@
 				)
 			)
 		)
-		(property "Value" "74189"
-			(at 0 0 0)
+		(property "Value" "74F189"
+			(at 5.588 32.766 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -553,8 +553,8 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
-			(at 0 0 0)
+		(property "Datasheet" "https://www.alldatasheet.com/datasheet-pdf/pdf/7973/NSC/74F189.html"
+			(at 0.762 -3.81 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -564,8 +564,8 @@
 				)
 			)
 		)
-		(property "Description" "Migrated from KiCad legacy cache library"
-			(at 0 0 0)
+		(property "Description" "64-Bit Random Access Memory with TRI-STATE Outputs"
+			(at 0.254 -6.858 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -575,22 +575,44 @@
 				)
 			)
 		)
-		(symbol "74189_0_1"
-			(rectangle
-				(start -11.43 6.35)
-				(end 11.43 -6.35)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
+		(property "ki_keywords" "RAM"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)
 		(symbol "74189_1_1"
+			(rectangle
+				(start -6.35 11.43)
+				(end 6.35 -1.27)
+				(stroke
+					(width 0)
+					(type solid)
+				)
+				(fill
+					(type background)
+				)
+			)
+			(polyline
+				(pts
+					(xy -5.08 11.43) (xy -5.08 12.7) (xy -6.35 12.7) (xy -6.35 30.48) (xy 6.35 30.48) (xy 6.35 12.7)
+					(xy 5.08 12.7) (xy 5.08 11.43) (xy -5.08 11.43)
+				)
+				(stroke
+					(width 0)
+					(type solid)
+				)
+				(fill
+					(type background)
+				)
+			)
 			(pin input line
-				(at -16.51 3.81 0)
+				(at -11.43 29.21 0)
 				(length 5.08)
 				(name "A0"
 					(effects
@@ -607,10 +629,10 @@
 					)
 				)
 			)
-			(pin input inverted
-				(at -5.08 11.43 270)
+			(pin input input_low
+				(at -11.43 16.51 0)
 				(length 5.08)
-				(name "~CS"
+				(name "~{CS}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -625,10 +647,10 @@
 					)
 				)
 			)
-			(pin input inverted
-				(at 7.62 11.43 270)
+			(pin input input_low
+				(at -11.43 13.97 0)
 				(length 5.08)
-				(name "~WE"
+				(name "~{WE}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -644,7 +666,7 @@
 				)
 			)
 			(pin input line
-				(at -2.54 11.43 270)
+				(at -11.43 1.27 0)
 				(length 5.08)
 				(name "D1"
 					(effects
@@ -661,8 +683,8 @@
 					)
 				)
 			)
-			(pin output inverted
-				(at -2.54 -11.43 90)
+			(pin output output_low
+				(at 11.43 1.27 180)
 				(length 5.08)
 				(name "O1"
 					(effects
@@ -680,7 +702,7 @@
 				)
 			)
 			(pin input line
-				(at 0 11.43 270)
+				(at -11.43 3.81 0)
 				(length 5.08)
 				(name "D2"
 					(effects
@@ -697,8 +719,8 @@
 					)
 				)
 			)
-			(pin output inverted
-				(at 0 -11.43 90)
+			(pin output output_low
+				(at 11.43 3.81 180)
 				(length 5.08)
 				(name "O2"
 					(effects
@@ -716,7 +738,7 @@
 				)
 			)
 			(pin power_in line
-				(at 10.16 -11.43 90)
+				(at 0 -6.35 90)
 				(length 5.08)
 				(name "GND"
 					(effects
@@ -733,8 +755,8 @@
 					)
 				)
 			)
-			(pin output inverted
-				(at 2.54 -11.43 90)
+			(pin output output_low
+				(at 11.43 6.35 180)
 				(length 5.08)
 				(name "O3"
 					(effects
@@ -752,7 +774,7 @@
 				)
 			)
 			(pin input line
-				(at 2.54 11.43 270)
+				(at -11.43 6.35 0)
 				(length 5.08)
 				(name "D3"
 					(effects
@@ -769,8 +791,8 @@
 					)
 				)
 			)
-			(pin output inverted
-				(at 5.08 -11.43 90)
+			(pin output output_low
+				(at 11.43 8.89 180)
 				(length 5.08)
 				(name "O4"
 					(effects
@@ -788,7 +810,7 @@
 				)
 			)
 			(pin input line
-				(at 5.08 11.43 270)
+				(at -11.43 8.89 0)
 				(length 5.08)
 				(name "D4"
 					(effects
@@ -806,7 +828,7 @@
 				)
 			)
 			(pin input line
-				(at -16.51 -3.81 0)
+				(at -11.43 21.59 0)
 				(length 5.08)
 				(name "A3"
 					(effects
@@ -824,7 +846,7 @@
 				)
 			)
 			(pin input line
-				(at -16.51 -1.27 0)
+				(at -11.43 24.13 0)
 				(length 5.08)
 				(name "A2"
 					(effects
@@ -842,7 +864,7 @@
 				)
 			)
 			(pin input line
-				(at -16.51 1.27 0)
+				(at -11.43 26.67 0)
 				(length 5.08)
 				(name "A1"
 					(effects
@@ -860,7 +882,7 @@
 				)
 			)
 			(pin power_in line
-				(at 10.16 11.43 270)
+				(at 0 35.56 270)
 				(length 5.08)
 				(name "VCC"
 					(effects
