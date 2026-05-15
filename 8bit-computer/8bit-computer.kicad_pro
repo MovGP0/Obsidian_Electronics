@@ -2169,7 +2169,7 @@
         "uuid": "ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
       }
     ],
-    "used_designators": "U9,U11-15,U17,U20-21,U24,U26-30,D18-25,#PWR34-63,#PWR73-74,#PWR79-89,R32-41,SW3-8,C7-11",
+    "used_designators": "U9,U11-15,U17,U20-21,U24,U26-34,U37-39,D18-25,#PWR34-67,#PWR73-74,#PWR79-105,R32-43,SW3-9,C7-13,C16-17",
     "variants": []
   },
   "sheets": [
