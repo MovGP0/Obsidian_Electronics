@@ -4,6 +4,10 @@
 	(generator_version "10.0")
 	(uuid "fca8b739-60bf-4afa-b29b-9a19b79eb505")
 	(paper "A4")
+	(title_block
+		(title "Memory Address Register (MAR)")
+		(date "2026-05-15")
+	)
 	(lib_symbols)
 	(junction
 		(at 88.9 93.98)

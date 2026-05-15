@@ -2169,7 +2169,7 @@
         "uuid": "ad4ae7b4-c6cb-482b-83a8-8fafb97d09a4"
       }
     ],
-    "used_designators": "",
+    "used_designators": "U9,U11-14,D18-25,#PWR73-74,#PWR79-89,R32-39,SW3-4,C7-9",
     "variants": []
   },
   "sheets": [

@@ -4,6 +4,10 @@
 	(generator_version "10.0")
 	(uuid "fb194763-cf8c-4be1-866c-23261d7f3698")
 	(paper "A4")
+	(title_block
+		(title "Register (R)")
+		(date "2026-05-15")
+	)
 	(lib_symbols
 		(symbol "74xx:74LS173"
 			(pin_names
@@ -4291,6 +4295,7 @@
 		(uuid "0fcbdee7-de66-4a8f-899c-3d2d8038217a")
 		(property "Reference" "R31"
 			(at 134.62 107.188 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4302,6 +4307,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 107.188 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4386,6 +4392,7 @@
 		(uuid "2bfcc32f-2f36-465b-acfb-8c0e15d941ab")
 		(property "Reference" "R24"
 			(at 134.62 160.528 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4397,6 +4404,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 160.528 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4629,6 +4637,7 @@
 		(uuid "300f29bd-c6ed-4f7d-ac79-4d18ae53257b")
 		(property "Reference" "D13"
 			(at 124.46 137.668 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4640,6 +4649,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 137.668 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4747,6 +4757,7 @@
 		)
 		(property "Value" "GND"
 			(at 64.77 196.85 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4827,6 +4838,7 @@
 		(uuid "33670619-8265-4143-9741-1fc3293d78fd")
 		(property "Reference" "D17"
 			(at 124.46 107.188 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4838,6 +4850,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 107.188 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4945,6 +4958,7 @@
 		)
 		(property "Value" "GND"
 			(at 49.53 114.3 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5025,6 +5039,7 @@
 		(uuid "40b3e4c0-7b6d-466c-92e1-d6f80a9fd906")
 		(property "Reference" "D12"
 			(at 124.46 145.288 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5036,6 +5051,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 145.288 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5131,6 +5147,7 @@
 		(uuid "43da8303-b6fc-496a-b70c-fdf0de109cb7")
 		(property "Reference" "D14"
 			(at 124.46 130.048 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5142,6 +5159,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 130.048 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5249,6 +5267,7 @@
 		)
 		(property "Value" "VCC"
 			(at 64.77 27.94 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5341,6 +5360,7 @@
 		)
 		(property "Value" "GND"
 			(at 64.77 137.16 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5433,6 +5453,7 @@
 		)
 		(property "Value" "GND"
 			(at 49.53 173.99 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5524,6 +5545,7 @@
 		)
 		(property "Value" "GND"
 			(at 68.834 76.708 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5874,6 +5896,7 @@
 		(uuid "64b12a1a-0b09-4196-a717-5be8344fd607")
 		(property "Reference" "D11"
 			(at 124.46 152.908 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5885,6 +5908,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 152.908 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5980,6 +6004,7 @@
 		(uuid "80b1cac0-f14f-4824-a8ff-6a114a84ae65")
 		(property "Reference" "R26"
 			(at 134.62 145.288 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5991,6 +6016,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 145.288 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6075,6 +6101,7 @@
 		(uuid "8aa71cff-7ee8-465a-82a7-49842eb76620")
 		(property "Reference" "D16"
 			(at 124.46 114.808 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6086,6 +6113,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 114.808 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6181,6 +6209,7 @@
 		(uuid "8ec9534b-20ab-4909-b91e-76c7051613cf")
 		(property "Reference" "R25"
 			(at 134.62 152.908 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6192,6 +6221,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 152.908 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6288,6 +6318,7 @@
 		)
 		(property "Value" "VCC"
 			(at 85.09 62.23 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6552,6 +6583,7 @@
 		(uuid "ab53fb96-9eed-4ba2-9412-b3aadf48d369")
 		(property "Reference" "R29"
 			(at 134.62 122.428 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6563,6 +6595,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 122.428 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6743,6 +6776,7 @@
 		(uuid "c5dde620-f461-4e61-9aa5-90787a084bd4")
 		(property "Reference" "R28"
 			(at 134.62 130.048 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6754,6 +6788,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 130.048 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6850,6 +6885,7 @@
 		)
 		(property "Value" "GND"
 			(at 148.59 137.16 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6930,6 +6966,7 @@
 		(uuid "e48f319f-0ef1-42a4-9f87-cb7f1c657a4e")
 		(property "Reference" "R27"
 			(at 134.62 137.668 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6941,6 +6978,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 137.668 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7025,6 +7063,7 @@
 		(uuid "e9f13ee0-76dd-42fc-9d22-a8429a7f0531")
 		(property "Reference" "D15"
 			(at 124.46 122.428 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7036,6 +7075,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 122.428 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7142,6 +7182,7 @@
 		)
 		(property "Value" "VCC"
 			(at 68.326 83.566 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7234,6 +7275,7 @@
 		)
 		(property "Value" "VCC"
 			(at 64.77 140.97 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7314,6 +7356,7 @@
 		(uuid "fa01fbb9-5ccf-4698-900b-5954e47adef0")
 		(property "Reference" "D10"
 			(at 124.46 160.528 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7325,6 +7368,7 @@
 		)
 		(property "Value" "RED"
 			(at 127 160.528 90)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7420,6 +7464,7 @@
 		(uuid "fe14edcf-3ac0-4230-a430-966aa982a596")
 		(property "Reference" "R30"
 			(at 134.62 114.808 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7431,6 +7476,7 @@
 		)
 		(property "Value" "220"
 			(at 137.16 114.808 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7500,11 +7546,6 @@
 					(unit 1)
 				)
 			)
-		)
-	)
-	(sheet_instances
-		(path "/"
-			(page "1")
 		)
 	)
 )

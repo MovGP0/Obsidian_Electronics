@@ -5,7 +5,7 @@
 	(uuid "57bf05bd-b690-46a1-8f3b-d0b4e73c9cb6")
 	(paper "A4")
 	(title_block
-		(title "PC (Program Counter)")
+		(title "Program Counter (PC)")
 		(date "2026-05-12")
 		(comment 1 "is currently executing.")
 		(comment 2 "to keep track of which instruction the computer")
